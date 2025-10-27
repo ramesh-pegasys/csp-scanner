@@ -1,5 +1,5 @@
 """Tests for API dependencies."""
-import asyncio
+
 from types import SimpleNamespace
 import pytest
 from fastapi import HTTPException
@@ -74,7 +74,9 @@ async def test_verify_api_key_disabled_returns_true():
 async def test_verify_api_key_success(monkeypatch):
     settings = Settings(api_key_enabled=True, api_key="secret")
     monkeypatch.setattr(dependencies.logger, "warning", lambda *args, **kwargs: None)
-    assert await dependencies.verify_api_key(x_api_key="secret", settings=settings) is True
+    assert (
+        await dependencies.verify_api_key(x_api_key="secret", settings=settings) is True
+    )
 
 
 @pytest.mark.asyncio
@@ -97,15 +99,31 @@ async def test_verify_api_key_missing_and_invalid(monkeypatch):
 @pytest.mark.asyncio
 async def test_optional_verify_api_key_behaviour():
     settings = Settings(api_key_enabled=True, api_key="secret")
-    assert await dependencies.optional_verify_api_key(x_api_key=None, settings=settings) is False
-    assert await dependencies.optional_verify_api_key(x_api_key="bad", settings=settings) is False
-    assert await dependencies.optional_verify_api_key(x_api_key="secret", settings=settings) is True
+    assert (
+        await dependencies.optional_verify_api_key(x_api_key=None, settings=settings)
+        is False
+    )
+    assert (
+        await dependencies.optional_verify_api_key(x_api_key="bad", settings=settings)
+        is False
+    )
+    assert (
+        await dependencies.optional_verify_api_key(
+            x_api_key="secret", settings=settings
+        )
+        is True
+    )
 
 
 @pytest.mark.asyncio
 async def test_optional_verify_api_key_disabled():
     settings = Settings(api_key_enabled=False)
-    assert await dependencies.optional_verify_api_key(x_api_key="anything", settings=settings) is False
+    assert (
+        await dependencies.optional_verify_api_key(
+            x_api_key="anything", settings=settings
+        )
+        is False
+    )
 
 
 @pytest.mark.asyncio
@@ -124,7 +142,9 @@ async def test_check_rate_limit(monkeypatch):
     assert exc.value.status_code == 429
 
     disabled_settings = Settings(rate_limiting_enabled=False)
-    assert await dependencies.check_rate_limit(request, settings=disabled_settings) is True
+    assert (
+        await dependencies.check_rate_limit(request, settings=disabled_settings) is True
+    )
 
 
 def test_pagination_params_success():

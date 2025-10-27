@@ -1,7 +1,6 @@
 """Tests for extraction endpoints"""
-import pytest
+
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, Mock
 import uuid
 
 
@@ -10,11 +9,7 @@ def test_trigger_extraction_success(client: TestClient, mock_orchestrator):
     job_id = str(uuid.uuid4())
     mock_orchestrator.run_extraction.return_value = job_id
 
-    payload = {
-        "services": ["s3", "ec2"],
-        "regions": ["us-east-1"],
-        "batch_size": 50
-    }
+    payload = {"services": ["s3", "ec2"], "regions": ["us-east-1"], "batch_size": 50}
 
     response = client.post("/api/v1/extraction/trigger", json=payload)
     assert response.status_code == 200

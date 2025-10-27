@@ -1,5 +1,5 @@
 """Tests for schedule endpoints"""
-import pytest
+
 from fastapi.testclient import TestClient
 from unittest.mock import Mock
 
@@ -10,7 +10,7 @@ def test_create_schedule_success(client: TestClient, mock_scheduler):
         "name": "daily-extraction",
         "cron_expression": "0 0 * * *",
         "services": ["s3", "ec2"],
-        "batch_size": 100
+        "batch_size": 100,
     }
 
     response = client.post("/api/v1/schedules/", json=payload)
@@ -22,12 +22,14 @@ def test_create_schedule_success(client: TestClient, mock_scheduler):
 
 def test_create_schedule_invalid_cron(client: TestClient, mock_scheduler):
     """Test schedule creation with invalid cron"""
-    mock_scheduler.add_job.side_effect = Exception("Wrong number of fields; got 1, expected 5 or 6")
+    mock_scheduler.add_job.side_effect = Exception(
+        "Wrong number of fields; got 1, expected 5 or 6"
+    )
 
     payload = {
         "name": "invalid-schedule",
         "cron_expression": "invalid",
-        "services": ["s3"]
+        "services": ["s3"],
     }
 
     response = client.post("/api/v1/schedules/", json=payload)

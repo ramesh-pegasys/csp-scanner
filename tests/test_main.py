@@ -1,4 +1,5 @@
 """Tests for main application"""
+
 import pytest
 from types import SimpleNamespace
 from unittest.mock import Mock, patch, AsyncMock
@@ -13,32 +14,45 @@ async def test_lifespan_startup():
     mock_app = Mock()
     mock_app.state = Mock()  # Use Mock instead of dict for attribute access
 
-    with patch('app.main.get_settings') as mock_get_settings, \
-         patch('app.main.boto3.Session') as mock_session_class, \
-         patch('app.main.ExtractorRegistry') as mock_registry_class, \
-         patch('app.main.TransportFactory.create') as mock_transport_factory, \
-         patch('app.main.ExtractionOrchestrator') as mock_orchestrator_class, \
-         patch('app.main.scheduler') as mock_scheduler:
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "app.main.boto3.Session"
+    ) as mock_session_class, patch(
+        "app.main.ExtractorRegistry"
+    ) as mock_registry_class, patch(
+        "app.main.TransportFactory.create"
+    ) as mock_transport_factory, patch(
+        "app.main.ExtractionOrchestrator"
+    ) as mock_orchestrator_class, patch(
+        "app.main.scheduler"
+    ) as mock_scheduler:
 
         # Setup mocks
         from app.core.config import Settings
+
         mock_settings = Settings(
-            aws_access_key_id='test-key',
-            aws_secret_access_key='test-secret',
-            aws_default_region='us-east-1',
-            scanner_endpoint_url='http://localhost:8000',
+            aws_access_key_id="test-key",
+            aws_secret_access_key="test-secret",
+            aws_default_region="us-east-1",
+            scanner_endpoint_url="http://localhost:8000",
             transport_timeout_seconds=30,
             transport_max_retries=3,
             max_concurrent_extractors=10,
             batch_size=100,
             batch_delay_seconds=0.1,
-            api_key_enabled=False
+            api_key_enabled=False,
         )
         # Patch all attributes to ensure correct access
         for attr in [
-            'aws_access_key_id', 'aws_secret_access_key', 'aws_default_region',
-            'scanner_endpoint_url', 'transport_timeout_seconds', 'transport_max_retries',
-            'max_concurrent_extractors', 'batch_size', 'batch_delay_seconds', 'api_key_enabled'
+            "aws_access_key_id",
+            "aws_secret_access_key",
+            "aws_default_region",
+            "scanner_endpoint_url",
+            "transport_timeout_seconds",
+            "transport_max_retries",
+            "max_concurrent_extractors",
+            "batch_size",
+            "batch_delay_seconds",
+            "api_key_enabled",
         ]:
             setattr(mock_settings, attr, getattr(mock_settings, attr))
         mock_get_settings.return_value = mock_settings
@@ -65,19 +79,18 @@ async def test_lifespan_startup():
             print(f"Mock session call args: {mock_session_class.call_args}")
             # Verify components were initialized
             mock_session_class.assert_called_once_with(
-                aws_access_key_id='test-key',
-                aws_secret_access_key='test-secret',
-                region_name='us-east-1'
+                aws_access_key_id="test-key",
+                aws_secret_access_key="test-secret",
+                region_name="us-east-1",
             )
             mock_registry_class.assert_called_once_with(mock_session, mock_settings)
             mock_transport_factory.assert_called_once_with(
-                mock_settings.transport_type,
-                mock_settings.transport_config
+                mock_settings.transport_type, mock_settings.transport_config
             )
             mock_orchestrator_class.assert_called_once_with(
                 registry=mock_registry,
                 transport=mock_transport,
-                config=mock_settings.orchestrator_config
+                config=mock_settings.orchestrator_config,
             )
             mock_scheduler.start.assert_called_once()
 
@@ -97,12 +110,15 @@ async def test_lifespan_shutdown_disconnect():
     mock_app = Mock()
     mock_app.state = Mock()
 
-    with patch('app.main.get_settings') as mock_get_settings, \
-         patch('app.main.boto3.Session'), \
-         patch('app.main.ExtractorRegistry') as mock_registry_class, \
-         patch('app.main.TransportFactory.create') as mock_transport_factory, \
-         patch('app.main.ExtractionOrchestrator') as mock_orchestrator_class, \
-         patch('app.main.scheduler') as mock_scheduler:
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "app.main.boto3.Session"
+    ), patch("app.main.ExtractorRegistry") as mock_registry_class, patch(
+        "app.main.TransportFactory.create"
+    ) as mock_transport_factory, patch(
+        "app.main.ExtractionOrchestrator"
+    ) as mock_orchestrator_class, patch(
+        "app.main.scheduler"
+    ) as mock_scheduler:
 
         mock_settings = Settings()
         mock_get_settings.return_value = mock_settings

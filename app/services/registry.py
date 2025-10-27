@@ -6,15 +6,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Type for concrete extractor classes (not abstract)
+ConcreteExtractor = Type[BaseExtractor]
+
+
 class ExtractorRegistry:
     """Registry for managing extractors"""
-    
+
     def __init__(self, session, config: Settings):
         self.session = session
         self.config = config
         self._extractors: Dict[str, BaseExtractor] = {}
         self._register_default_extractors()
-    
+
     def _register_default_extractors(self):
         """Register all available extractors"""
         from app.extractors.ec2 import EC2Extractor
@@ -30,7 +34,7 @@ class ExtractorRegistry:
         from app.extractors.cloudfront import CloudFrontExtractor
         from app.extractors.apigateway import APIGatewayExtractor
         from app.extractors.kms import KMSExtractor
-        
+
         extractor_classes = [
             EC2Extractor,
             S3Extractor,
@@ -44,44 +48,45 @@ class ExtractorRegistry:
             ELBExtractor,
             CloudFrontExtractor,
             APIGatewayExtractor,
-            KMSExtractor
+            KMSExtractor,
         ]
-        
+
         for extractor_class in extractor_classes:
-            self.register(extractor_class)
-    
-    def register(self, extractor_class: Type[BaseExtractor]):
+            self.register(extractor_class)  # type: ignore[type-abstract]
+
+    def register(self, extractor_class: ConcreteExtractor) -> None:
         """Register an extractor class"""
         try:
             extractor_config = self.config.extractors.get(
-                extractor_class.__name__.replace('Extractor', '').lower(),
-                {}
+                extractor_class.__name__.replace("Extractor", "").lower(), {}
             )
-            
+
             instance = extractor_class(self.session, extractor_config)
             service_name = instance.metadata.service_name
-            
+
             self._extractors[service_name] = instance
             logger.info(f"Registered extractor: {service_name}")
-            
+
         except Exception as e:
             logger.error(f"Failed to register {extractor_class.__name__}: {e}")
-    
+
     def get(self, service_name: str) -> Optional[BaseExtractor]:
         """Get extractor by service name"""
         return self._extractors.get(service_name)
-    
-    def get_extractors(self, services: Optional[List[str]] = None) -> List[BaseExtractor]:
+
+    def get_extractors(
+        self, services: Optional[List[str]] = None
+    ) -> List[BaseExtractor]:
         """Get multiple extractors"""
         if services is None:
             return list(self._extractors.values())
-        
+
         return [
             self._extractors[service]
             for service in services
             if service in self._extractors
         ]
-    
+
     def list_services(self) -> List[str]:
         """List all registered services"""
         return list(self._extractors.keys())

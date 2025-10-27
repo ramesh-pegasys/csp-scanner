@@ -4,10 +4,10 @@ Custom retry policy implementation with exponential backoff.
 Provides flexible retry logic for transport operations with configurable backoff strategies.
 """
 
-from typing import Dict, Any, Optional, Callable, List, Type, Union
+from typing import Dict, Any, Optional, Callable, List, Type
 from enum import Enum
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 import asyncio
 import random
 import logging
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class RetryStrategy(str, Enum):
     """Retry strategies for backoff calculation"""
+
     EXPONENTIAL = "exponential"
     LINEAR = "linear"
     FIXED = "fixed"
@@ -25,6 +26,7 @@ class RetryStrategy(str, Enum):
 
 class JitterType(str, Enum):
     """Types of jitter to apply to backoff delays"""
+
     NONE = "none"
     FULL = "full"
     EQUAL = "equal"
@@ -34,6 +36,7 @@ class JitterType(str, Enum):
 @dataclass
 class RetryConfig:
     """Configuration for retry policy"""
+
     max_attempts: int = 3
     base_delay: float = 1.0  # seconds
     max_delay: float = 60.0  # seconds
@@ -59,6 +62,7 @@ class RetryConfig:
 @dataclass
 class RetryAttempt:
     """Information about a retry attempt"""
+
     attempt_number: int
     delay: float
     exception: Optional[Exception] = None
@@ -103,7 +107,7 @@ class RetryPolicy:
 
         # Calculate base delay based on strategy
         if self.config.strategy == RetryStrategy.EXPONENTIAL:
-            delay = base_delay * (self.config.backoff_multiplier ** attempt_number)
+            delay = base_delay * (self.config.backoff_multiplier**attempt_number)
         elif self.config.strategy == RetryStrategy.LINEAR:
             delay = base_delay + (base_delay * attempt_number)
         elif self.config.strategy == RetryStrategy.FIXED:
@@ -148,7 +152,9 @@ class RetryPolicy:
             # Decorrelated jitter: exponential backoff with randomization
             if attempt_number == 1:
                 return delay
-            prev_delay = self.attempts[-1].delay if self.attempts else self.config.base_delay
+            prev_delay = (
+                self.attempts[-1].delay if self.attempts else self.config.base_delay
+            )
             return random.uniform(self.config.base_delay, prev_delay * 3)
 
         return delay
@@ -170,7 +176,10 @@ class RetryPolicy:
 
         # Check retryable exceptions
         if self.config.retryable_exceptions:
-            if not any(isinstance(exception, exc_type) for exc_type in self.config.retryable_exceptions):
+            if not any(
+                isinstance(exception, exc_type)
+                for exc_type in self.config.retryable_exceptions
+            ):
                 return False
 
         # Check custom retry condition
@@ -181,9 +190,7 @@ class RetryPolicy:
         return True
 
     async def execute_with_retry(
-        self,
-        operation: Callable[[], Any],
-        operation_name: str = "operation"
+        self, operation: Callable[[], Any], operation_name: str = "operation"
     ) -> Any:
         """
         Execute an operation with retry logic.
@@ -203,7 +210,9 @@ class RetryPolicy:
 
         for attempt in range(self.config.max_attempts):
             try:
-                logger.debug(f"Attempting {operation_name} (attempt {attempt + 1}/{self.config.max_attempts})")
+                logger.debug(
+                    f"Attempting {operation_name} (attempt {attempt + 1}/{self.config.max_attempts})"
+                )
 
                 # Calculate delay for this attempt
                 delay = self.calculate_delay(attempt)
@@ -218,7 +227,9 @@ class RetryPolicy:
                 result = await operation()
                 duration = time.time() - start_time
 
-                logger.debug(f"{operation_name} succeeded on attempt {attempt + 1} in {duration:.2f}s")
+                logger.debug(
+                    f"{operation_name} succeeded on attempt {attempt + 1} in {duration:.2f}s"
+                )
                 return result
 
             except Exception as e:
@@ -226,17 +237,17 @@ class RetryPolicy:
                 attempt_info = RetryAttempt(
                     attempt_number=attempt + 1,
                     delay=self.calculate_delay(attempt),
-                    exception=e
+                    exception=e,
                 )
                 self.attempts.append(attempt_info)
 
-                logger.warning(
-                    f"{operation_name} failed on attempt {attempt + 1}: {e}"
-                )
+                logger.warning(f"{operation_name} failed on attempt {attempt + 1}: {e}")
 
                 # Check if we should retry
                 if not self.should_retry(e, attempt):
-                    logger.error(f"{operation_name} failed permanently after {attempt + 1} attempts")
+                    logger.error(
+                        f"{operation_name} failed permanently after {attempt + 1} attempts"
+                    )
                     break
 
         # All retries exhausted
@@ -254,28 +265,34 @@ class RetryPolicy:
         """
         if not self.attempts:
             return {
-                'total_attempts': 0,
-                'successful_attempt': None,
-                'total_delay': 0.0,
-                'last_exception': None
+                "total_attempts": 0,
+                "successful_attempt": None,
+                "total_delay": 0.0,
+                "last_exception": None,
             }
 
         total_delay = sum(attempt.delay for attempt in self.attempts)
 
         return {
-            'total_attempts': len(self.attempts),
-            'successful_attempt': None,  # Would be set if we tracked success
-            'total_delay': total_delay,
-            'last_exception': str(self.attempts[-1].exception) if self.attempts[-1].exception else None,
-            'attempts': [
+            "total_attempts": len(self.attempts),
+            "successful_attempt": None,  # Would be set if we tracked success
+            "total_delay": total_delay,
+            "last_exception": (
+                str(self.attempts[-1].exception)
+                if self.attempts[-1].exception
+                else None
+            ),
+            "attempts": [
                 {
-                    'number': attempt.attempt_number,
-                    'delay': attempt.delay,
-                    'exception': str(attempt.exception) if attempt.exception else None,
-                    'timestamp': attempt.timestamp.isoformat() if attempt.timestamp else None
+                    "number": attempt.attempt_number,
+                    "delay": attempt.delay,
+                    "exception": str(attempt.exception) if attempt.exception else None,
+                    "timestamp": (
+                        attempt.timestamp.isoformat() if attempt.timestamp else None
+                    ),
                 }
                 for attempt in self.attempts
-            ]
+            ],
         }
 
 
@@ -287,7 +304,7 @@ DEFAULT_RETRY_CONFIG = RetryConfig(
     backoff_multiplier=2.0,
     strategy=RetryStrategy.EXPONENTIAL,
     jitter_type=JitterType.EQUAL,
-    jitter_factor=0.1
+    jitter_factor=0.1,
 )
 
 AGGRESSIVE_RETRY_CONFIG = RetryConfig(
@@ -296,7 +313,7 @@ AGGRESSIVE_RETRY_CONFIG = RetryConfig(
     max_delay=60.0,
     backoff_multiplier=2.0,
     strategy=RetryStrategy.EXPONENTIAL,
-    jitter_type=JitterType.FULL
+    jitter_type=JitterType.FULL,
 )
 
 CONSERVATIVE_RETRY_CONFIG = RetryConfig(
@@ -305,7 +322,7 @@ CONSERVATIVE_RETRY_CONFIG = RetryConfig(
     max_delay=10.0,
     backoff_multiplier=1.5,
     strategy=RetryStrategy.EXPONENTIAL,
-    jitter_type=JitterType.NONE
+    jitter_type=JitterType.NONE,
 )
 
 

@@ -1,8 +1,8 @@
 """Tests for core modules"""
-import pytest
+
 from unittest.mock import Mock, patch, mock_open
-import os
-from app.core.config import Settings, get_settings
+import os  # noqa: F401
+from app.core.config import Settings, get_settings  # noqa: F401
 
 
 def test_settings_defaults(monkeypatch):
@@ -11,7 +11,7 @@ def test_settings_defaults(monkeypatch):
     monkeypatch.delenv("AWS_DEFAULT_REGION", raising=False)
     monkeypatch.delenv("CONFIG_FILE", raising=False)
     settings = Settings()
-    
+
     assert settings.app_name == "Cloud Artifact Extractor"
     assert settings.environment == "development"
     assert settings.debug is False
@@ -30,23 +30,27 @@ def test_settings_transport_config():
         scanner_endpoint_url="https://scanner.example.com",
         scanner_api_key="test-key",
         transport_timeout_seconds=60,
-        transport_max_retries=5
+        transport_max_retries=5,
     )
-    
+
     config = settings.transport_config
-    assert config['scanner_endpoint_url'] == "https://scanner.example.com"
-    assert config['api_key'] == "test-key"
-    assert config['timeout_seconds'] == 60
-    assert config['max_retries'] == 5
-    assert 'Content-Type' in config['headers']
-    assert 'User-Agent' in config['headers']
+    assert config["scanner_endpoint_url"] == "https://scanner.example.com"
+    assert config["api_key"] == "test-key"
+    assert config["timeout_seconds"] == 60
+    assert config["max_retries"] == 5
+    assert "Content-Type" in config["headers"]
+    assert "User-Agent" in config["headers"]
 
 
 def test_settings_transport_config_filesystem():
-    settings = Settings(transport_type="filesystem", filesystem_base_dir="/tmp", filesystem_create_dir=False)
+    settings = Settings(
+        transport_type="filesystem",
+        filesystem_base_dir="/tmp",
+        filesystem_create_dir=False,
+    )
     config = settings.transport_config
-    assert config['base_dir'] == "/tmp"
-    assert config['create_dir'] is False
+    assert config["base_dir"] == "/tmp"
+    assert config["create_dir"] is False
 
 
 def test_settings_transport_config_null():
@@ -56,62 +60,63 @@ def test_settings_transport_config_null():
 
 def test_settings_orchestrator_config():
     """Test orchestrator config property"""
-    settings = Settings(
-        max_concurrent_extractors=20,
-        batch_delay_seconds=0.5
-    )
-    
+    settings = Settings(max_concurrent_extractors=20, batch_delay_seconds=0.5)
+
     config = settings.orchestrator_config
-    assert config['max_workers'] == 20
-    assert config['batch_delay_seconds'] == 0.5
+    assert config["max_workers"] == 20
+    assert config["batch_delay_seconds"] == 0.5
 
 
-@patch('os.path.exists')
-@patch('builtins.open', new_callable=mock_open, read_data="""
+@patch("os.path.exists")
+@patch(
+    "builtins.open",
+    new_callable=mock_open,
+    read_data="""
 ec2:
   enabled: true
   regions: ['us-east-1', 'us-west-2']
 s3:
   enabled: false
-""")
+""",
+)
 def test_settings_extractors_config(mock_file, mock_exists):
     """Test extractors config loading"""
     mock_exists.return_value = True
-    
+
     settings = Settings(extractor_config_path="config/extractors.yaml")
     extractors = settings.extractors
-    
-    assert extractors['ec2']['enabled'] is True
-    assert extractors['s3']['enabled'] is False
+
+    assert extractors["ec2"]["enabled"] is True
+    assert extractors["s3"]["enabled"] is False
 
 
-@patch('os.path.exists')
+@patch("os.path.exists")
 def test_settings_extractors_config_missing(mock_exists):
     """Test extractors config when file doesn't exist"""
     mock_exists.return_value = False
-    
+
     settings = Settings()
     extractors = settings.extractors
-    
+
     assert extractors == {}
 
 
-@patch('app.core.config.Settings')
+@patch("app.core.config.Settings")
 def test_get_settings_cached(mock_settings_class):
     """Test get_settings caching"""
     from app.core.config import get_settings
-    
+
     # Clear the LRU cache to ensure clean state
     get_settings.cache_clear()
-    
+
     mock_instance = Mock()
     mock_settings_class.return_value = mock_instance
-    
+
     # First call
     settings1 = get_settings()
     # Second call should return cached instance
     settings2 = get_settings()
-    
+
     assert settings1 is settings2
     mock_settings_class.assert_called_once()
 
@@ -124,6 +129,7 @@ def test_get_settings_from_config_file(tmp_path, monkeypatch):
     monkeypatch.delenv("AWS_DEFAULT_REGION", raising=False)
 
     from app.core.config import get_settings
+
     get_settings.cache_clear()
     settings = get_settings()
 

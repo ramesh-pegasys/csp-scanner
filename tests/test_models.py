@@ -1,5 +1,5 @@
 """Tests for models"""
-import pytest
+
 from datetime import datetime
 from app.models.job import Job, JobStatus
 from app.models.artifact import CloudArtifact
@@ -15,7 +15,7 @@ def test_job_model():
         total_artifacts=10,
         successful_artifacts=8,
         failed_artifacts=2,
-        errors=["Error 1", "Error 2"]
+        errors=["Error 1", "Error 2"],
     )
 
     assert job.id == "test-job-123"
@@ -35,7 +35,7 @@ def test_job_model_defaults():
         id="test-job-456",
         status=JobStatus.PENDING,
         started_at=datetime(2023, 1, 1, 12, 0, 0),
-        services=["s3"]
+        services=["s3"],
     )
 
     assert job.total_artifacts == 0
@@ -62,7 +62,7 @@ def test_cloud_artifact_model():
         account_id="123456789012",
         configuration={"name": "my-bucket", "created": "2023-01-01"},
         raw={"raw_data": "value"},
-        extracted_at=datetime(2023, 1, 1, 12, 0, 0)
+        extracted_at=datetime(2023, 1, 1, 12, 0, 0),
     )
 
     assert artifact.resource_id == "my-bucket"

@@ -7,10 +7,9 @@ Each artifact is written as a separate JSON file with a unique filename.
 import os
 import json
 import uuid
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 from datetime import datetime, timezone
 import logging
-from pathlib import Path
 
 from app.transport.base import BaseTransport, TransportResult, TransportStatus
 from app.core.exceptions import TransportError
@@ -38,18 +37,20 @@ class FilesystemTransport(BaseTransport):
         super().__init__(config)
 
         # Get base directory from config, default to ./file_collector relative to cwd
-        self.base_dir = config.get('base_dir', './file_collector')
+        self.base_dir = config.get("base_dir", "./file_collector")
 
         # Convert to absolute path if relative
         if not os.path.isabs(self.base_dir):
             self.base_dir = os.path.join(os.getcwd(), self.base_dir)
 
-        self.create_dir = config.get('create_dir', True)
+        self.create_dir = config.get("create_dir", True)
 
         # Ensure base directory exists
         self._ensure_base_dir()
 
-        logger.info(f"Filesystem transport initialized with base directory: {self.base_dir}")
+        logger.info(
+            f"Filesystem transport initialized with base directory: {self.base_dir}"
+        )
 
     def _ensure_base_dir(self) -> None:
         """Ensure the base directory exists"""
@@ -58,7 +59,9 @@ class FilesystemTransport(BaseTransport):
                 os.makedirs(self.base_dir, exist_ok=True)
                 logger.info(f"Created base directory: {self.base_dir}")
             except OSError as e:
-                raise TransportError(f"Failed to create base directory {self.base_dir}: {e}")
+                raise TransportError(
+                    f"Failed to create base directory {self.base_dir}: {e}"
+                )
 
     def _generate_filename(self, artifact: Dict[str, Any]) -> str:
         """
@@ -72,15 +75,15 @@ class FilesystemTransport(BaseTransport):
         Returns:
             Unique filename
         """
-        service = artifact.get('service', 'unknown')
-        resource_type = artifact.get('resource_type', 'unknown')
-        resource_id = artifact.get('resource_id', 'unknown')
+        service = artifact.get("service", "unknown")
+        resource_type = artifact.get("resource_type", "unknown")
+        resource_id = artifact.get("resource_id", "unknown")
 
         # Clean resource_id to be filesystem-safe
-        resource_id_clean = str(resource_id).replace('/', '_').replace('\\', '_')[:50]
+        resource_id_clean = str(resource_id).replace("/", "_").replace("\\", "_")[:50]
 
         # Generate timestamp
-        timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
 
         # Generate unique ID
         unique_id = str(uuid.uuid4())[:8]
@@ -134,7 +137,7 @@ class FilesystemTransport(BaseTransport):
             TransportResult indicating success/failure
         """
         start_time = datetime.now(timezone.utc)
-        artifact_id = artifact.get('resource_id', 'unknown')
+        artifact_id = artifact.get("resource_id", "unknown")
 
         try:
             # Generate unique filename
@@ -142,10 +145,12 @@ class FilesystemTransport(BaseTransport):
             file_path = self._get_file_path(filename)
 
             # Write artifact to JSON file
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(artifact, f, indent=2, ensure_ascii=False, default=str)
 
-            duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
+            duration_ms = (
+                datetime.now(timezone.utc) - start_time
+            ).total_seconds() * 1000
 
             logger.debug(f"Successfully wrote artifact {artifact_id} to {file_path}")
 
@@ -153,15 +158,17 @@ class FilesystemTransport(BaseTransport):
                 status=TransportStatus.SUCCESS,
                 artifact_id=artifact_id,
                 timestamp=datetime.now(timezone.utc),
-                response_data={'file_path': file_path, 'filename': filename},
-                duration_ms=duration_ms
+                response_data={"file_path": file_path, "filename": filename},
+                duration_ms=duration_ms,
             )
 
             await self._update_metrics_success(result)
             return result
 
         except Exception as e:
-            duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
+            duration_ms = (
+                datetime.now(timezone.utc) - start_time
+            ).total_seconds() * 1000
             error_msg = f"Failed to write artifact {artifact_id}: {str(e)}"
 
             logger.error(error_msg)
@@ -171,13 +178,15 @@ class FilesystemTransport(BaseTransport):
                 artifact_id=artifact_id,
                 timestamp=datetime.now(timezone.utc),
                 error_message=error_msg,
-                duration_ms=duration_ms
+                duration_ms=duration_ms,
             )
 
             await self._update_metrics_failure(result)
             return result
 
-    async def send_batch(self, artifacts: List[Dict[str, Any]]) -> List[TransportResult]:
+    async def send_batch(
+        self, artifacts: List[Dict[str, Any]]
+    ) -> List[TransportResult]:
         """
         Write multiple artifacts as individual JSON files.
 
@@ -203,9 +212,9 @@ class FilesystemTransport(BaseTransport):
         """
         try:
             # Try to write a test file
-            test_file = os.path.join(self.base_dir, '.health_check')
-            with open(test_file, 'w') as f:
-                f.write('health_check')
+            test_file = os.path.join(self.base_dir, ".health_check")
+            with open(test_file, "w") as f:
+                f.write("health_check")
 
             # Clean up test file
             os.remove(test_file)
@@ -232,8 +241,12 @@ class FilesystemTransport(BaseTransport):
             List of filenames
         """
         try:
-            return [f for f in os.listdir(self.base_dir)
-                   if f.endswith('.json') and os.path.isfile(os.path.join(self.base_dir, f))]
+            return [
+                f
+                for f in os.listdir(self.base_dir)
+                if f.endswith(".json")
+                and os.path.isfile(os.path.join(self.base_dir, f))
+            ]
         except Exception as e:
             logger.error(f"Failed to list files: {e}")
             return []
@@ -241,4 +254,5 @@ class FilesystemTransport(BaseTransport):
 
 # Register this transport
 from app.transport.base import TransportFactory  # noqa: E402
-TransportFactory.register('filesystem', FilesystemTransport)
+
+TransportFactory.register("filesystem", FilesystemTransport)

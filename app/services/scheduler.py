@@ -1,34 +1,30 @@
 # app/services/scheduler.py
-from typing import Dict, Any, Optional
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.jobstores.memory import MemoryJobStore
-from apscheduler.executors.asyncio import AsyncIOExecutor
+from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore[import-untyped]
+from apscheduler.jobstores.memory import MemoryJobStore  # type: ignore[import-untyped]
+from apscheduler.executors.asyncio import AsyncIOExecutor  # type: ignore[import-untyped]
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class SchedulerService:
     """Service for managing scheduled extraction jobs using APScheduler"""
 
     def __init__(self):
         # Configure job stores and executors
-        jobstores = {
-            'default': MemoryJobStore()
-        }
-        executors = {
-            'default': AsyncIOExecutor()
-        }
+        jobstores = {"default": MemoryJobStore()}
+        executors = {"default": AsyncIOExecutor()}
 
         # Create scheduler
         self.scheduler = AsyncIOScheduler(
             jobstores=jobstores,
             executors=executors,
             job_defaults={
-                'coalesce': True,
-                'max_instances': 1,
-                'misfire_grace_time': 30
+                "coalesce": True,
+                "max_instances": 1,
+                "misfire_grace_time": 30,
             },
-            timezone='UTC'
+            timezone="UTC",
         )
 
     def start(self):
@@ -46,11 +42,7 @@ class SchedulerService:
     def add_job(self, func, trigger, id: str, name: str, **kwargs):
         """Add a scheduled job"""
         return self.scheduler.add_job(
-            func=func,
-            trigger=trigger,
-            id=id,
-            name=name,
-            **kwargs
+            func=func, trigger=trigger, id=id, name=name, **kwargs
         )
 
     def get_jobs(self):

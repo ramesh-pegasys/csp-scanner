@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class HTTPTransport(BaseTransport):
     """
     HTTP transport that sends artifacts to a remote policy scanner endpoint.
-    
+
     Uses the HTTPClient internally for actual HTTP communication.
     """
 
@@ -65,11 +65,13 @@ class HTTPTransport(BaseTransport):
             TransportResult indicating success/failure
         """
         start_time = datetime.now(timezone.utc)
-        artifact_id = artifact.get('resource_id', 'unknown')
+        artifact_id = artifact.get("resource_id", "unknown")
 
         try:
             response = await self.client.send(artifact)
-            duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
+            duration_ms = (
+                datetime.now(timezone.utc) - start_time
+            ).total_seconds() * 1000
 
             logger.debug(f"Successfully sent artifact {artifact_id} via HTTP")
 
@@ -78,14 +80,16 @@ class HTTPTransport(BaseTransport):
                 artifact_id=artifact_id,
                 timestamp=datetime.now(timezone.utc),
                 response_data=response,
-                duration_ms=duration_ms
+                duration_ms=duration_ms,
             )
 
             await self._update_metrics_success(result)
             return result
 
         except TransportError as e:
-            duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
+            duration_ms = (
+                datetime.now(timezone.utc) - start_time
+            ).total_seconds() * 1000
             error_msg = f"Failed to send artifact {artifact_id} via HTTP: {str(e)}"
 
             logger.error(error_msg)
@@ -95,14 +99,16 @@ class HTTPTransport(BaseTransport):
                 artifact_id=artifact_id,
                 timestamp=datetime.now(timezone.utc),
                 error_message=error_msg,
-                duration_ms=duration_ms
+                duration_ms=duration_ms,
             )
 
             await self._update_metrics_failure(result)
             return result
 
         except Exception as e:
-            duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
+            duration_ms = (
+                datetime.now(timezone.utc) - start_time
+            ).total_seconds() * 1000
             error_msg = f"Unexpected error sending artifact {artifact_id}: {str(e)}"
 
             logger.error(error_msg)
@@ -112,13 +118,15 @@ class HTTPTransport(BaseTransport):
                 artifact_id=artifact_id,
                 timestamp=datetime.now(timezone.utc),
                 error_message=error_msg,
-                duration_ms=duration_ms
+                duration_ms=duration_ms,
             )
 
             await self._update_metrics_failure(result)
             return result
 
-    async def send_batch(self, artifacts: List[Dict[str, Any]]) -> List[TransportResult]:
+    async def send_batch(
+        self, artifacts: List[Dict[str, Any]]
+    ) -> List[TransportResult]:
         """
         Send multiple artifacts as individual HTTP requests.
 
@@ -157,4 +165,5 @@ class HTTPTransport(BaseTransport):
 
 # Register this transport
 from app.transport.base import TransportFactory  # noqa: E402
-TransportFactory.register('http', HTTPTransport)
+
+TransportFactory.register("http", HTTPTransport)

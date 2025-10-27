@@ -3,6 +3,7 @@
 These tests use lightweight mocks to mimic boto3 clients so we can execute the
 extractor helpers and cover the rich transformation logic in app/extractors.
 """
+
 from datetime import datetime
 from unittest.mock import Mock
 
@@ -137,7 +138,10 @@ def test_apprunner_extractor_walks_services_and_connections():
     apprunner_client = Mock()
 
     service_pages = [
-        {"ServiceSummaryList": [{"ServiceArn": "arn1", "ServiceName": "svc1"}], "NextToken": "token"},
+        {
+            "ServiceSummaryList": [{"ServiceArn": "arn1", "ServiceName": "svc1"}],
+            "NextToken": "token",
+        },
         {"ServiceSummaryList": [{"ServiceArn": "arn2", "ServiceName": "svc2"}]},
     ]
 
@@ -172,7 +176,9 @@ def test_apprunner_extractor_walks_services_and_connections():
             "NextToken": None,
         }
     ]
-    apprunner_client.list_connections.side_effect = lambda NextToken=None: connection_pages[0]
+    apprunner_client.list_connections.side_effect = (
+        lambda NextToken=None: connection_pages[0]
+    )
     apprunner_client.describe_connection.return_value = {
         "Connection": {
             "ConnectionName": "github",
@@ -208,13 +214,7 @@ def test_cloudfront_extractor_handles_distribution_and_oai():
     paginators = {
         "list_distributions": DummyPaginator(distribution_pages),
         "list_cloud_front_origin_access_identities": DummyPaginator(
-            [
-                {
-                    "CloudFrontOriginAccessIdentityList": {
-                        "Items": [{"Id": "oai1"}]
-                    }
-                }
-            ]
+            [{"CloudFrontOriginAccessIdentityList": {"Items": [{"Id": "oai1"}]}}]
         ),
     }
     cloudfront_client.get_paginator.side_effect = lambda name: paginators[name]
@@ -393,9 +393,7 @@ def test_eks_extractor_loads_cluster_nodegroup_and_fargate():
     paginators = {
         "list_clusters": DummyPaginator([{"clusters": ["demo-cluster"]}]),
         "list_nodegroups": DummyPaginator([{"nodegroups": ["ng-1"]}]),
-        "list_fargate_profiles": DummyPaginator(
-            [{"fargateProfileNames": ["fp-1"]}]
-        ),
+        "list_fargate_profiles": DummyPaginator([{"fargateProfileNames": ["fp-1"]}]),
     }
     eks_client.get_paginator.side_effect = lambda name: paginators[name]
     eks_client.describe_cluster.return_value = {
@@ -569,14 +567,18 @@ def test_iam_extractor_captures_all_identity_types():
         "MFADevices": [{"SerialNumber": "device"}]
     }
     iam_client.list_attached_role_policies.return_value = {
-        "AttachedPolicies": [{"PolicyName": "RolePolicy", "PolicyArn": "arn:rolepolicy"}]
+        "AttachedPolicies": [
+            {"PolicyName": "RolePolicy", "PolicyArn": "arn:rolepolicy"}
+        ]
     }
     iam_client.list_role_policies.return_value = {"PolicyNames": ["RoleInline"]}
     iam_client.get_policy_version.return_value = {
         "PolicyVersion": {"Document": {"Statement": []}}
     }
     iam_client.list_attached_group_policies.return_value = {
-        "AttachedPolicies": [{"PolicyName": "GroupPolicy", "PolicyArn": "arn:grouppolicy"}]
+        "AttachedPolicies": [
+            {"PolicyName": "GroupPolicy", "PolicyArn": "arn:grouppolicy"}
+        ]
     }
     iam_client.list_group_policies.return_value = {"PolicyNames": ["GroupInline"]}
 
@@ -646,7 +648,9 @@ def test_kms_extractor_collects_keys_aliases_and_grants():
             }
         ]
     }
-    kms_client.list_resource_tags.return_value = {"Tags": [{"TagKey": "env", "TagValue": "dev"}]}
+    kms_client.list_resource_tags.return_value = {
+        "Tags": [{"TagKey": "env", "TagValue": "dev"}]
+    }
 
     session = make_session_with_clients({("kms", "us-east-1"): kms_client})
     extractor = KMSExtractor(session, {})

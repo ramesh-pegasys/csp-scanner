@@ -4,11 +4,13 @@ from typing import List, Optional
 from datetime import datetime
 from enum import Enum
 
+
 class JobStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
+
 
 class Job(BaseModel):
     id: str
@@ -20,8 +22,6 @@ class Job(BaseModel):
     successful_artifacts: int = 0
     failed_artifacts: int = 0
     errors: List[str] = []
-    
+
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+        json_encoders = {datetime: lambda v: v.isoformat()}
