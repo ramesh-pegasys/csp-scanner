@@ -1,6 +1,5 @@
 [run]
 omit =
-    app/extractors/*
     file_collector/*
     sample_extractions/*
 
