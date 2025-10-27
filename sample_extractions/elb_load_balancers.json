@@ -1,0 +1,99 @@
+[
+  {
+    "resource_id": "my-application-load-balancer",
+    "resource_type": "elb:application-load-balancer",
+    "service": "elb",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "configuration": {
+      "load_balancer_name": "my-application-load-balancer",
+      "load_balancer_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/my-application-load-balancer/1234567890abcdef",
+      "dns_name": "my-app-alb-1234567890.us-east-1.elb.amazonaws.com",
+      "canonical_hosted_zone_id": "Z35SXDOTRQ7X7K",
+      "created_time": "2024-01-15T10:00:00Z",
+      "load_balancer_addresses": [],
+      "availability_zones": [
+        {
+          "zoneName": "us-east-1a",
+          "subnetId": "subnet-12345678",
+          "loadBalancerAddresses": []
+        },
+        {
+          "zoneName": "us-east-1b",
+          "subnetId": "subnet-87654321",
+          "loadBalancerAddresses": []
+        }
+      ],
+      "security_groups": ["sg-12345678"],
+      "ip_address_type": "ipv4",
+      "scheme": "internal",
+      "state": {
+        "code": "active"
+      },
+      "type": "application",
+      "vpc_id": "vpc-12345678",
+      "listeners": [
+        {
+          "Protocol": "HTTPS",
+          "Port": 443,
+          "SslPolicy": "ELBSecurityPolicy-TLS-1-2-2017-01"
+        }
+      ],
+      "tags": [
+        {
+          "Key": "Environment",
+          "Value": "production"
+        },
+        {
+          "Key": "Application",
+          "Value": "web-app"
+        }
+      ]
+    },
+    "raw": {
+      "LoadBalancerName": "my-application-load-balancer",
+      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/my-application-load-balancer/1234567890abcdef",
+      "DNSName": "my-app-alb-1234567890.us-east-1.elb.amazonaws.com",
+      "CanonicalHostedZoneId": "Z35SXDOTRQ7X7K",
+      "CreatedTime": "2024-01-15T10:00:00Z",
+      "LoadBalancerAddresses": [],
+      "AvailabilityZones": [
+        {
+          "ZoneName": "us-east-1a",
+          "SubnetId": "subnet-12345678",
+          "LoadBalancerAddresses": []
+        },
+        {
+          "ZoneName": "us-east-1b",
+          "SubnetId": "subnet-87654321",
+          "LoadBalancerAddresses": []
+        }
+      ],
+      "SecurityGroups": ["sg-12345678"],
+      "IpAddressType": "ipv4",
+      "Scheme": "internal",
+      "State": {
+        "Code": "active"
+      },
+      "Type": "application",
+      "VpcId": "vpc-12345678",
+      "listeners": [
+        {
+          "Protocol": "HTTPS",
+          "Port": 443,
+          "SslPolicy": "ELBSecurityPolicy-TLS-1-2-2017-01"
+        }
+      ],
+      "tags": [
+        {
+          "Key": "Environment",
+          "Value": "production"
+        },
+        {
+          "Key": "Application",
+          "Value": "web-app"
+        }
+      ]
+    }
+  }
+]

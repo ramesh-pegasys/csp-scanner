@@ -1,0 +1,29 @@
+# config/extractors.yaml
+ec2:
+  max_workers: 10
+  include_stopped: true
+  include_terminated: false
+
+s3:
+  max_workers: 20
+  check_bucket_policies: true
+  check_acls: true
+
+rds:
+  max_workers: 10
+  include_snapshots: true
+  include_clusters: true
+
+lambda:
+  max_workers: 15
+  include_versions: false
+  include_aliases: true
+
+iam:
+  include_aws_managed_policies: false
+  detailed_policy_analysis: true
+
+vpc:
+  max_workers: 10
+  include_flow_logs: true
+  include_nat_gateways: true

@@ -1,0 +1,115 @@
+[
+  {
+    "resource_id": "arn:aws:iam::123456789012:user/john.doe",
+    "resource_type": "iam:user",
+    "service": "iam",
+    "region": null,
+    "account_id": "123456789012",
+    "configuration": {
+      "user_name": "john.doe",
+      "user_id": "AIDACKCEVSQ6C2EXAMPLE",
+      "arn": "arn:aws:iam::123456789012:user/john.doe",
+      "create_date": "2024-01-01T00:00:00Z",
+      "password_last_used": "2024-01-20T08:30:00Z",
+      "attached_policies": [
+        {
+          "PolicyName": "ReadOnlyAccess",
+          "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        }
+      ],
+      "groups": ["developers"],
+      "tags": [
+        {
+          "Key": "Department",
+          "Value": "Engineering"
+        },
+        {
+          "Key": "EmployeeID",
+          "Value": "12345"
+        }
+      ]
+    },
+    "raw": {
+      "UserName": "john.doe",
+      "UserId": "AIDACKCEVSQ6C2EXAMPLE",
+      "Arn": "arn:aws:iam::123456789012:user/john.doe",
+      "CreateDate": "2024-01-01T00:00:00Z",
+      "PasswordLastUsed": "2024-01-20T08:30:00Z",
+      "AttachedPolicies": [
+        {
+          "PolicyName": "ReadOnlyAccess",
+          "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        }
+      ],
+      "Groups": ["developers"],
+      "Tags": [
+        {
+          "Key": "Department",
+          "Value": "Engineering"
+        },
+        {
+          "Key": "EmployeeID",
+          "Value": "12345"
+        }
+      ]
+    }
+  },
+  {
+    "resource_id": "arn:aws:iam::123456789012:role/EC2InstanceRole",
+    "resource_type": "iam:role",
+    "service": "iam",
+    "region": null,
+    "account_id": "123456789012",
+    "configuration": {
+      "role_name": "EC2InstanceRole",
+      "role_id": "AROA1234567890EXAMPLE",
+      "arn": "arn:aws:iam::123456789012:role/EC2InstanceRole",
+      "create_date": "2024-01-05T00:00:00Z",
+      "assume_role_policy_document": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "ec2.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "attached_policies": [
+        {
+          "PolicyName": "AmazonEC2ReadOnlyAccess",
+          "PolicyArn": "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+        }
+      ],
+      "max_session_duration": 3600,
+      "tags": [
+        {
+          "Key": "Purpose",
+          "Value": "EC2 instance access"
+        }
+      ]
+    },
+    "raw": {
+      "RoleName": "EC2InstanceRole",
+      "RoleId": "AROA1234567890EXAMPLE",
+      "Arn": "arn:aws:iam::123456789012:role/EC2InstanceRole",
+      "CreateDate": "2024-01-05T00:00:00Z",
+      "AssumeRolePolicyDocument": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}",
+      "AttachedPolicies": [
+        {
+          "PolicyName": "AmazonEC2ReadOnlyAccess",
+          "PolicyArn": "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+        }
+      ],
+      "MaxSessionDuration": 3600,
+      "Tags": [
+        {
+          "Key": "Purpose",
+          "Value": "EC2 instance access"
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,19 @@
+# config/production.yaml
+app_name: "Cloud Artifact Extractor"
+environment: "production"
+debug: false
+
+aws_default_region: "us-east-1"
+
+scanner_endpoint_url: "https://policy-scanner.example.com/api/scan"
+transport_timeout_seconds: 60
+transport_max_retries: 5
+
+max_concurrent_extractors: 20
+batch_size: 200
+batch_delay_seconds: 0.1
+
+# Transport Configuration
+transport_type: "http"  # Options: http, filesystem, null
+filesystem_base_dir: "./file_collector"
+filesystem_create_dir: true

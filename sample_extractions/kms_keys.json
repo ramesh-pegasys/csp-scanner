@@ -1,0 +1,150 @@
+[
+  {
+    "resource_id": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+    "resource_type": "kms:key",
+    "service": "kms",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "configuration": {
+      "keyId": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+      "arn": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+      "creationDate": "2023-01-10T09:00:00Z",
+      "enabled": true,
+      "description": "Production encryption key for database data",
+      "keyUsage": "ENCRYPT_DECRYPT",
+      "keyState": "Enabled",
+      "origin": "AWS_KMS",
+      "keyManager": "CUSTOMER",
+      "customerMasterKeySpec": "SYMMETRIC_DEFAULT",
+      "keySpec": "SYMMETRIC_DEFAULT",
+      "encryptionAlgorithms": ["SYMMETRIC_DEFAULT"],
+      "multiRegion": false,
+      "pendingDeletionWindowInDays": null,
+      "keyRotationEnabled": true,
+      "rotationPeriodInDays": 365,
+      "cloudHsmClusterId": null,
+      "customKeyStoreId": null,
+      "backupRetentionPeriodMinutes": null,
+      "xksKeyConfiguration": null,
+      "policy": {
+        "Version": "2012-10-17",
+        "Id": "key-default-1",
+        "Statement": [
+          {
+            "Sid": "Enable IAM User Permissions",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "arn:aws:iam::123456789012:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+          },
+          {
+            "Sid": "Allow access for Key Administrators",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": [
+                "arn:aws:iam::123456789012:role/KMSKeyAdminRole",
+                "arn:aws:iam::123456789012:user/KMSAdmin"
+              ]
+            },
+            "Action": [
+              "kms:Create*",
+              "kms:Describe*",
+              "kms:Enable*",
+              "kms:List*",
+              "kms:Put*",
+              "kms:Update*",
+              "kms:Revoke*",
+              "kms:Disable*",
+              "kms:Get*",
+              "kms:Delete*",
+              "kms:TagResource",
+              "kms:UntagResource",
+              "kms:ScheduleKeyDeletion",
+              "kms:CancelKeyDeletion",
+              "kms:ReplicateKey",
+              "kms:ImportKeyMaterial",
+              "kms:ConnectCustomKeyStore",
+              "kms:UpdateCustomKeyStore",
+              "kms:DisconnectCustomKeyStore",
+              "kms:DeleteCustomKeyStore"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Sid": "Allow use of the key",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": [
+                "arn:aws:iam::123456789012:role/EC2InstanceRole",
+                "arn:aws:iam::123456789012:role/RDSServiceRole"
+              ]
+            },
+            "Action": [
+              "kms:Encrypt",
+              "kms:Decrypt",
+              "kms:ReEncrypt*",
+              "kms:GenerateDataKey*",
+              "kms:CreateGrant",
+              "kms:GetPublicKey",
+              "kms:DescribeKey",
+              "kms:RetireGrant"
+            ],
+            "Resource": "*"
+          }
+        ]
+      },
+      "tags": [
+        {
+          "TagKey": "Environment",
+          "TagValue": "production"
+        },
+        {
+          "TagKey": "Application",
+          "TagValue": "database"
+        },
+        {
+          "TagKey": "Compliance",
+          "TagValue": "soc2"
+        }
+      ],
+      "aliases": [
+        {
+          "AliasName": "alias/production-database-key",
+          "AliasArn": "arn:aws:kms:us-east-1:123456789012:alias/production-database-key",
+          "TargetKeyId": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+          "CreationDate": "2023-01-10T09:05:00Z",
+          "LastUpdatedDate": "2023-01-10T09:05:00Z"
+        }
+      ],
+      "grants": [],
+      "keyAgreementAlgorithms": null,
+      "signingAlgorithms": null,
+      "keyAgreementAlgorithmsForDecryption": null,
+      "macAlgorithms": null
+    },
+    "raw": {
+      "KeyId": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+      "Arn": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+      "CreationDate": "2023-01-10T09:00:00Z",
+      "Enabled": true,
+      "Description": "Production encryption key for database data",
+      "KeyUsage": "ENCRYPT_DECRYPT",
+      "KeyState": "Enabled",
+      "Origin": "AWS_KMS",
+      "KeyManager": "CUSTOMER",
+      "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
+      "KeySpec": "SYMMETRIC_DEFAULT",
+      "EncryptionAlgorithms": ["SYMMETRIC_DEFAULT"],
+      "MultiRegion": false,
+      "PendingDeletionWindowInDays": null,
+      "KeyRotationEnabled": true,
+      "RotationPeriodInDays": 365,
+      "CloudHsmClusterId": null,
+      "CustomKeyStoreId": null,
+      "BackupRetentionPeriodMinutes": null,
+      "XksKeyConfiguration": null
+    }
+  }
+]

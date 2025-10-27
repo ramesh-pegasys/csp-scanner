@@ -1,0 +1,89 @@
+[
+  {
+    "resource_id": "my-lambda-function",
+    "resource_type": "lambda:function",
+    "service": "lambda",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "configuration": {
+      "function_name": "my-lambda-function",
+      "function_arn": "arn:aws:lambda:us-east-1:123456789012:function:my-lambda-function",
+      "runtime": "python3.9",
+      "role": "arn:aws:iam::123456789012:role/lambda-execution-role",
+      "handler": "lambda_function.lambda_handler",
+      "code_size": 2048,
+      "description": "Sample Lambda function for processing data",
+      "timeout": 30,
+      "memory_size": 256,
+      "last_modified": "2024-01-15T10:00:00Z",
+      "version": "$LATEST",
+      "environment": {
+        "Variables": {
+          "ENVIRONMENT": "production",
+          "LOG_LEVEL": "INFO"
+        }
+      },
+      "vpc_config": {
+        "VpcId": "vpc-12345678",
+        "SubnetIds": ["subnet-12345678", "subnet-87654321"],
+        "SecurityGroupIds": ["sg-12345678"]
+      },
+      "dead_letter_config": {
+        "TargetArn": "arn:aws:sqs:us-east-1:123456789012:dlq-queue"
+      },
+      "tracing_config": {
+        "Mode": "Active"
+      },
+      "tags": [
+        {
+          "Key": "Environment",
+          "Value": "production"
+        },
+        {
+          "Key": "Project",
+          "Value": "data-processing"
+        }
+      ]
+    },
+    "raw": {
+      "FunctionName": "my-lambda-function",
+      "FunctionArn": "arn:aws:lambda:us-east-1:123456789012:function:my-lambda-function",
+      "Runtime": "python3.9",
+      "Role": "arn:aws:iam::123456789012:role/lambda-execution-role",
+      "Handler": "lambda_function.lambda_handler",
+      "CodeSize": 2048,
+      "Description": "Sample Lambda function for processing data",
+      "Timeout": 30,
+      "MemorySize": 256,
+      "LastModified": "2024-01-15T10:00:00Z",
+      "Version": "$LATEST",
+      "Environment": {
+        "Variables": {
+          "ENVIRONMENT": "production",
+          "LOG_LEVEL": "INFO"
+        }
+      },
+      "VpcConfig": {
+        "VpcId": "vpc-12345678",
+        "SubnetIds": ["subnet-12345678", "subnet-87654321"],
+        "SecurityGroupIds": ["sg-12345678"]
+      },
+      "DeadLetterConfig": {
+        "TargetArn": "arn:aws:sqs:us-east-1:123456789012:dlq-queue"
+      },
+      "TracingConfig": {
+        "Mode": "Active"
+      },
+      "Tags": [
+        {
+          "Key": "Environment",
+          "Value": "production"
+        },
+        {
+          "Key": "Project",
+          "Value": "data-processing"
+        }
+      ]
+    }
+  }
+]

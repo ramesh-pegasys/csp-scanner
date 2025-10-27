@@ -1,0 +1,9 @@
+[run]
+omit =
+    app/extractors/*
+    file_collector/*
+    sample_extractions/*
+
+[report]
+exclude_lines =
+    pragma: no cover

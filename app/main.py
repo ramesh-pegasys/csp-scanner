@@ -1,0 +1,98 @@
+# app/main.py
+from fastapi import FastAPI, BackgroundTasks
+from contextlib import asynccontextmanager
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+import boto3
+import logging
+from typing import Any
+
+from app.core.config import get_settings
+from app.services.registry import ExtractorRegistry
+from app.services.orchestrator import ExtractionOrchestrator
+from app.transport.base import TransportFactory
+import app.transport.http_transport  # Import to register http transport
+import app.transport.filesystem  # Import to register filesystem transport
+from app.api.routes import extraction, schedules, health
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Global instances
+scheduler = AsyncIOScheduler()
+orchestrator = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown events"""
+    global orchestrator
+    
+    # Get settings inside the context manager to allow patching in tests
+    settings = get_settings()
+    # Startup
+    logger.info("Starting Cloud Artifact Extractor")
+    
+    # Initialize AWS session
+    session = boto3.Session(
+        aws_access_key_id=settings.aws_access_key_id if hasattr(settings, 'aws_access_key_id') else None,
+        aws_secret_access_key=settings.aws_secret_access_key if hasattr(settings, 'aws_secret_access_key') else None,
+        region_name=settings.aws_default_region if hasattr(settings, 'aws_default_region') else None
+    )
+    
+    # Initialize components
+    registry = ExtractorRegistry(session, settings)
+    
+    # Create transport based on configuration
+    transport: Any = TransportFactory.create(settings.transport_type, settings.transport_config)
+    
+    orchestrator = ExtractionOrchestrator(
+        registry=registry,
+        transport=transport,
+        config=settings.orchestrator_config
+    )
+    
+    # Start scheduler
+    scheduler.start()
+    logger.info("Scheduler started")
+    
+    # Store in app state
+    app.state.orchestrator = orchestrator
+    app.state.scheduler = scheduler
+    app.state.registry = registry
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down")
+    scheduler.shutdown()
+    
+    # Close transport if it has a close method (HTTP transport), otherwise disconnect
+    if hasattr(transport, 'close'):
+        await transport.close()
+    elif hasattr(transport, 'disconnect'):
+        await transport.disconnect()
+
+# Create FastAPI app
+app = FastAPI(
+    title="Cloud Artifact Extractor",
+    description="Extract AWS cloud artifacts and send to policy scanner",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# Include routers
+app.include_router(extraction.router, prefix="/api/v1/extraction", tags=["extraction"])
+app.include_router(schedules.router, prefix="/api/v1/schedules", tags=["schedules"])
+app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
+
+@app.get("/")
+async def root():
+    return {
+        "service": "Cloud Artifact Extractor",
+        "version": "1.0.0",
+        "status": "running"
+    }

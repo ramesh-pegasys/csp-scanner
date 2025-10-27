@@ -1,0 +1,199 @@
+[
+  {
+    "resource_id": "vpc-12345678",
+    "resource_type": "vpc:vpc",
+    "service": "vpc",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "configuration": {
+      "vpc_id": "vpc-12345678",
+      "state": "available",
+      "cidr_block": "10.0.0.0/16",
+      "dhcp_options_id": "dopt-12345678",
+      "instance_tenancy": "default",
+      "is_default": false,
+      "tags": [
+        {
+          "Key": "Name",
+          "Value": "production-vpc"
+        },
+        {
+          "Key": "Environment",
+          "Value": "production"
+        }
+      ]
+    },
+    "raw": {
+      "VpcId": "vpc-12345678",
+      "State": "available",
+      "CidrBlock": "10.0.0.0/16",
+      "DhcpOptionsId": "dopt-12345678",
+      "InstanceTenancy": "default",
+      "IsDefault": false,
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "production-vpc"
+        },
+        {
+          "Key": "Environment",
+          "Value": "production"
+        }
+      ]
+    }
+  },
+  {
+    "resource_id": "subnet-12345678",
+    "resource_type": "vpc:subnet",
+    "service": "vpc",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "configuration": {
+      "subnet_id": "subnet-12345678",
+      "vpc_id": "vpc-12345678",
+      "cidr_block": "10.0.1.0/24",
+      "availability_zone": "us-east-1a",
+      "available_ip_address_count": 251,
+      "default_for_az": false,
+      "map_public_ip_on_launch": false,
+      "state": "available",
+      "tags": [
+        {
+          "Key": "Name",
+          "Value": "private-subnet-1a"
+        },
+        {
+          "Key": "Type",
+          "Value": "private"
+        }
+      ]
+    },
+    "raw": {
+      "SubnetId": "subnet-12345678",
+      "VpcId": "vpc-12345678",
+      "CidrBlock": "10.0.1.0/24",
+      "AvailabilityZone": "us-east-1a",
+      "AvailableIpAddressCount": 251,
+      "DefaultForAz": false,
+      "MapPublicIpOnLaunch": false,
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "private-subnet-1a"
+        },
+        {
+          "Key": "Type",
+          "Value": "private"
+        }
+      ]
+    }
+  },
+  {
+    "resource_id": "sg-12345678",
+    "resource_type": "vpc:security-group",
+    "service": "vpc",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "configuration": {
+      "group_id": "sg-12345678",
+      "group_name": "web-servers",
+      "group_description": "Security group for web servers",
+      "vpc_id": "vpc-12345678",
+      "ip_permissions": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 80,
+          "ToPort": 80,
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "HTTP access from anywhere"
+            }
+          ]
+        },
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 443,
+          "ToPort": 443,
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "HTTPS access from anywhere"
+            }
+          ]
+        }
+      ],
+      "ip_permissions_egress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        {
+          "Key": "Name",
+          "Value": "web-servers"
+        },
+        {
+          "Key": "Environment",
+          "Value": "production"
+        }
+      ]
+    },
+    "raw": {
+      "GroupId": "sg-12345678",
+      "GroupName": "web-servers",
+      "GroupDescription": "Security group for web servers",
+      "VpcId": "vpc-12345678",
+      "IpPermissions": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 80,
+          "ToPort": 80,
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "HTTP access from anywhere"
+            }
+          ]
+        },
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 443,
+          "ToPort": 443,
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "HTTPS access from anywhere"
+            }
+          ]
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ]
+        }
+      ],
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "web-servers"
+        },
+        {
+          "Key": "Environment",
+          "Value": "production"
+        }
+      ]
+    }
+  }
+]
