@@ -1,0 +1,36 @@
+# Code Owners
+# This file defines who owns and is responsible for code in this repository.
+# When a pull request is opened, the users listed here will be automatically
+# requested for review.
+
+# Global owners - all code
+* @ramesh
+
+# Core application code
+/app/ @ramesh
+/app/**/*.py @ramesh
+
+# Tests
+/tests/ @ramesh
+/tests/**/*.py @ramesh
+
+# Configuration
+/config/ @ramesh
+*.yaml @ramesh
+*.yml @ramesh
+
+# CI/CD and Docker
+.github/ @ramesh
+Dockerfile @ramesh
+.dockerignore @ramesh
+
+# Documentation
+*.md @ramesh
+CONTRIBUTING.md @ramesh
+README.md @ramesh
+
+# Python configuration
+requirements.txt @ramesh
+pytest.ini @ramesh
+.flake8 @ramesh
+.coveragerc @ramesh
