@@ -285,7 +285,11 @@ class APIGatewayExtractor(BaseExtractor):
 
         elif resource_type == "stage":
             return {
-                "resource_id": f"{raw_data.get('api_id', 'unknown')}/{raw_data.get('deployment_id', 'unknown')}/{resource['stageName']}",
+                "resource_id": (
+                    f"{raw_data.get('api_id', 'unknown')}/"
+                    f"{raw_data.get('deployment_id', 'unknown')}/"
+                    f"{resource['stageName']}"
+                ),
                 "resource_type": "apigateway:stage",
                 "service": "apigateway",
                 "region": region,

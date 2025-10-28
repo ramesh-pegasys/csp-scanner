@@ -1,22 +1,28 @@
 """Tests for transport layer"""
 
-import pytest
-from unittest.mock import Mock, AsyncMock, patch
-import httpx
 from datetime import datetime
-from app.transport.http_client import HTTPTransport
-from app.transport.http_transport import HTTPTransport as HTTPTransportWrapper
+import json
+import os
+import tempfile
+from unittest.mock import AsyncMock, Mock, patch
+
+import httpx
+import pytest
+
+from app.core.exceptions import TransportError
 from app.transport.base import (
+    BaseTransport,
+    BatchTransportMixin,
+    NullTransport,
+    ParallelBatchTransportMixin,
+    TransportFactory,
+    TransportMetrics,
     TransportResult,
     TransportStatus,
-    TransportMetrics,
-    BaseTransport,
-    NullTransport,
-    TransportFactory,
-    BatchTransportMixin,
-    ParallelBatchTransportMixin,
 )
-from app.core.exceptions import TransportError
+from app.transport.filesystem import FilesystemTransport
+from app.transport.http_client import HTTPTransport
+from app.transport.http_transport import HTTPTransport as HTTPTransportWrapper
 
 
 def test_transport_result_creation():
@@ -354,10 +360,6 @@ async def test_http_transport_close(transport_config):
 
 
 # Filesystem Transport Tests
-import tempfile
-import os
-import json
-from app.transport.filesystem import FilesystemTransport
 
 
 @pytest.fixture

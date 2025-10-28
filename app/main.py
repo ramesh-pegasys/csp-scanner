@@ -1,18 +1,21 @@
 # app/main.py
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
-from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore[import-untyped]
-import boto3  # type: ignore[import-untyped]
+import importlib
 import logging
+import boto3  # type: ignore[import-untyped]
+from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore[import-untyped]
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
 from typing import Any
 
+from app.api.routes import extraction, schedules, health
 from app.core.config import get_settings
 from app.services.registry import ExtractorRegistry
 from app.services.orchestrator import ExtractionOrchestrator
 from app.transport.base import TransportFactory
-import app.transport.http_transport  # Import to register http transport
-import app.transport.filesystem  # Import to register filesystem transport
-from app.api.routes import extraction, schedules, health
+
+# Ensure transports register themselves with the factory
+importlib.import_module("app.transport.http_transport")
+importlib.import_module("app.transport.filesystem")
 
 # Setup logging
 logging.basicConfig(

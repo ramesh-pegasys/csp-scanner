@@ -1,8 +1,8 @@
 """Tests for core modules"""
 
-from unittest.mock import Mock, patch, mock_open
-import os  # noqa: F401
-from app.core.config import Settings, get_settings  # noqa: F401
+from unittest.mock import Mock, mock_open, patch
+
+from app.core.config import Settings
 
 
 def test_settings_defaults(monkeypatch):

@@ -10,7 +10,6 @@ from app.api import dependencies
 from app.core.config import Settings
 from app.services.orchestrator import ExtractionOrchestrator
 from app.services.registry import ExtractorRegistry
-from app.services.scheduler import SchedulerService
 
 
 def make_request(state_attrs=None, headers=None, client=None, method="GET", path="/"):
@@ -32,6 +31,8 @@ def test_get_config_returns_settings(monkeypatch):
     monkeypatch.setattr(dependencies, "get_settings", lambda: settings)
 
     assert dependencies.get_config() is settings
+
+
 def test_get_orchestrator_success():
     orchestrator = object()
     request = make_request({"orchestrator": orchestrator})
@@ -140,7 +141,10 @@ async def test_check_rate_limit(monkeypatch):
     request = make_request(client=SimpleNamespace(host="tester"))
     settings = Settings(rate_limiting_enabled=True)
 
-    assert await dependencies.check_rate_limit(cast(Request, request), settings=settings) is True
+    assert (
+        await dependencies.check_rate_limit(cast(Request, request), settings=settings)
+        is True
+    )
 
     with pytest.raises(HTTPException) as exc:
         await dependencies.check_rate_limit(cast(Request, request), settings=settings)
@@ -148,7 +152,10 @@ async def test_check_rate_limit(monkeypatch):
 
     disabled_settings = Settings(rate_limiting_enabled=False)
     assert (
-        await dependencies.check_rate_limit(cast(Request, request), settings=disabled_settings) is True
+        await dependencies.check_rate_limit(
+            cast(Request, request), settings=disabled_settings
+        )
+        is True
     )
 
 
@@ -182,7 +189,9 @@ async def test_check_service_health(monkeypatch):
 
 
 def test_request_validator_services_and_regions():
-    registry = cast(ExtractorRegistry, SimpleNamespace(list_services=lambda: ["ec2", "s3"]))
+    registry = cast(
+        ExtractorRegistry, SimpleNamespace(list_services=lambda: ["ec2", "s3"])
+    )
     validator = dependencies.RequestValidator()
 
     assert validator.validate_services(["ec2"], registry) == ["ec2"]

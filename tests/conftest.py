@@ -1,14 +1,14 @@
-import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import Mock, AsyncMock
-import sys
 import os
+import sys
 import uuid
+from unittest.mock import AsyncMock, Mock
+
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 # Add app to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-from fastapi import FastAPI
 
 
 @pytest.fixture

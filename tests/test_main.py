@@ -25,7 +25,6 @@ async def test_lifespan_startup():
     ) as mock_orchestrator_class, patch(
         "app.main.scheduler"
     ) as mock_scheduler:
-
         # Setup mocks
         from app.core.config import Settings
 
@@ -119,7 +118,6 @@ async def test_lifespan_shutdown_disconnect():
     ) as mock_orchestrator_class, patch(
         "app.main.scheduler"
     ) as mock_scheduler:
-
         mock_settings = Settings()
         mock_get_settings.return_value = mock_settings
 
