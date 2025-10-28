@@ -2,6 +2,13 @@
 
 A FastAPI-based service for extracting and managing cloud service artifacts from AWS.
 
+[![CI](https://github.com/username/repo/actions/workflows/ci.yml/badge.svg)](https://github.com/username/repo/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/username/repo/branch/main/graph/badge.svg)](https://codecov.io/gh/username/repo)
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
+[![Flake8](https://img.shields.io/badge/flake8-checked-blue.svg)](https://flake8.pycqa.org/)
+[![Black](https://img.shields.io/badge/black-formatted-black.svg)](https://github.com/psf/black)
+
 ## AWS Credentials Setup
 
 The application requires AWS credentials to access and extract data from AWS services. Here are the different ways to provide AWS credentials:
