@@ -3,9 +3,14 @@
 from types import SimpleNamespace
 import pytest
 from fastapi import HTTPException
+from typing import cast
+from starlette.requests import Request
 
 from app.api import dependencies
 from app.core.config import Settings
+from app.services.orchestrator import ExtractionOrchestrator
+from app.services.registry import ExtractorRegistry
+from app.services.scheduler import SchedulerService
 
 
 def make_request(state_attrs=None, headers=None, client=None, method="GET", path="/"):
@@ -27,20 +32,20 @@ def test_get_config_returns_settings(monkeypatch):
     monkeypatch.setattr(dependencies, "get_settings", lambda: settings)
 
     assert dependencies.get_config() is settings
-
-
 def test_get_orchestrator_success():
     orchestrator = object()
     request = make_request({"orchestrator": orchestrator})
 
-    assert dependencies.get_orchestrator(request) is orchestrator
+    assert dependencies.get_orchestrator(cast(Request, request)) is orchestrator
+
+    assert dependencies.get_orchestrator(cast(Request, request)) is orchestrator
 
 
 def test_get_orchestrator_missing():
     request = make_request()
 
     with pytest.raises(HTTPException) as exc:
-        dependencies.get_orchestrator(request)
+        dependencies.get_orchestrator(cast(Request, request))
 
     assert exc.value.status_code == 503
 
@@ -49,10 +54,10 @@ def test_get_registry_and_scheduler_missing():
     request = make_request()
 
     with pytest.raises(HTTPException):
-        dependencies.get_registry(request)
+        dependencies.get_registry(cast(Request, request))
 
     with pytest.raises(HTTPException):
-        dependencies.get_scheduler(request)
+        dependencies.get_scheduler(cast(Request, request))
 
 
 def test_get_registry_and_scheduler_success():
@@ -60,8 +65,8 @@ def test_get_registry_and_scheduler_success():
     scheduler = object()
     request = make_request({"registry": registry, "scheduler": scheduler})
 
-    assert dependencies.get_registry(request) is registry
-    assert dependencies.get_scheduler(request) is scheduler
+    assert dependencies.get_registry(cast(Request, request)) is registry
+    assert dependencies.get_scheduler(cast(Request, request)) is scheduler
 
 
 @pytest.mark.asyncio
@@ -135,15 +140,15 @@ async def test_check_rate_limit(monkeypatch):
     request = make_request(client=SimpleNamespace(host="tester"))
     settings = Settings(rate_limiting_enabled=True)
 
-    assert await dependencies.check_rate_limit(request, settings=settings) is True
+    assert await dependencies.check_rate_limit(cast(Request, request), settings=settings) is True
 
     with pytest.raises(HTTPException) as exc:
-        await dependencies.check_rate_limit(request, settings=settings)
+        await dependencies.check_rate_limit(cast(Request, request), settings=settings)
     assert exc.value.status_code == 429
 
     disabled_settings = Settings(rate_limiting_enabled=False)
     assert (
-        await dependencies.check_rate_limit(request, settings=disabled_settings) is True
+        await dependencies.check_rate_limit(cast(Request, request), settings=disabled_settings) is True
     )
 
 
@@ -166,18 +171,18 @@ def test_pagination_params_validation_errors():
 
 @pytest.mark.asyncio
 async def test_check_service_health(monkeypatch):
-    orchestrator = object()
-    registry = SimpleNamespace(list_services=lambda: ["ec2"])
+    orchestrator = cast(ExtractionOrchestrator, object())
+    registry = cast(ExtractorRegistry, SimpleNamespace(list_services=lambda: ["ec2"]))
 
     assert await dependencies.check_service_health(orchestrator, registry) is True
 
-    registry_empty = SimpleNamespace(list_services=lambda: [])
+    registry_empty = cast(ExtractorRegistry, SimpleNamespace(list_services=lambda: []))
     with pytest.raises(HTTPException):
         await dependencies.check_service_health(orchestrator, registry_empty)
 
 
 def test_request_validator_services_and_regions():
-    registry = SimpleNamespace(list_services=lambda: ["ec2", "s3"])
+    registry = cast(ExtractorRegistry, SimpleNamespace(list_services=lambda: ["ec2", "s3"]))
     validator = dependencies.RequestValidator()
 
     assert validator.validate_services(["ec2"], registry) == ["ec2"]
@@ -204,7 +209,7 @@ def test_request_validator_batch_size():
 
 @pytest.mark.asyncio
 async def test_validate_extraction_request(monkeypatch):
-    registry = SimpleNamespace(list_services=lambda: ["ec2"])
+    registry = cast(ExtractorRegistry, SimpleNamespace(list_services=lambda: ["ec2"]))
     validated = await dependencies.validate_extraction_request(
         services=["ec2"],
         regions=["us-east-1"],
@@ -224,7 +229,7 @@ def test_request_context_and_tracker():
         method="POST",
         path="/extract",
     )
-    context = dependencies.get_request_context(request)
+    context = dependencies.get_request_context(cast(Request, request))
     context_dict = context.to_dict()
 
     assert context_dict["request_id"] == "req-1"
@@ -234,7 +239,9 @@ def test_request_context_and_tracker():
 
     tracker = dependencies.BackgroundTaskTracker()
     tracker.add_task("task-1", "example")
-    assert tracker.get_task("task-1")["name"] == "example"
+    task = tracker.get_task("task-1")
+    assert task is not None
+    assert task["name"] == "example"
     assert "task-1" in tracker.list_tasks()
 
     global_tracker = dependencies.get_background_task_tracker()
