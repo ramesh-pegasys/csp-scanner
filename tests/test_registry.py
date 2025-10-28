@@ -1,14 +1,14 @@
 """Tests for ExtractorRegistry."""
 
-import pytest
+import sys
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from app.services.registry import ExtractorRegistry
-from app.extractors.base import BaseExtractor, ExtractorMetadata
+import pytest
+
 from app.core.config import Settings
-import sys
-from types import SimpleNamespace
+from app.extractors.base import BaseExtractor, ExtractorMetadata
+from app.services.registry import ExtractorRegistry
 
 
 class DummyExtractor(BaseExtractor):

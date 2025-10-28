@@ -10,7 +10,6 @@ from app.api import dependencies
 from app.core.config import Settings
 from app.services.orchestrator import ExtractionOrchestrator
 from app.services.registry import ExtractorRegistry
-from app.services.scheduler import SchedulerService
 
 
 def make_request(state_attrs=None, headers=None, client=None, method="GET", path="/"):

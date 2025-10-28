@@ -242,7 +242,11 @@ class KMSExtractor(BaseExtractor):
 
         elif resource_type == "grant":
             return {
-                "resource_id": f"{raw_data.get('key_id', 'unknown')}/{resource['KeyId']}/{resource.get('GrantId', 'unknown')}",
+                "resource_id": (
+                    f"{raw_data.get('key_id', 'unknown')}/"
+                    f"{resource['KeyId']}/"
+                    f"{resource.get('GrantId', 'unknown')}"
+                ),
                 "resource_type": "kms:grant",
                 "service": "kms",
                 "region": region,
