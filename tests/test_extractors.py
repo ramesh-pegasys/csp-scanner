@@ -195,7 +195,6 @@ async def test_ec2_extractor_extract_multiple_regions():
     with patch.object(
         extractor, "_get_all_regions", return_value=["us-east-1", "us-west-2"]
     ), patch.object(extractor, "_extract_region") as mock_extract:
-
         mock_extract.side_effect = [
             [{"resource_id": "i-123", "resource_type": "instance"}],
             [{"resource_id": "i-456", "resource_type": "instance"}],
