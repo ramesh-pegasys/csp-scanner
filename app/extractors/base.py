@@ -27,30 +27,35 @@ class ExtractorMetadata:
 class BaseExtractor(ABC):
     """Base class for all cloud resource extractors"""
 
-    def __init__(self, session: Union[boto3.Session, "CloudSession"], config: Dict[str, Any]):
+    def __init__(
+        self, session: Union[boto3.Session, "CloudSession"], config: Dict[str, Any]
+    ):
         # Support both old boto3.Session and new CloudSession for backward compatibility
         if isinstance(session, boto3.Session):
             # Wrap boto3 session for backward compatibility
             from app.cloud.aws_session import AWSSession
+
             self.session = AWSSession(session)
         else:
             self.session = session
-        
+
         self.config = config
         self.metadata = self.get_metadata()
-        self.cloud_provider: CloudProvider = getattr(self.metadata, "cloud_provider", "aws")
-    
+        self.cloud_provider: CloudProvider = getattr(
+            self.metadata, "cloud_provider", "aws"
+        )
+
     def _get_client(self, service: str, region: Optional[str] = None) -> Any:
         """
         Get a cloud service client (backward compatible helper).
-        
+
         This method provides backward compatibility for extractors that were
         written before the CloudSession abstraction.
-        
+
         Args:
             service: Service name (e.g., 'ec2', 's3', 'compute')
             region: Region/location name (optional)
-        
+
         Returns:
             Service client instance
         """
@@ -100,15 +105,20 @@ class BaseExtractor(ABC):
         Returns:
             True if valid, False otherwise
         """
-        required_fields = ["cloud_provider", "resource_type", "metadata", "configuration"]
+        required_fields = [
+            "cloud_provider",
+            "resource_type",
+            "metadata",
+            "configuration",
+        ]
         if not all(field in artifact for field in required_fields):
             return False
-        
+
         # Validate metadata structure
         metadata = artifact.get("metadata", {})
         required_metadata_fields = ["resource_id"]
         return all(field in metadata for field in required_metadata_fields)
-    
+
     def create_metadata_object(
         self,
         resource_id: str,
@@ -123,7 +133,7 @@ class BaseExtractor(ABC):
     ) -> Dict[str, Any]:
         """
         Create a cloud-agnostic metadata object
-        
+
         Args:
             resource_id: Unique identifier for the resource
             service: Service name (e.g., 'ec2', 'compute', etc.)
@@ -134,14 +144,14 @@ class BaseExtractor(ABC):
             resource_group: Azure resource group
             labels: Extensible key-value pairs for labels
             tags: Resource tags (will be merged into labels)
-        
+
         Returns:
             Metadata dictionary
         """
         metadata: Dict[str, Any] = {
             "resource_id": resource_id,
         }
-        
+
         # Add cloud-specific fields
         if self.cloud_provider == "aws":
             if service:
@@ -166,17 +176,17 @@ class BaseExtractor(ABC):
                 metadata["region"] = region
             if project_id:
                 metadata["project_id"] = project_id
-        
+
         # Merge tags and labels
         merged_labels = {}
         if tags:
             merged_labels.update(tags)
         if labels:
             merged_labels.update(labels)
-        
+
         if merged_labels:
             metadata["labels"] = merged_labels
         else:
             metadata["labels"] = {}
-        
+
         return metadata

@@ -157,7 +157,7 @@ class LambdaExtractor(BaseExtractor):
         if resource_type == "function":
             tags = raw_data.get("tags", {})
             account_id = resource["FunctionArn"].split(":")[4]
-            
+
             return {
                 "cloud_provider": "aws",
                 "resource_type": "aws:lambda:function",
@@ -188,7 +188,7 @@ class LambdaExtractor(BaseExtractor):
             }
         elif resource_type == "layer":
             account_id = resource["LayerArn"].split(":")[4]
-            
+
             return {
                 "cloud_provider": "aws",
                 "resource_type": "aws:lambda:layer",
@@ -214,7 +214,7 @@ class LambdaExtractor(BaseExtractor):
                 if resource.get("FunctionArn")
                 else None
             )
-            
+
             return {
                 "cloud_provider": "aws",
                 "resource_type": "aws:lambda:event-source-mapping",

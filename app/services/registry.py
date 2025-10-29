@@ -14,7 +14,9 @@ ConcreteExtractor = Type[BaseExtractor]
 class ExtractorRegistry:
     """Registry for managing extractors across multiple cloud providers"""
 
-    def __init__(self, sessions: Union[Any, Dict[CloudProvider, CloudSession]], config: Settings):
+    def __init__(
+        self, sessions: Union[Any, Dict[CloudProvider, CloudSession]], config: Settings
+    ):
         # Support both old single session and new multi-session dict
         if isinstance(sessions, dict):
             self.sessions = sessions
@@ -22,11 +24,12 @@ class ExtractorRegistry:
             # Backward compatibility: wrap single session as AWS
             from app.cloud.aws_session import AWSSession
             import boto3
+
             if isinstance(sessions, boto3.Session):
                 self.sessions = {CloudProvider.AWS: AWSSession(sessions)}
             else:
                 self.sessions = {CloudProvider.AWS: sessions}
-        
+
         self.config = config
         self._extractors: Dict[str, BaseExtractor] = {}
         self._register_default_extractors()
@@ -36,15 +39,15 @@ class ExtractorRegistry:
         # Register AWS extractors if AWS is enabled
         if CloudProvider.AWS in self.sessions:
             self._register_aws_extractors()
-        
+
         # Register Azure extractors if Azure is enabled
         if CloudProvider.AZURE in self.sessions:
             self._register_azure_extractors()
-        
+
         # Register GCP extractors if GCP is enabled
         if CloudProvider.GCP in self.sessions:
             self._register_gcp_extractors()
-    
+
     def _register_aws_extractors(self):
         """Register AWS extractors"""
         from app.extractors.aws.ec2 import EC2Extractor
@@ -79,61 +82,55 @@ class ExtractorRegistry:
 
         aws_session = self.sessions[CloudProvider.AWS]
         aws_config = self.config.extractors.get("aws", {})
-        
+
         for extractor_class in extractor_classes:
             self._register_extractor(
                 extractor_class,  # type: ignore[type-abstract]
                 aws_session,
                 aws_config,
-                CloudProvider.AWS
+                CloudProvider.AWS,
             )
-    
+
     def _register_azure_extractors(self):
         """Register Azure extractors"""
         try:
             from app.extractors.azure.compute import AzureComputeExtractor
             from app.extractors.azure.storage import AzureStorageExtractor
             from app.extractors.azure.network import AzureNetworkExtractor
-            
+
             extractor_classes = [
                 AzureComputeExtractor,
                 AzureStorageExtractor,
                 AzureNetworkExtractor,
             ]
-            
+
             azure_session = self.sessions[CloudProvider.AZURE]
             azure_config = self.config.extractors.get("azure", {})
-            
+
             for extractor_class in extractor_classes:
                 self._register_extractor(
-                    extractor_class,
-                    azure_session,
-                    azure_config,
-                    CloudProvider.AZURE
+                    extractor_class, azure_session, azure_config, CloudProvider.AZURE
                 )
         except ImportError as e:
             logger.warning(f"Azure extractors not available: {e}")
-    
+
     def _register_gcp_extractors(self):
         """Register GCP extractors"""
         try:
             from app.extractors.gcp.compute import GCPComputeExtractor
             from app.extractors.gcp.storage import GCPStorageExtractor
-            
+
             extractor_classes = [
                 GCPComputeExtractor,
                 GCPStorageExtractor,
             ]
-            
+
             gcp_session = self.sessions[CloudProvider.GCP]
             gcp_config = self.config.extractors.get("gcp", {})
-            
+
             for extractor_class in extractor_classes:
                 self._register_extractor(
-                    extractor_class,
-                    gcp_session,
-                    gcp_config,
-                    CloudProvider.GCP
+                    extractor_class, gcp_session, gcp_config, CloudProvider.GCP
                 )
         except ImportError as e:
             logger.warning(f"GCP extractors not available: {e}")
@@ -149,49 +146,51 @@ class ExtractorRegistry:
                 extractor_class,  # type: ignore[type-abstract]
                 self.sessions[CloudProvider.AWS],
                 {"aws": extractor_config},
-                CloudProvider.AWS
+                CloudProvider.AWS,
             )
-    
+
     def _register_extractor(
         self,
         extractor_class: ConcreteExtractor,
         session: CloudSession,
         provider_config: Dict[str, Any],
-        provider: CloudProvider
+        provider: CloudProvider,
     ) -> None:
         """Register a single extractor"""
         try:
             service_name = extractor_class.__name__.replace("Extractor", "").lower()
             # Remove provider prefixes like "Azure" or "AWS"
             service_name = service_name.replace("azure", "").replace("aws", "")
-            
+
             extractor_config = provider_config.get(service_name, {})
-            
+
             instance = extractor_class(session, extractor_config)
             # Create unique key: provider:service
             key = f"{provider.value}:{instance.metadata.service_name}"
-            
+
             self._extractors[key] = instance
             logger.info(f"Registered extractor: {key}")
-        
+
         except Exception as e:
             logger.error(f"Failed to register {extractor_class.__name__}: {e}")
 
-    def get(self, service_name: str, provider: Optional[CloudProvider] = None) -> Optional[BaseExtractor]:
+    def get(
+        self, service_name: str, provider: Optional[CloudProvider] = None
+    ) -> Optional[BaseExtractor]:
         """
         Get extractor by service name and optionally provider.
-        
+
         Args:
             service_name: Service name (e.g., 'ec2', 'compute')
             provider: Cloud provider (optional, searches all if not specified)
-        
+
         Returns:
             BaseExtractor instance or None
         """
         if provider:
             key = f"{provider.value}:{service_name}"
             return self._extractors.get(key)
-        
+
         # Search all providers for this service
         for key, extractor in self._extractors.items():
             if key.endswith(f":{service_name}") or key == service_name:
@@ -201,40 +200,44 @@ class ExtractorRegistry:
     def get_extractors(
         self,
         services: Optional[List[str]] = None,
-        provider: Optional[CloudProvider] = None
+        provider: Optional[CloudProvider] = None,
     ) -> List[BaseExtractor]:
         """
         Get multiple extractors, optionally filtered by provider.
-        
+
         Args:
             services: List of service names (None = all services)
             provider: Cloud provider filter (None = all providers)
-        
+
         Returns:
             List of BaseExtractor instances
         """
         extractors = list(self._extractors.values())
-        
+
         # Filter by provider if specified
         if provider:
             extractors = [e for e in extractors if e.cloud_provider == provider.value]
-        
+
         # Filter by services if specified
         if services:
             extractors = [e for e in extractors if e.metadata.service_name in services]
-        
+
         return extractors
 
     def list_services(self, provider: Optional[CloudProvider] = None) -> List[str]:
         """
         List all registered services, optionally filtered by provider.
-        
+
         Args:
             provider: Cloud provider filter (None = all providers)
-        
+
         Returns:
             List of service names with provider prefix (e.g., 'aws:ec2', 'azure:compute')
         """
         if provider:
-            return [key for key in self._extractors.keys() if key.startswith(f"{provider.value}:")]
+            return [
+                key
+                for key in self._extractors.keys()
+                if key.startswith(f"{provider.value}:")
+            ]
         return list(self._extractors.keys())

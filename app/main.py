@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize cloud sessions based on enabled providers
     sessions: Dict[CloudProvider, CloudSession] = {}
-    
+
     # Initialize AWS if enabled
     if settings.is_aws_enabled:
         logger.info("Initializing AWS session...")
@@ -67,7 +67,7 @@ async def lifespan(app: FastAPI):
         )
         sessions[CloudProvider.AWS] = AWSSession(boto_session)
         logger.info("AWS session initialized")
-    
+
     # Initialize Azure if enabled
     if settings.is_azure_enabled:
         logger.info("Initializing Azure session...")
@@ -83,7 +83,7 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"Failed to initialize Azure session: {e}")
             logger.warning("Azure extractors will not be available")
-    
+
     # Initialize GCP if enabled
     if settings.is_gcp_enabled:
         logger.info("Initializing GCP session...")
@@ -97,7 +97,7 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"Failed to initialize GCP session: {e}")
             logger.warning("GCP extractors will not be available")
-    
+
     if not sessions:
         logger.error("No cloud providers enabled! Check your configuration.")
         raise RuntimeError("At least one cloud provider must be enabled")

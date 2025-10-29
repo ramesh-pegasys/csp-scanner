@@ -133,7 +133,7 @@ class EC2Extractor(BaseExtractor):
 
         if resource_type == "instance":
             tags = {tag["Key"]: tag["Value"] for tag in resource.get("Tags", [])}
-            
+
             return {
                 "cloud_provider": "aws",
                 "resource_type": "aws:ec2:instance",
@@ -161,7 +161,7 @@ class EC2Extractor(BaseExtractor):
             }
         elif resource_type == "security-group":
             tags = {tag["Key"]: tag["Value"] for tag in resource.get("Tags", [])}
-            
+
             return {
                 "cloud_provider": "aws",
                 "resource_type": "aws:ec2:security-group",

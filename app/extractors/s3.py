@@ -145,7 +145,7 @@ class S3Extractor(BaseExtractor):
 
         if resource_type == "bucket":
             tags = resource.get("tags", {})
-            
+
             return {
                 "cloud_provider": "aws",
                 "resource_type": "aws:s3:bucket",
