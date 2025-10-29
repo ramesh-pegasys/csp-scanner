@@ -108,6 +108,173 @@ azure:
 
 ---
 
+### Web (azure:web)
+
+#### App Service Plans
+- **Resource Type**: `azure:web:app-service-plan`
+- **Azure Resource**: `Microsoft.Web/serverfarms`
+- **Extracted Information**:
+  - SKU (name, tier, size, capacity)
+  - Number of sites
+  - Maximum workers
+  - Provisioning state
+  - Tags and metadata
+
+#### Web Apps
+- **Resource Type**: `azure:web:web-app`
+- **Azure Resource**: `Microsoft.Web/sites`
+- **Extracted Information**:
+  - Runtime stack (Linux/Windows FX versions)
+  - HTTPS enforcement
+  - Client certificate requirements
+  - Site configuration
+  - Provisioning state
+  - Tags and metadata
+
+#### Function Apps
+- **Resource Type**: `azure:web:function-app`
+- **Azure Resource**: `Microsoft.Web/sites` (with kind=functionapp)
+- **Extracted Information**:
+  - Runtime configuration
+  - Function app settings
+  - HTTPS and security settings
+  - Provisioning state
+  - Tags and metadata
+
+**Configuration Options**:
+```yaml
+azure:
+  web:
+    max_workers: 10
+    include_app_service_plans: true
+    include_web_apps: true
+    include_function_apps: true
+```
+
+---
+
+### Key Vault (azure:keyvault)
+
+#### Key Vaults
+- **Resource Type**: `azure:keyvault:key-vault`
+- **Azure Resource**: `Microsoft.KeyVault/vaults`
+- **Extracted Information**:
+  - Vault URI
+  - SKU and access policies
+  - Soft delete settings
+  - Network ACLs (firewall rules)
+  - Encryption settings
+  - Access control settings
+  - Tags and metadata
+
+**Configuration Options**:
+```yaml
+azure:
+  keyvault:
+    max_workers: 10
+    include_network_acls: true
+    check_access_policies: true
+```
+
+---
+
+### SQL Database (azure:sql)
+
+#### SQL Servers
+- **Resource Type**: `azure:sql:sql-server`
+- **Azure Resource**: `Microsoft.Sql/servers`
+- **Extracted Information**:
+  - Server version and administrator login
+  - Public network access settings
+  - Minimal TLS version
+  - Firewall rules
+  - Provisioning state
+  - Tags and metadata
+
+#### SQL Databases
+- **Resource Type**: `azure:sql:sql-database`
+- **Azure Resource**: `Microsoft.Sql/servers/databases`
+- **Extracted Information**:
+  - Database collation and size
+  - SKU and performance tier
+  - Zone redundancy
+  - Status and provisioning state
+  - Server association
+  - Tags and metadata
+
+**Configuration Options**:
+```yaml
+azure:
+  sql:
+    max_workers: 10
+    include_databases: true
+    include_firewall_rules: true
+    check_public_access: true
+```
+
+---
+
+### Container Service (azure:containerservice)
+
+#### AKS Clusters
+- **Resource Type**: `azure:containerservice:aks-cluster`
+- **Azure Resource**: `Microsoft.ContainerService/managedClusters`
+- **Extracted Information**:
+  - Kubernetes version
+  - Node pools configuration
+  - Network settings (CNI, service CIDR)
+  - RBAC and API server access
+  - Addon configurations
+  - Agent pool profiles
+  - Provisioning state
+  - Tags and metadata
+
+**Configuration Options**:
+```yaml
+azure:
+  containerservice:
+    max_workers: 10
+    include_node_pools: true
+    include_network_config: true
+    check_rbac_settings: true
+```
+
+---
+
+### Authorization (azure:authorization)
+
+#### Role Definitions
+- **Resource Type**: `azure:authorization:role-definition`
+- **Azure Resource**: `Microsoft.Authorization/roleDefinitions`
+- **Extracted Information**:
+  - Role permissions (actions, not actions)
+  - Assignable scopes
+  - Role description and type
+  - Custom vs built-in roles
+  - Tags and metadata
+
+#### Role Assignments
+- **Resource Type**: `azure:authorization:role-assignment`
+- **Azure Resource**: `Microsoft.Authorization/roleAssignments`
+- **Extracted Information**:
+  - Principal ID and type
+  - Role definition reference
+  - Assignment scope (subscription, resource group, resource)
+  - Scope type analysis
+  - Tags and metadata
+
+**Configuration Options**:
+```yaml
+azure:
+  authorization:
+    max_workers: 10
+    include_custom_roles: true
+    include_role_assignments: true
+    analyze_scope_hierarchy: true
+```
+
+---
+
 ## Metadata Format
 
 All Azure resources include standardized metadata:
@@ -143,11 +310,14 @@ All Azure resources include standardized metadata:
 | **Compute** | VM, VMSS | Container Instances, Batch | |
 | **Storage** | Storage Accounts | File Shares, Disks | |
 | **Network** | NSG, VNet, Load Balancer | Application Gateway, VPN Gateway, Firewall | |
-| **Web** | | App Services, Function Apps | |
-| **Database** | | SQL Database, Cosmos DB | |
-| **Container** | | AKS | |
-| **Security** | | Key Vault | |
-| **Identity** | | RBAC, Role Assignments | |
+| **Web** | App Service Plans, Web Apps, Function Apps | API Apps, Mobile Apps | |
+| **Database** | SQL Servers, SQL Databases | Cosmos DB, MySQL, PostgreSQL | |
+| **Container** | AKS Clusters | Container Instances | |
+| **Security** | Key Vaults | Application Gateway WAF, Security Center | |
+| **Identity** | Role Definitions, Role Assignments | Managed Identities, AD Groups | |
+| **Management** | | Resource Groups, Policy Assignments | |
+| **Analytics** | | Log Analytics, Application Insights | |
+| **Integration** | | Service Bus, Event Grid | |
 
 ## Planned Additions
 
