@@ -51,7 +51,7 @@ class KMSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract KMS keys"""
         artifacts = []
-        client = self.session.client("kms", region_name=region)
+        client = self._get_client("kms", region_name=region)
 
         try:
             paginator = client.get_paginator("list_keys")
@@ -157,7 +157,7 @@ class KMSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract KMS aliases"""
         artifacts = []
-        client = self.session.client("kms", region_name=region)
+        client = self._get_client("kms", region_name=region)
 
         try:
             paginator = client.get_paginator("list_aliases")

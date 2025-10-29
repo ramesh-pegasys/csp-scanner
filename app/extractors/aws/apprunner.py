@@ -53,7 +53,7 @@ class AppRunnerExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract App Runner services"""
         artifacts = []
-        client = self.session.client("apprunner", region_name=region)
+        client = self._get_client("apprunner", region_name=region)
 
         try:
             # App Runner list_services doesn't support pagination
@@ -100,7 +100,7 @@ class AppRunnerExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract App Runner connections"""
         artifacts = []
-        client = self.session.client("apprunner", region_name=region)
+        client = self._get_client("apprunner", region_name=region)
 
         try:
             # App Runner list_connections doesn't support pagination

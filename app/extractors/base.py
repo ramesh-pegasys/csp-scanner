@@ -1,10 +1,13 @@
 # app/extractors/base.py
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional, Literal
+from typing import List, Dict, Any, Optional, Literal, Union, TYPE_CHECKING
 from dataclasses import dataclass
 import boto3  # type: ignore[import-untyped]
 
-# Cloud provider type
+if TYPE_CHECKING:
+    from app.cloud.base import CloudSession, CloudProvider as CloudProviderEnum
+
+# Cloud provider type (kept for backward compatibility)
 CloudProvider = Literal["aws", "azure", "gcp"]
 
 
@@ -24,11 +27,34 @@ class ExtractorMetadata:
 class BaseExtractor(ABC):
     """Base class for all cloud resource extractors"""
 
-    def __init__(self, session: boto3.Session, config: Dict[str, Any]):
-        self.session = session
+    def __init__(self, session: Union[boto3.Session, "CloudSession"], config: Dict[str, Any]):
+        # Support both old boto3.Session and new CloudSession for backward compatibility
+        if isinstance(session, boto3.Session):
+            # Wrap boto3 session for backward compatibility
+            from app.cloud.aws_session import AWSSession
+            self.session = AWSSession(session)
+        else:
+            self.session = session
+        
         self.config = config
         self.metadata = self.get_metadata()
         self.cloud_provider: CloudProvider = getattr(self.metadata, "cloud_provider", "aws")
+    
+    def _get_client(self, service: str, region: Optional[str] = None) -> Any:
+        """
+        Get a cloud service client (backward compatible helper).
+        
+        This method provides backward compatibility for extractors that were
+        written before the CloudSession abstraction.
+        
+        Args:
+            service: Service name (e.g., 'ec2', 's3', 'compute')
+            region: Region/location name (optional)
+        
+        Returns:
+            Service client instance
+        """
+        return self.session.get_client(service, region)
 
     @abstractmethod
     def get_metadata(self) -> ExtractorMetadata:

@@ -25,7 +25,7 @@ class IAMExtractor(BaseExtractor):
         self, region: Optional[str] = None, filters: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """Extract IAM resources"""
-        iam_client = self.session.client("iam")
+        iam_client = self._get_client("iam")
         artifacts = []
 
         # Extract different IAM resource types concurrently

@@ -50,7 +50,7 @@ class EKSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract EKS clusters and their associated resources"""
         artifacts = []
-        client = self.session.client("eks", region_name=region)
+        client = self._get_client("eks", region_name=region)
 
         try:
             paginator = client.get_paginator("list_clusters")

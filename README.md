@@ -1,6 +1,6 @@
 # Cloud Artifact Extractor
 
-A FastAPI-based service for extracting and managing cloud service artifacts from AWS.
+A FastAPI-based service for extracting and managing cloud service artifacts from AWS, Azure, and GCP.
 
 [![CI](https://github.com/username/repo/actions/workflows/ci.yml/badge.svg)](https://github.com/username/repo/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-pytest--cov-blue.svg)](https://pytest-cov.readthedocs.io/)
@@ -8,6 +8,26 @@ A FastAPI-based service for extracting and managing cloud service artifacts from
 [![Mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
 [![Flake8](https://img.shields.io/badge/flake8-checked-blue.svg)](https://flake8.pycqa.org/)
 [![Black](https://img.shields.io/badge/black-formatted-black.svg)](https://github.com/psf/black)
+
+## Multi-Cloud Support
+
+The CSP Scanner supports extracting resources from **AWS**, **Azure**, and **GCP**. Enable the providers you need:
+
+```bash
+# Environment variable
+export ENABLED_PROVIDERS='["aws", "azure", "gcp"]'
+
+# Or in YAML config
+enabled_providers:
+  - aws
+  - azure
+  - gcp
+```
+
+For detailed setup instructions:
+- **AWS Setup**: See AWS Credentials Setup section below
+- **Azure Setup**: See [AZURE_SETUP.md](./AZURE_SETUP.md)
+- **GCP Setup**: See [GCP_SETUP.md](./GCP_SETUP.md)
 
 ## AWS Credentials Setup
 

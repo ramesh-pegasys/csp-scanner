@@ -50,7 +50,7 @@ class CloudFrontExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract CloudFront distributions"""
         artifacts = []
-        client = self.session.client("cloudfront")  # CloudFront is global
+        client = self._get_client("cloudfront")  # CloudFront is global
 
         try:
             paginator = client.get_paginator("list_distributions")
@@ -105,7 +105,7 @@ class CloudFrontExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract CloudFront origin access identities"""
         artifacts = []
-        client = self.session.client("cloudfront")
+        client = self._get_client("cloudfront")
 
         try:
             paginator = client.get_paginator(
@@ -149,7 +149,7 @@ class CloudFrontExtractor(BaseExtractor):
     def _get_account_id(self) -> str:
         """Get AWS account ID from STS"""
         try:
-            sts_client = self.session.client("sts")
+            sts_client = self._get_client("sts")
             return sts_client.get_caller_identity()["Account"]
         except Exception:
             return "unknown"

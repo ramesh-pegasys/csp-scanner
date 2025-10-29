@@ -50,7 +50,7 @@ class APIGatewayExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract REST APIs and their components"""
         artifacts = []
-        client = self.session.client("apigateway", region_name=region)
+        client = self._get_client("apigateway", region_name=region)
 
         try:
             paginator = client.get_paginator("get_rest_apis")

@@ -53,7 +53,7 @@ class ECSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract ECS clusters and their services/tasks"""
         artifacts = []
-        client = self.session.client("ecs", region_name=region)
+        client = self._get_client("ecs", region_name=region)
 
         try:
             # List clusters
@@ -178,7 +178,7 @@ class ECSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract ECS task definitions"""
         artifacts = []
-        client = self.session.client("ecs", region_name=region)
+        client = self._get_client("ecs", region_name=region)
 
         try:
             paginator = client.get_paginator("list_task_definitions")

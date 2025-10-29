@@ -53,7 +53,7 @@ class LambdaExtractor(BaseExtractor):
         self, region: str, filters: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Extract Lambda resources from a specific region"""
-        lambda_client = self.session.client("lambda", region_name=region)
+        lambda_client = self._get_client("lambda", region_name=region)
         artifacts = []
 
         # Extract functions
@@ -144,7 +144,7 @@ class LambdaExtractor(BaseExtractor):
 
     def _get_all_regions(self) -> List[str]:
         """Get all enabled regions (using EC2 as reference)"""
-        ec2_client = self.session.client("ec2")
+        ec2_client = self._get_client("ec2")
         response = ec2_client.describe_regions(AllRegions=False)
         return [region["RegionName"] for region in response["Regions"]]
 

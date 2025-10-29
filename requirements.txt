@@ -1,16 +1,43 @@
 # requirements.txt
+# Core Framework
 fastapi==0.119.1
 uvicorn[standard]==0.37.0
 pydantic==2.12.0 # Assuming Pydantic v2 as you were using Pydantic-Settings v2
 pydantic-settings==2.11.0
-boto3==1.40.57
-botocore==1.40.57
 httpx==0.28.1
 tenacity==9.1.2
 apscheduler==3.11.0
 pyyaml==6.0.3
 python-multipart==0.0.20
 python-json-logger==4.0.0
+
+# AWS
+boto3==1.40.57
+botocore==1.40.57
+
+# Azure
+azure-identity==1.19.0
+azure-mgmt-compute==33.0.0
+azure-mgmt-network==28.0.0
+azure-mgmt-storage==21.2.1
+azure-mgmt-web==7.4.0
+azure-mgmt-sql==4.0.0
+azure-mgmt-containerservice==33.0.0
+azure-mgmt-containerinstance==10.1.0
+azure-mgmt-keyvault==10.3.1
+azure-mgmt-monitor==6.0.2
+azure-mgmt-authorization==4.0.0
+azure-mgmt-resource==23.2.0
+
+# GCP
+google-cloud-compute==1.21.0
+google-cloud-storage==2.19.0
+google-auth==2.38.0
+google-auth-oauthlib==1.2.1
+google-cloud-container==2.57.0
+google-cloud-sql==1.7.1
+google-cloud-functions==1.15.3
+google-cloud-resource-manager==1.13.1
 
 # Development
 pytest==8.4.2

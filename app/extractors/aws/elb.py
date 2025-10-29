@@ -55,7 +55,7 @@ class ELBExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract load balancers (ALB, NLB, CLB)"""
         artifacts = []
-        client = self.session.client("elbv2", region_name=region)
+        client = self._get_client("elbv2", region_name=region)
 
         try:
             paginator = client.get_paginator("describe_load_balancers")
@@ -116,7 +116,7 @@ class ELBExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract target groups"""
         artifacts = []
-        client = self.session.client("elbv2", region_name=region)
+        client = self._get_client("elbv2", region_name=region)
 
         try:
             paginator = client.get_paginator("describe_target_groups")
