@@ -134,7 +134,10 @@ class GCPKubernetesExtractor(BaseExtractor):
                 cluster_dict = {
                     "resource_type": "gcp:kubernetes:cluster",
                     "name": cluster.name,
-                    "self_link": f"https://container.googleapis.com/v1/projects/{gcp_session.project_id}/locations/{zone}/clusters/{cluster.name}",
+                    "self_link": (
+                        f"https://container.googleapis.com/v1/projects/"
+                        f"{gcp_session.project_id}/locations/{zone}/clusters/{cluster.name}"
+                    ),
                     "zone": zone,
                     "description": cluster.description,
                     "initial_cluster_version": cluster.initial_cluster_version,
@@ -187,8 +190,6 @@ class GCPKubernetesExtractor(BaseExtractor):
                     "locations": [loc for loc in cluster.locations],
                     "network": cluster.network,
                     "subnetwork": cluster.subnetwork,
-                    "cluster_ipv4_cidr": cluster.cluster_ipv4_cidr,
-                    "services_ipv4_cidr": cluster.services_ipv4_cidr,
                     "private_cluster_config": (
                         {
                             "enable_private_nodes": (
@@ -337,7 +338,11 @@ class GCPKubernetesExtractor(BaseExtractor):
                 node_pool_dict = {
                     "resource_type": "gcp:kubernetes:node-pool",
                     "name": node_pool.name,
-                    "self_link": f"https://container.googleapis.com/v1/projects/{gcp_session.project_id}/locations/{zone}/clusters/{cluster_name}/nodePools/{node_pool.name}",
+                    "self_link": (
+                        f"https://container.googleapis.com/v1/projects/"
+                        f"{gcp_session.project_id}/locations/{zone}/clusters/"
+                        f"{cluster_name}/nodePools/{node_pool.name}"
+                    ),
                     "zone": zone,
                     "cluster": cluster_name,
                     "config": (
