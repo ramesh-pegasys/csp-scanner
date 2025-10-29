@@ -1,101 +1,121 @@
-[
-  {
+{
+  "cloud_provider": "aws",
+  "resource_type": "aws:eks:cluster",
+  "metadata": {
     "resource_id": "my-eks-cluster",
-    "resource_type": "eks:cluster",
     "service": "eks",
     "region": "us-east-1",
     "account_id": "123456789012",
-    "configuration": {
-      "name": "my-eks-cluster",
-      "arn": "arn:aws:eks:us-east-1:123456789012:cluster/my-eks-cluster",
-      "created_at": "2024-01-10T08:00:00Z",
-      "version": "1.27",
-      "endpoint": "https://1234567890ABCDEF1234567890.gr7.us-east-1.eks.amazonaws.com",
-      "role_arn": "arn:aws:iam::123456789012:role/eks-service-role",
-      "resources_vpc_config": {
-        "subnetIds": ["subnet-12345678", "subnet-87654321", "subnet-abcdef12"],
-        "securityGroupIds": ["sg-12345678"],
-        "clusterSecurityGroupId": "sg-cluster123",
-        "vpcId": "vpc-12345678",
-        "endpointPublicAccess": true,
-        "endpointPrivateAccess": false,
-        "publicAccessCidrs": ["0.0.0.0/0"]
-      },
-      "kubernetes_network_config": {
-        "serviceIpv4Cidr": "10.100.0.0/16",
-        "ipFamily": "ipv4"
-      },
-      "logging": {
-        "clusterLogging": [
-          {
-            "types": ["api", "audit", "authenticator", "controllerManager", "scheduler"],
-            "enabled": true
-          }
-        ]
-      },
-      "identity": {
-        "oidc": {
-          "issuer": "https://oidc.eks.us-east-1.amazonaws.com/id/1234567890ABCDEF1234567890"
-        }
-      },
-      "status": "ACTIVE",
-      "platform_version": "eks.1",
-      "tags": [
+    "labels": {}
+  },
+  "configuration": {
+    "name": "my-eks-cluster",
+    "arn": "arn:aws:eks:us-east-1:123456789012:cluster/my-eks-cluster",
+    "created_at": "2024-01-10T08:00:00Z",
+    "version": "1.27",
+    "endpoint": "https://1234567890ABCDEF1234567890.gr7.us-east-1.eks.amazonaws.com",
+    "role_arn": "arn:aws:iam::123456789012:role/eks-service-role",
+    "resources_vpc_config": {
+      "subnetIds": [
+        "subnet-12345678",
+        "subnet-87654321",
+        "subnet-abcdef12"
+      ],
+      "securityGroupIds": [
+        "sg-12345678"
+      ],
+      "clusterSecurityGroupId": "sg-cluster123",
+      "vpcId": "vpc-12345678",
+      "endpointPublicAccess": true,
+      "endpointPrivateAccess": false,
+      "publicAccessCidrs": [
+        "0.0.0.0/0"
+      ]
+    },
+    "kubernetes_network_config": {
+      "serviceIpv4Cidr": "10.100.0.0/16",
+      "ipFamily": "ipv4"
+    },
+    "logging": {
+      "clusterLogging": [
         {
-          "key": "Environment",
-          "value": "production"
-        },
-        {
-          "key": "Team",
-          "value": "platform"
+          "types": [
+            "api",
+            "audit",
+            "authenticator",
+            "controllerManager",
+            "scheduler"
+          ],
+          "enabled": true
         }
       ]
     },
-    "raw": {
-      "name": "my-eks-cluster",
-      "arn": "arn:aws:eks:us-east-1:123456789012:cluster/my-eks-cluster",
-      "createdAt": "2024-01-10T08:00:00Z",
-      "version": "1.27",
-      "endpoint": "https://1234567890ABCDEF1234567890.gr7.us-east-1.eks.amazonaws.com",
-      "roleArn": "arn:aws:iam::123456789012:role/eks-service-role",
-      "resourcesVpcConfig": {
-        "subnetIds": ["subnet-12345678", "subnet-87654321", "subnet-abcdef12"],
-        "securityGroupIds": ["sg-12345678"],
-        "clusterSecurityGroupId": "sg-cluster123",
-        "vpcId": "vpc-12345678",
-        "endpointPublicAccess": true,
-        "endpointPrivateAccess": false,
-        "publicAccessCidrs": ["0.0.0.0/0"]
-      },
-      "kubernetesNetworkConfig": {
-        "serviceIpv4Cidr": "10.100.0.0/16",
-        "ipFamily": "ipv4"
-      },
-      "logging": {
-        "clusterLogging": [
-          {
-            "types": ["api", "audit", "authenticator", "controllerManager", "scheduler"],
-            "enabled": true
-          }
-        ]
-      },
-      "identity": {
-        "oidc": {
-          "issuer": "https://oidc.eks.us-east-1.amazonaws.com/id/1234567890ABCDEF1234567890"
-        }
-      },
-      "status": "ACTIVE",
-      "platformVersion": "eks.1",
-      "tags": [
+    "identity": {
+      "oidc": {
+        "issuer": "https://oidc.eks.us-east-1.amazonaws.com/id/1234567890ABCDEF1234567890"
+      }
+    },
+    "status": "ACTIVE",
+    "platform_version": "eks.1"
+  },
+  "raw": {
+    "name": "my-eks-cluster",
+    "arn": "arn:aws:eks:us-east-1:123456789012:cluster/my-eks-cluster",
+    "createdAt": "2024-01-10T08:00:00Z",
+    "version": "1.27",
+    "endpoint": "https://1234567890ABCDEF1234567890.gr7.us-east-1.eks.amazonaws.com",
+    "roleArn": "arn:aws:iam::123456789012:role/eks-service-role",
+    "resourcesVpcConfig": {
+      "subnetIds": [
+        "subnet-12345678",
+        "subnet-87654321",
+        "subnet-abcdef12"
+      ],
+      "securityGroupIds": [
+        "sg-12345678"
+      ],
+      "clusterSecurityGroupId": "sg-cluster123",
+      "vpcId": "vpc-12345678",
+      "endpointPublicAccess": true,
+      "endpointPrivateAccess": false,
+      "publicAccessCidrs": [
+        "0.0.0.0/0"
+      ]
+    },
+    "kubernetesNetworkConfig": {
+      "serviceIpv4Cidr": "10.100.0.0/16",
+      "ipFamily": "ipv4"
+    },
+    "logging": {
+      "clusterLogging": [
         {
-          "key": "Environment",
-          "value": "production"
-        },
-        {
-          "key": "Team",
-          "value": "platform"
+          "types": [
+            "api",
+            "audit",
+            "authenticator",
+            "controllerManager",
+            "scheduler"
+          ],
+          "enabled": true
         }
       ]
-    }
+    },
+    "identity": {
+      "oidc": {
+        "issuer": "https://oidc.eks.us-east-1.amazonaws.com/id/1234567890ABCDEF1234567890"
+      }
+    },
+    "status": "ACTIVE",
+    "platformVersion": "eks.1",
+    "tags": [
+      {
+        "key": "Environment",
+        "value": "production"
+      },
+      {
+        "key": "Team",
+        "value": "platform"
+      }
+    ]
   }
-]
+}

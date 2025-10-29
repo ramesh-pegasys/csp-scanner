@@ -155,12 +155,19 @@ class LambdaExtractor(BaseExtractor):
         resource_type = raw_data["resource_type"]
 
         if resource_type == "function":
+            tags = raw_data.get("tags", {})
+            account_id = resource["FunctionArn"].split(":")[4]
+            
             return {
-                "resource_id": resource["FunctionArn"],
-                "resource_type": "lambda:function",
-                "service": "lambda",
-                "region": region,
-                "account_id": resource["FunctionArn"].split(":")[4],
+                "cloud_provider": "aws",
+                "resource_type": "aws:lambda:function",
+                "metadata": self.create_metadata_object(
+                    resource_id=resource["FunctionArn"],
+                    service="lambda",
+                    region=region,
+                    account_id=account_id,
+                    tags=tags,
+                ),
                 "configuration": {
                     "function_name": resource["FunctionName"],
                     "runtime": resource.get("Runtime"),
@@ -180,12 +187,17 @@ class LambdaExtractor(BaseExtractor):
                 "raw": resource,  # Include full resource for comprehensive scanning
             }
         elif resource_type == "layer":
+            account_id = resource["LayerArn"].split(":")[4]
+            
             return {
-                "resource_id": resource["LayerArn"],
-                "resource_type": "lambda:layer",
-                "service": "lambda",
-                "region": region,
-                "account_id": resource["LayerArn"].split(":")[4],
+                "cloud_provider": "aws",
+                "resource_type": "aws:lambda:layer",
+                "metadata": self.create_metadata_object(
+                    resource_id=resource["LayerArn"],
+                    service="lambda",
+                    region=region,
+                    account_id=account_id,
+                ),
                 "configuration": {
                     "layer_name": resource["LayerName"],
                     "version": resource.get("Version"),
@@ -197,15 +209,20 @@ class LambdaExtractor(BaseExtractor):
                 "raw": resource,
             }
         elif resource_type == "event-source-mapping":
+            account_id = (
+                resource.get("FunctionArn", "").split(":")[4]
+                if resource.get("FunctionArn")
+                else None
+            )
+            
             return {
-                "resource_id": resource["UUID"],
-                "resource_type": "lambda:event-source-mapping",
-                "service": "lambda",
-                "region": region,
-                "account_id": (
-                    resource.get("FunctionArn", "").split(":")[4]
-                    if resource.get("FunctionArn")
-                    else None
+                "cloud_provider": "aws",
+                "resource_type": "aws:lambda:event-source-mapping",
+                "metadata": self.create_metadata_object(
+                    resource_id=resource["UUID"],
+                    service="lambda",
+                    region=region,
+                    account_id=account_id,
                 ),
                 "configuration": {
                     "function_arn": resource.get("FunctionArn"),

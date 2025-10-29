@@ -1,8 +1,11 @@
 # app/extractors/base.py
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Literal
 from dataclasses import dataclass
 import boto3  # type: ignore[import-untyped]
+
+# Cloud provider type
+CloudProvider = Literal["aws", "azure", "gcp"]
 
 
 @dataclass
@@ -13,17 +16,19 @@ class ExtractorMetadata:
     version: str
     description: str
     resource_types: List[str]
+    cloud_provider: CloudProvider = "aws"
     supports_regions: bool = True
     requires_pagination: bool = True
 
 
 class BaseExtractor(ABC):
-    """Base class for all AWS resource extractors"""
+    """Base class for all cloud resource extractors"""
 
     def __init__(self, session: boto3.Session, config: Dict[str, Any]):
         self.session = session
         self.config = config
         self.metadata = self.get_metadata()
+        self.cloud_provider: CloudProvider = getattr(self.metadata, "cloud_provider", "aws")
 
     @abstractmethod
     def get_metadata(self) -> ExtractorMetadata:
@@ -69,5 +74,83 @@ class BaseExtractor(ABC):
         Returns:
             True if valid, False otherwise
         """
-        required_fields = ["resource_id", "resource_type", "service", "configuration"]
-        return all(field in artifact for field in required_fields)
+        required_fields = ["cloud_provider", "resource_type", "metadata", "configuration"]
+        if not all(field in artifact for field in required_fields):
+            return False
+        
+        # Validate metadata structure
+        metadata = artifact.get("metadata", {})
+        required_metadata_fields = ["resource_id"]
+        return all(field in metadata for field in required_metadata_fields)
+    
+    def create_metadata_object(
+        self,
+        resource_id: str,
+        service: Optional[str] = None,
+        region: Optional[str] = None,
+        account_id: Optional[str] = None,
+        subscription_id: Optional[str] = None,
+        project_id: Optional[str] = None,
+        resource_group: Optional[str] = None,
+        labels: Optional[Dict[str, str]] = None,
+        tags: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Create a cloud-agnostic metadata object
+        
+        Args:
+            resource_id: Unique identifier for the resource
+            service: Service name (e.g., 'ec2', 'compute', etc.)
+            region: AWS region, Azure location, or GCP zone/region
+            account_id: AWS account ID
+            subscription_id: Azure subscription ID
+            project_id: GCP project ID
+            resource_group: Azure resource group
+            labels: Extensible key-value pairs for labels
+            tags: Resource tags (will be merged into labels)
+        
+        Returns:
+            Metadata dictionary
+        """
+        metadata: Dict[str, Any] = {
+            "resource_id": resource_id,
+        }
+        
+        # Add cloud-specific fields
+        if self.cloud_provider == "aws":
+            if service:
+                metadata["service"] = service
+            if region:
+                metadata["region"] = region
+            if account_id:
+                metadata["account_id"] = account_id
+        elif self.cloud_provider == "azure":
+            if service:
+                metadata["service"] = service
+            if region:
+                metadata["location"] = region
+            if subscription_id:
+                metadata["subscription_id"] = subscription_id
+            if resource_group:
+                metadata["resource_group"] = resource_group
+        elif self.cloud_provider == "gcp":
+            if service:
+                metadata["service"] = service
+            if region:
+                metadata["region"] = region
+            if project_id:
+                metadata["project_id"] = project_id
+        
+        # Merge tags and labels
+        merged_labels = {}
+        if tags:
+            merged_labels.update(tags)
+        if labels:
+            merged_labels.update(labels)
+        
+        if merged_labels:
+            metadata["labels"] = merged_labels
+        else:
+            metadata["labels"] = {}
+        
+        return metadata

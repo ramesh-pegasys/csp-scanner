@@ -1,128 +1,139 @@
 {
+  "cloud_provider": "aws",
+  "resource_type": "aws:apigateway:restapi",
+  "metadata": {
     "resource_id": "abc123def456",
-    "resource_type": "apigateway:restapi",
     "service": "apigateway",
     "region": "us-east-1",
     "account_id": "123456789012",
-    "configuration": {
-      "id": "abc123def456",
-      "name": "my-api-gateway",
-      "description": "REST API for production application",
-      "createdDate": "2023-01-15T10:30:00Z",
-      "apiKeySourceType": "HEADER",
-      "endpointConfiguration": {
-        "types": ["REGIONAL"],
-        "vpcEndpointIds": []
-      },
-      "policy": {
-        "Version": "2012-10-17",
-        "Statement": [
-          {
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "execute-api:Invoke",
-            "Resource": "arn:aws:execute-api:us-east-1:123456789012:abc123def456/*",
-            "Condition": {
-              "IpAddress": {
-                "aws:SourceIp": "192.168.1.0/24"
-              }
-            }
-          }
-        ]
-      },
-      "disableExecuteApiEndpoint": false,
-      "binaryMediaTypes": ["application/octet-stream"],
-      "minimumCompressionSize": 0,
-      "tags": {
-        "Environment": "production",
-        "Application": "api"
-      },
-      "stages": [
-        {
-          "deploymentId": "xyz789",
-          "stageName": "prod",
-          "description": "Production stage",
-          "cacheClusterEnabled": true,
-          "cacheClusterSize": "0.5",
-          "cacheClusterStatus": "AVAILABLE",
-          "methodSettings": {
-            "*/*": {
-              "metricsEnabled": true,
-              "loggingLevel": "INFO",
-              "dataTraceEnabled": false,
-              "throttlingBurstLimit": 100,
-              "throttlingRateLimit": 50.0,
-              "cachingEnabled": false,
-              "cacheTtlInSeconds": 300,
-              "cacheDataEncrypted": true,
-              "requireAuthorizationForCacheControl": true,
-              "unauthorizedCacheControlHeaderStrategy": "SUCCEED"
-            }
-          },
-          "variables": {
-            "environment": "prod"
-          },
-          "documentationVersion": "1.0",
-          "accessLogSettings": {
-            "format": "{\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\"caller\":\"$context.identity.caller\",\"user\":\"$context.identity.user\",\"requestTime\":\"$context.requestTime\",\"httpMethod\":\"$context.httpMethod\",\"resourcePath\":\"$context.resourcePath\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\"}",
-            "destinationArn": "arn:aws:logs:us-east-1:123456789012:log-group:/aws/apigateway/my-api-gateway-prod"
-          },
-          "canarySettings": {
-            "percentTraffic": 0.0,
-            "deploymentId": "xyz789",
-            "stageVariableOverrides": {},
-            "useStageCache": false
-          },
-          "tracingEnabled": true,
-          "webAclArn": "arn:aws:wafv2:us-east-1:123456789012:regional/webacl/api-gateway-waf/12345678-1234-1234-1234-123456789012",
-          "tags": {
-            "Stage": "prod"
-          }
-        }
+    "labels": {
+      "Environment": "production",
+      "Application": "api"
+    }
+  },
+  "configuration": {
+    "id": "abc123def456",
+    "name": "my-api-gateway",
+    "description": "REST API for production application",
+    "createdDate": "2023-01-15T10:30:00Z",
+    "apiKeySourceType": "HEADER",
+    "endpointConfiguration": {
+      "types": [
+        "REGIONAL"
       ],
-      "deployments": [
+      "vpcEndpointIds": []
+    },
+    "policy": {
+      "Version": "2012-10-17",
+      "Statement": [
         {
-          "id": "xyz789",
-          "description": "Production deployment",
-          "createdDate": "2023-01-15T11:00:00Z",
-          "apiSummary": {
-            "/health": {
-              "GET": {
-                "authorizationType": "NONE",
-                "apiKeyRequired": false
-              }
-            },
-            "/users": {
-              "GET": {
-                "authorizationType": "AWS_IAM",
-                "apiKeyRequired": true
-              },
-              "POST": {
-                "authorizationType": "AWS_IAM",
-                "apiKeyRequired": true
-              }
+          "Effect": "Allow",
+          "Principal": "*",
+          "Action": "execute-api:Invoke",
+          "Resource": "arn:aws:execute-api:us-east-1:123456789012:abc123def456/*",
+          "Condition": {
+            "IpAddress": {
+              "aws:SourceIp": "192.168.1.0/24"
             }
           }
         }
       ]
     },
-    "raw": {
-      "id": "abc123def456",
-      "name": "my-api-gateway",
-      "description": "REST API for production application",
-      "createdDate": "2023-01-15T10:30:00Z",
-      "apiKeySourceType": "HEADER",
-      "endpointConfiguration": {
-        "types": ["REGIONAL"],
-        "vpcEndpointIds": []
-      },
-      "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"execute-api:Invoke\",\"Resource\":\"arn:aws:execute-api:us-east-1:123456789012:abc123def456/*\",\"Condition\":{\"IpAddress\":{\"aws:SourceIp\":\"192.168.1.0/24\"}}}]}",
-      "disableExecuteApiEndpoint": false,
-      "binaryMediaTypes": ["application/octet-stream"],
-      "minimumCompressionSize": 0,
-      "tags": {
-        "Environment": "production",
-        "Application": "api"
+    "disableExecuteApiEndpoint": false,
+    "binaryMediaTypes": [
+      "application/octet-stream"
+    ],
+    "minimumCompressionSize": 0,
+    "stages": [
+      {
+        "deploymentId": "xyz789",
+        "stageName": "prod",
+        "description": "Production stage",
+        "cacheClusterEnabled": true,
+        "cacheClusterSize": "0.5",
+        "cacheClusterStatus": "AVAILABLE",
+        "methodSettings": {
+          "*/*": {
+            "metricsEnabled": true,
+            "loggingLevel": "INFO",
+            "dataTraceEnabled": false,
+            "throttlingBurstLimit": 100,
+            "throttlingRateLimit": 50.0,
+            "cachingEnabled": false,
+            "cacheTtlInSeconds": 300,
+            "cacheDataEncrypted": true,
+            "requireAuthorizationForCacheControl": true,
+            "unauthorizedCacheControlHeaderStrategy": "SUCCEED"
+          }
+        },
+        "variables": {
+          "environment": "prod"
+        },
+        "documentationVersion": "1.0",
+        "accessLogSettings": {
+          "format": "{\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\"caller\":\"$context.identity.caller\",\"user\":\"$context.identity.user\",\"requestTime\":\"$context.requestTime\",\"httpMethod\":\"$context.httpMethod\",\"resourcePath\":\"$context.resourcePath\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\"}",
+          "destinationArn": "arn:aws:logs:us-east-1:123456789012:log-group:/aws/apigateway/my-api-gateway-prod"
+        },
+        "canarySettings": {
+          "percentTraffic": 0.0,
+          "deploymentId": "xyz789",
+          "stageVariableOverrides": {},
+          "useStageCache": false
+        },
+        "tracingEnabled": true,
+        "webAclArn": "arn:aws:wafv2:us-east-1:123456789012:regional/webacl/api-gateway-waf/12345678-1234-1234-1234-123456789012",
+        "tags": {
+          "Stage": "prod"
+        }
       }
+    ],
+    "deployments": [
+      {
+        "id": "xyz789",
+        "description": "Production deployment",
+        "createdDate": "2023-01-15T11:00:00Z",
+        "apiSummary": {
+          "/health": {
+            "GET": {
+              "authorizationType": "NONE",
+              "apiKeyRequired": false
+            }
+          },
+          "/users": {
+            "GET": {
+              "authorizationType": "AWS_IAM",
+              "apiKeyRequired": true
+            },
+            "POST": {
+              "authorizationType": "AWS_IAM",
+              "apiKeyRequired": true
+            }
+          }
+        }
+      }
+    ]
+  },
+  "raw": {
+    "id": "abc123def456",
+    "name": "my-api-gateway",
+    "description": "REST API for production application",
+    "createdDate": "2023-01-15T10:30:00Z",
+    "apiKeySourceType": "HEADER",
+    "endpointConfiguration": {
+      "types": [
+        "REGIONAL"
+      ],
+      "vpcEndpointIds": []
+    },
+    "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"execute-api:Invoke\",\"Resource\":\"arn:aws:execute-api:us-east-1:123456789012:abc123def456/*\",\"Condition\":{\"IpAddress\":{\"aws:SourceIp\":\"192.168.1.0/24\"}}}]}",
+    "disableExecuteApiEndpoint": false,
+    "binaryMediaTypes": [
+      "application/octet-stream"
+    ],
+    "minimumCompressionSize": 0,
+    "tags": {
+      "Environment": "production",
+      "Application": "api"
     }
   }
+}

@@ -144,12 +144,17 @@ class S3Extractor(BaseExtractor):
         resource_type = raw_data["resource_type"]
 
         if resource_type == "bucket":
+            tags = resource.get("tags", {})
+            
             return {
-                "resource_id": resource["Name"],
-                "resource_type": "s3:bucket",
-                "service": "s3",
-                "region": resource.get("region"),
-                "account_id": None,  # S3 doesn't expose account ID directly
+                "cloud_provider": "aws",
+                "resource_type": "aws:s3:bucket",
+                "metadata": self.create_metadata_object(
+                    resource_id=resource["Name"],
+                    service="s3",
+                    region=resource.get("region"),
+                    tags=tags,
+                ),
                 "configuration": {
                     "bucket_name": resource["Name"],
                     "creation_date": resource.get("CreationDate"),
@@ -158,7 +163,6 @@ class S3Extractor(BaseExtractor):
                     "encryption": resource.get("encryption", {}),
                     "policy": resource.get("policy", {}),
                     "acl": resource.get("acl", {}),
-                    "tags": resource.get("tags", {}),
                 },
                 "raw": resource,
             }

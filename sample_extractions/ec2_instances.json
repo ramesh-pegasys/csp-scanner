@@ -1,73 +1,65 @@
-[
-  {
+{
+  "cloud_provider": "aws",
+  "resource_type": "aws:ec2:instance",
+  "metadata": {
     "resource_id": "i-1234567890abcdef0",
-    "resource_type": "ec2:instance",
     "service": "ec2",
     "region": "us-east-1",
     "account_id": "123456789012",
-    "configuration": {
-      "instance_id": "i-1234567890abcdef0",
-      "instance_type": "t3.medium",
-      "state": "running",
-      "launch_time": "2024-01-15T10:30:00Z",
-      "availability_zone": "us-east-1a",
-      "vpc_id": "vpc-12345678",
-      "subnet_id": "subnet-12345678",
-      "security_groups": [
-        {
-          "GroupId": "sg-12345678",
-          "GroupName": "web-servers"
-        }
-      ],
-      "key_name": "my-key-pair",
-      "monitoring": {
-        "State": "enabled"
-      },
-      "ebs_optimized": true,
-      "tags": [
-        {
-          "Key": "Name",
-          "Value": "web-server-01"
-        },
-        {
-          "Key": "Environment",
-          "Value": "production"
-        }
-      ]
+    "labels": {}
+  },
+  "configuration": {
+    "instance_id": "i-1234567890abcdef0",
+    "instance_type": "t3.medium",
+    "state": "running",
+    "launch_time": "2024-01-15T10:30:00Z",
+    "availability_zone": "us-east-1a",
+    "vpc_id": "vpc-12345678",
+    "subnet_id": "subnet-12345678",
+    "security_groups": [
+      {
+        "GroupId": "sg-12345678",
+        "GroupName": "web-servers"
+      }
+    ],
+    "key_name": "my-key-pair",
+    "monitoring": {
+      "State": "enabled"
     },
-    "raw": {
-      "InstanceId": "i-1234567890abcdef0",
-      "InstanceType": "t3.medium",
-      "State": {
-        "Name": "running"
+    "ebs_optimized": true
+  },
+  "raw": {
+    "InstanceId": "i-1234567890abcdef0",
+    "InstanceType": "t3.medium",
+    "State": {
+      "Name": "running"
+    },
+    "LaunchTime": "2024-01-15T10:30:00Z",
+    "Placement": {
+      "AvailabilityZone": "us-east-1a"
+    },
+    "VpcId": "vpc-12345678",
+    "SubnetId": "subnet-12345678",
+    "SecurityGroups": [
+      {
+        "GroupId": "sg-12345678",
+        "GroupName": "web-servers"
+      }
+    ],
+    "KeyName": "my-key-pair",
+    "Monitoring": {
+      "State": "enabled"
+    },
+    "EbsOptimized": true,
+    "Tags": [
+      {
+        "Key": "Name",
+        "Value": "web-server-01"
       },
-      "LaunchTime": "2024-01-15T10:30:00Z",
-      "Placement": {
-        "AvailabilityZone": "us-east-1a"
-      },
-      "VpcId": "vpc-12345678",
-      "SubnetId": "subnet-12345678",
-      "SecurityGroups": [
-        {
-          "GroupId": "sg-12345678",
-          "GroupName": "web-servers"
-        }
-      ],
-      "KeyName": "my-key-pair",
-      "Monitoring": {
-        "State": "enabled"
-      },
-      "EbsOptimized": true,
-      "Tags": [
-        {
-          "Key": "Name",
-          "Value": "web-server-01"
-        },
-        {
-          "Key": "Environment",
-          "Value": "production"
-        }
-      ]
-    }
+      {
+        "Key": "Environment",
+        "Value": "production"
+      }
+    ]
   }
-]
+}
