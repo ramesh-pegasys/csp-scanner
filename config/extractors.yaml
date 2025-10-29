@@ -59,3 +59,19 @@ gcp:
     max_workers: 20
     include_iam_policies: false  # Fetching IAM policies requires additional permissions
     check_public_access: true
+  
+  # High Priority Extractors
+  networking:
+    max_workers: 10
+    include_firewall_rules: true
+    include_load_balancers: true
+  
+  kubernetes:
+    max_workers: 10
+    include_node_pools: true
+    include_cluster_config: true
+  
+  iam:
+    include_service_accounts: true
+    include_policies: true
+    detailed_policy_analysis: true

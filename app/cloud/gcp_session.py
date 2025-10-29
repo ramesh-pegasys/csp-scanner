@@ -94,9 +94,16 @@ class GCPSession:
             - 'compute' -> Compute Engine client
             - 'storage' -> Cloud Storage client
             - 'container' -> GKE client
-            - 'sql' -> Cloud SQL client
+            - 'asset' -> Cloud Asset Inventory client (for unified resource discovery)
             - 'functions' -> Cloud Functions client
             - 'iam' -> IAM client
+            - 'compute_firewalls' -> Compute Engine firewalls
+            - 'compute_networks' -> Compute Engine networks
+            - 'compute_subnetworks' -> Compute Engine subnetworks
+            - 'compute_backend_services' -> Load balancer backend services
+            - 'compute_url_maps' -> Load balancer URL maps
+            - 'compute_target_proxies' -> Load balancer target proxies
+            - 'compute_forwarding_rules' -> Load balancer forwarding rules
         """
         cache_key = f"{service}:{region}" if region else service
 
@@ -138,6 +145,26 @@ class GCPSession:
 
                 return compute_v1.SubnetworksClient(credentials=self.credentials)
 
+            elif service == "compute_backend_services":
+                from google.cloud import compute_v1  # type: ignore[import-untyped]
+
+                return compute_v1.BackendServicesClient(credentials=self.credentials)
+
+            elif service == "compute_url_maps":
+                from google.cloud import compute_v1  # type: ignore[import-untyped]
+
+                return compute_v1.UrlMapsClient(credentials=self.credentials)
+
+            elif service == "compute_target_proxies":
+                from google.cloud import compute_v1  # type: ignore[import-untyped]
+
+                return compute_v1.TargetHttpProxiesClient(credentials=self.credentials)
+
+            elif service == "compute_forwarding_rules":
+                from google.cloud import compute_v1  # type: ignore[import-untyped]
+
+                return compute_v1.ForwardingRulesClient(credentials=self.credentials)
+
             elif service == "storage":
                 from google.cloud import storage  # type: ignore[import-untyped]
 
@@ -150,10 +177,10 @@ class GCPSession:
 
                 return container_v1.ClusterManagerClient(credentials=self.credentials)
 
-            elif service == "sql":
-                from google.cloud import sql_v1  # type: ignore[import-untyped]
+            elif service == "asset":
+                from google.cloud import asset_v1  # type: ignore[import-untyped]
 
-                return sql_v1.SqlInstancesServiceClient(credentials=self.credentials)
+                return asset_v1.AssetServiceClient(credentials=self.credentials)
 
             elif service == "functions":
                 from google.cloud import functions_v1  # type: ignore[import-untyped]
@@ -264,3 +291,51 @@ class GCPSession:
             if region:
                 return [z for z in default_zones if z.startswith(region)]
             return default_zones
+
+    def search_resources(
+        self, 
+        asset_types: Optional[List[str]] = None,
+        scope: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Search for GCP resources using Cloud Asset Inventory.
+
+        Args:
+            asset_types: List of asset types to search for (e.g., ['sqladmin.googleapis.com/Instance'])
+            scope: Scope for the search (project, folder, or organization). Defaults to current project.
+
+        Returns:
+            List of resource dictionaries with metadata
+        """
+        try:
+            from google.cloud import asset_v1  # type: ignore[import-untyped]
+
+            asset_client = self.get_client("asset")
+            
+            if scope is None:
+                scope = f"projects/{self.project_id}"
+            
+            request = asset_v1.SearchAllResourcesRequest(
+                scope=scope,
+                asset_types=asset_types,
+            )
+
+            resources = []
+            for resource in asset_client.search_all_resources(request=request):
+                resources.append({
+                    "name": resource.name,
+                    "asset_type": resource.asset_type,
+                    "location": resource.location,
+                    "project": resource.project,
+                    "display_name": resource.display_name,
+                    "description": resource.description,
+                    "labels": dict(resource.labels) if resource.labels else {},
+                    "create_time": resource.create_time,
+                    "update_time": resource.update_time,
+                })
+
+            return resources
+
+        except Exception as e:
+            logger.error(f"Failed to search GCP resources: {e}")
+            return []
