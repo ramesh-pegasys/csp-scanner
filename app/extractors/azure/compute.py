@@ -152,24 +152,32 @@ class AzureComputeExtractor(BaseExtractor):
 
             # Build configuration
             config: Dict[str, Any] = {
-                "vm_size": resource.hardware_profile.vm_size
-                if resource.hardware_profile
-                else None,
+                "vm_size": (
+                    resource.hardware_profile.vm_size
+                    if resource.hardware_profile
+                    else None
+                ),
                 "provisioning_state": resource.provisioning_state,
             }
 
             # Add storage profile
             if resource.storage_profile:
                 config["os_disk"] = {
-                    "name": resource.storage_profile.os_disk.name
-                    if resource.storage_profile.os_disk
-                    else None,
-                    "os_type": resource.storage_profile.os_disk.os_type
-                    if resource.storage_profile.os_disk
-                    else None,
-                    "disk_size_gb": resource.storage_profile.os_disk.disk_size_gb
-                    if resource.storage_profile.os_disk
-                    else None,
+                    "name": (
+                        resource.storage_profile.os_disk.name
+                        if resource.storage_profile.os_disk
+                        else None
+                    ),
+                    "os_type": (
+                        resource.storage_profile.os_disk.os_type
+                        if resource.storage_profile.os_disk
+                        else None
+                    ),
+                    "disk_size_gb": (
+                        resource.storage_profile.os_disk.disk_size_gb
+                        if resource.storage_profile.os_disk
+                        else None
+                    ),
                     "managed_disk_id": (
                         resource.storage_profile.os_disk.managed_disk.id
                         if resource.storage_profile.os_disk

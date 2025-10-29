@@ -293,9 +293,7 @@ class GCPSession:
             return default_zones
 
     def search_resources(
-        self, 
-        asset_types: Optional[List[str]] = None,
-        scope: Optional[str] = None
+        self, asset_types: Optional[List[str]] = None, scope: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
         Search for GCP resources using Cloud Asset Inventory.
@@ -311,10 +309,10 @@ class GCPSession:
             from google.cloud import asset_v1  # type: ignore[import-untyped]
 
             asset_client = self.get_client("asset")
-            
+
             if scope is None:
                 scope = f"projects/{self.project_id}"
-            
+
             request = asset_v1.SearchAllResourcesRequest(
                 scope=scope,
                 asset_types=asset_types,
@@ -322,17 +320,19 @@ class GCPSession:
 
             resources = []
             for resource in asset_client.search_all_resources(request=request):
-                resources.append({
-                    "name": resource.name,
-                    "asset_type": resource.asset_type,
-                    "location": resource.location,
-                    "project": resource.project,
-                    "display_name": resource.display_name,
-                    "description": resource.description,
-                    "labels": dict(resource.labels) if resource.labels else {},
-                    "create_time": resource.create_time,
-                    "update_time": resource.update_time,
-                })
+                resources.append(
+                    {
+                        "name": resource.name,
+                        "asset_type": resource.asset_type,
+                        "location": resource.location,
+                        "project": resource.project,
+                        "display_name": resource.display_name,
+                        "description": resource.description,
+                        "labels": dict(resource.labels) if resource.labels else {},
+                        "create_time": resource.create_time,
+                        "update_time": resource.update_time,
+                    }
+                )
 
             return resources
 

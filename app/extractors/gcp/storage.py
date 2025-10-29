@@ -107,19 +107,23 @@ class GCPStorageExtractor(BaseExtractor):
                 bucket_dict = {
                     "name": bucket.name,
                     "id": bucket.id,
-                    "self_link": bucket.self_link
-                    if hasattr(bucket, "self_link")
-                    else f"https://www.googleapis.com/storage/v1/b/{bucket.name}",
+                    "self_link": (
+                        bucket.self_link
+                        if hasattr(bucket, "self_link")
+                        else f"https://www.googleapis.com/storage/v1/b/{bucket.name}"
+                    ),
                     "location": bucket.location,
                     "location_type": bucket.location_type,
                     "storage_class": bucket.storage_class,
-                    "time_created": str(bucket.time_created)
-                    if bucket.time_created
-                    else None,
+                    "time_created": (
+                        str(bucket.time_created) if bucket.time_created else None
+                    ),
                     "updated": str(bucket.updated) if bucket.updated else None,
-                    "versioning_enabled": bucket.versioning_enabled
-                    if hasattr(bucket, "versioning_enabled")
-                    else False,
+                    "versioning_enabled": (
+                        bucket.versioning_enabled
+                        if hasattr(bucket, "versioning_enabled")
+                        else False
+                    ),
                     "labels": dict(bucket.labels) if bucket.labels else {},
                     "resource_type": "gcp:storage:bucket",
                 }
@@ -211,15 +215,19 @@ class GCPStorageExtractor(BaseExtractor):
                 if hasattr(bucket, "iam_configuration"):
                     iam_config = bucket.iam_configuration
                     bucket_dict["public_access_prevention"] = {
-                        "is_enforced": iam_config.public_access_prevention == "enforced"
-                        if hasattr(iam_config, "public_access_prevention")
-                        else False,
+                        "is_enforced": (
+                            iam_config.public_access_prevention == "enforced"
+                            if hasattr(iam_config, "public_access_prevention")
+                            else False
+                        ),
                         "uniform_bucket_level_access": {
-                            "enabled": iam_config.uniform_bucket_level_access_enabled
-                            if hasattr(
-                                iam_config, "uniform_bucket_level_access_enabled"
-                            )
-                            else False,
+                            "enabled": (
+                                iam_config.uniform_bucket_level_access_enabled
+                                if hasattr(
+                                    iam_config, "uniform_bucket_level_access_enabled"
+                                )
+                                else False
+                            ),
                         },
                     }
 

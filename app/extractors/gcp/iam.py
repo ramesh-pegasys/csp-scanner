@@ -66,8 +66,12 @@ class GCPIAMExtractor(BaseExtractor):
         ) as executor:
             loop = asyncio.get_event_loop()
             tasks = [
-                loop.run_in_executor(executor, self._extract_service_accounts, gcp_session),
-                loop.run_in_executor(executor, self._extract_project_policy, gcp_session),
+                loop.run_in_executor(
+                    executor, self._extract_service_accounts, gcp_session
+                ),
+                loop.run_in_executor(
+                    executor, self._extract_project_policy, gcp_session
+                ),
                 loop.run_in_executor(executor, self._extract_roles, gcp_session),
             ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -81,7 +85,9 @@ class GCPIAMExtractor(BaseExtractor):
         logger.info(f"Extracted {len(artifacts)} IAM resources")
         return artifacts
 
-    def _extract_service_accounts(self, gcp_session: GCPSession) -> List[Dict[str, Any]]:
+    def _extract_service_accounts(
+        self, gcp_session: GCPSession
+    ) -> List[Dict[str, Any]]:
         """Extract service accounts"""
         resources = []
         try:
@@ -129,15 +135,32 @@ class GCPIAMExtractor(BaseExtractor):
                 "project_id": gcp_session.project_id,
                 "version": policy.version,
                 "etag": policy.etag,
-                "bindings": [{
-                    "role": binding.role,
-                    "members": [member for member in binding.members],
-                    "condition": {
-                        "title": binding.condition.title if binding.condition else "",
-                        "description": binding.condition.description if binding.condition else "",
-                        "expression": binding.condition.expression if binding.condition else "",
-                    } if binding.condition else {},
-                } for binding in policy.bindings],
+                "bindings": [
+                    {
+                        "role": binding.role,
+                        "members": [member for member in binding.members],
+                        "condition": (
+                            {
+                                "title": (
+                                    binding.condition.title if binding.condition else ""
+                                ),
+                                "description": (
+                                    binding.condition.description
+                                    if binding.condition
+                                    else ""
+                                ),
+                                "expression": (
+                                    binding.condition.expression
+                                    if binding.condition
+                                    else ""
+                                ),
+                            }
+                            if binding.condition
+                            else {}
+                        ),
+                    }
+                    for binding in policy.bindings
+                ],
             }
             resources.append(policy_dict)
 
@@ -164,7 +187,9 @@ class GCPIAMExtractor(BaseExtractor):
                     "name": role.name,
                     "title": role.title,
                     "description": role.description,
-                    "included_permissions": [perm for perm in role.included_permissions],
+                    "included_permissions": [
+                        perm for perm in role.included_permissions
+                    ],
                     "stage": role.stage,
                     "etag": role.etag,
                 }
@@ -187,7 +212,9 @@ class GCPIAMExtractor(BaseExtractor):
         """
         try:
             # Extract common fields
-            resource_type_suffix = raw_data.get("resource_type", "gcp:iam:service-account")
+            resource_type_suffix = raw_data.get(
+                "resource_type", "gcp:iam:service-account"
+            )
             resource_id = raw_data.get("name", raw_data.get("email", "unknown"))
 
             # Get project ID from session

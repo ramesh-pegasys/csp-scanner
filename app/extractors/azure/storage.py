@@ -109,9 +109,9 @@ class AzureStorageExtractor(BaseExtractor):
         config: Dict[str, Any] = {
             "kind": resource.kind,
             "provisioning_state": resource.provisioning_state,
-            "creation_time": str(resource.creation_time)
-            if resource.creation_time
-            else None,
+            "creation_time": (
+                str(resource.creation_time) if resource.creation_time else None
+            ),
         }
 
         # Add SKU

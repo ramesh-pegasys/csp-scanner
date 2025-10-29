@@ -227,9 +227,11 @@ class AzureNetworkExtractor(BaseExtractor):
                     {
                         "name": subnet.name,
                         "address_prefix": subnet.address_prefix,
-                        "nsg_id": subnet.network_security_group.id
-                        if subnet.network_security_group
-                        else None,
+                        "nsg_id": (
+                            subnet.network_security_group.id
+                            if subnet.network_security_group
+                            else None
+                        ),
                     }
                     for subnet in resource.subnets
                 ]
@@ -275,9 +277,9 @@ class AzureNetworkExtractor(BaseExtractor):
                     {
                         "name": fe.name,
                         "private_ip": fe.private_ip_address,
-                        "public_ip_id": fe.public_ip_address.id
-                        if fe.public_ip_address
-                        else None,
+                        "public_ip_id": (
+                            fe.public_ip_address.id if fe.public_ip_address else None
+                        ),
                     }
                     for fe in resource.frontend_ip_configurations
                 ]
