@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import boto3  # type: ignore[import-untyped]
 
 if TYPE_CHECKING:
-    from app.cloud.base import CloudSession, CloudProvider as CloudProviderEnum
+    from app.cloud.base import CloudSession
 
 # Cloud provider type (kept for backward compatibility)
 CloudProvider = Literal["aws", "azure", "gcp"]

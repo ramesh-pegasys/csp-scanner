@@ -308,7 +308,6 @@ class GCPComputeExtractor(BaseExtractor):
             # Extract common fields
             resource_type_suffix = raw_data.get("resource_type", "gcp:compute:instance")
             resource_id = raw_data.get("self_link", raw_data.get("name", "unknown"))
-            resource_name = raw_data.get("name", "unknown")
             zone = raw_data.get("zone", "unknown")
 
             # Extract region from zone (e.g., us-central1-a -> us-central1)

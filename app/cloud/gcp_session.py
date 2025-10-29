@@ -4,7 +4,7 @@ GCP session wrapper implementing CloudSession protocol.
 """
 
 from typing import Any, Optional, Dict, List
-from app.cloud.base import CloudSession, CloudProvider
+from app.cloud.base import CloudProvider
 import logging
 
 logger = logging.getLogger(__name__)

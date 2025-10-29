@@ -5,7 +5,7 @@ AWS session wrapper implementing CloudSession protocol.
 
 import boto3  # type: ignore[import-untyped]
 from typing import Any, Optional, List
-from app.cloud.base import CloudSession, CloudProvider
+from app.cloud.base import CloudProvider
 import logging
 
 logger = logging.getLogger(__name__)

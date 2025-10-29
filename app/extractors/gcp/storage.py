@@ -245,7 +245,6 @@ class GCPStorageExtractor(BaseExtractor):
         try:
             # Extract common fields
             resource_id = raw_data.get("self_link", raw_data.get("name", "unknown"))
-            bucket_name = raw_data.get("name", "unknown")
             location = raw_data.get("location", "unknown")
 
             # Get project ID from session
