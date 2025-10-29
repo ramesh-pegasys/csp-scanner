@@ -1,0 +1,99 @@
+# Jekyll Configuration for GitHub Pages
+title: "Cloud Artifact Extractor"
+description: "A FastAPI-based service for extracting and managing cloud service artifacts from AWS, Azure, and GCP"
+url: "https://ramesh-pegasys.github.io"
+baseurl: "/csp-scanner"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Plugins
+# plugins:
+#   - jekyll-feed
+#   - jekyll-sitemap
+#   - jekyll-seo-tag
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:name/
+
+# Navigation
+navigation:
+  - title: "Home"
+    url: "/"
+  - title: "Getting Started"
+    url: "/getting-started"
+  - title: "Configuration"
+    url: "/configuration"
+  - title: "Cloud Providers"
+    url: "/cloud-providers"
+  - title: "Supported Resources"
+    url: "/supported-resources"
+  - title: "Metadata Structure"
+    url: "/metadata-structure"
+  - title: "Implementation Details"
+    url: "/implementation-details"
+  - title: "API Reference"
+    url: "/api-reference"
+  - title: "Troubleshooting"
+    url: "/troubleshooting"
+  - title: "Development"
+    url: "/development"
+
+# Exclude from processing
+exclude:
+  - Gemfile.lock
+  - vendor/
+  - .bundle/
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - .vscode/
+  - .github/
+
+# Include files
+include:
+  - _pages
+
+# SEO and social
+author: "Cloud Security Team"
+social:
+  name: Cloud Artifact Extractor
+  links:
+    - https://github.com/yourusername/csp-scanner
+
+# Custom variables
+logo: /assets/images/logo.png
+github_username: yourusername
+repo: csp-scanner
+
+# Markdown settings
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    default_lang: bash
+    css_class: 'highlight'
+    span:
+      line_numbers: false
+    block:
+      line_numbers: false
+
+# Sass settings
+sass:
+  sass_dir: _sass
+  style: compressed
+
+# Collections settings
+defaults:
+  - scope:
+      path: ""
+      type: docs
+    values:
+      layout: page
+      author: "Cloud Security Team"
+      permalink: /:collection/:name/
