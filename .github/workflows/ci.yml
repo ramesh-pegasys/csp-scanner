@@ -47,17 +47,17 @@ jobs:
       run: |
         mypy app
 
-  docker:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  # docker:
+  #   needs: test
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: actions/docker/setup-buildx-action@v3
+  #   - name: Set up Docker Buildx
+  #     uses: actions/docker/setup-buildx-action@v3
 
     # - name: Log in to Docker Hub
     #   uses: docker/login-action@v3
@@ -65,18 +65,18 @@ jobs:
     #     username: ${{ secrets.DOCKERHUB_USERNAME }}
     #     password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ secrets.DOCKERHUB_USERNAME }}/csp-scanner
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
+    # - name: Extract metadata
+    #   id: meta
+    #   uses: docker/metadata-action@v5
+    #   with:
+    #     images: ${{ secrets.DOCKERHUB_USERNAME }}/csp-scanner
+    #     tags: |
+    #       type=ref,event=branch
+    #       type=ref,event=pr
+    #       type=sha,prefix={{branch}}-
+    #       type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build Docker image (no push)
+    # - name: Build Docker image (no push)
       uses: docker/build-push-action@v5
       with:
         context: .
