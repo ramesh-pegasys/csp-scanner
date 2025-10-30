@@ -9,9 +9,9 @@ router = APIRouter()
 
 
 class ExtractionRequest(BaseModel):
-    provider: Optional[
-        str
-    ] = None  # Cloud provider filter (None = all enabled providers)
+    provider: Optional[str] = (
+        None  # Cloud provider filter (None = all enabled providers)
+    )
     services: Optional[List[str]] = None
     regions: Optional[List[str]] = None
     filters: Optional[dict] = None
