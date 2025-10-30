@@ -339,3 +339,250 @@ def test_list_services_filtered_by_provider(registry):
     azure_services = registry.list_services(provider=CloudProvider.AZURE)
     assert len(azure_services) == 1
     assert "azure:azuredummy" in azure_services
+
+
+def test_register_azure_extractors_success(monkeypatch, tmp_path):
+    """Test Azure extractor registration when Azure session is available"""
+    from app.cloud.base import CloudProvider
+
+    # Create registry with Azure session
+    azure_session = SimpleNamespace()
+    sessions = {CloudProvider.AZURE: azure_session}
+    settings = Settings()
+    
+    # Mock Azure extractors
+    azure_modules = {
+        "app.extractors.azure.compute": SimpleNamespace(
+            AzureComputeExtractor=make_dummy_extractor("compute")
+        ),
+        "app.extractors.azure.storage": SimpleNamespace(
+            AzureStorageExtractor=make_dummy_extractor("storage")
+        ),
+        "app.extractors.azure.network": SimpleNamespace(
+            AzureNetworkExtractor=make_dummy_extractor("network")
+        ),
+        "app.extractors.azure.authorization": SimpleNamespace(
+            AzureAuthorizationExtractor=make_dummy_extractor("authorization")
+        ),
+        "app.extractors.azure.containerservice": SimpleNamespace(
+            AzureContainerServiceExtractor=make_dummy_extractor("containerservice")
+        ),
+        "app.extractors.azure.keyvault": SimpleNamespace(
+            AzureKeyVaultExtractor=make_dummy_extractor("keyvault")
+        ),
+        "app.extractors.azure.sql": SimpleNamespace(
+            AzureSQLExtractor=make_dummy_extractor("sql")
+        ),
+        "app.extractors.azure.web": SimpleNamespace(
+            AzureWebExtractor=make_dummy_extractor("web")
+        ),
+    }
+
+    for name, module in azure_modules.items():
+        monkeypatch.setitem(sys.modules, name, module)
+
+    with patch.object(
+        ExtractorRegistry, "_register_default_extractors", lambda self: None
+    ):
+        reg = ExtractorRegistry(sessions, settings)
+
+    # Manually call Azure registration
+    reg._register_azure_extractors()
+    
+    services = reg.list_services()
+    expected_azure_services = [
+        "azure:compute",
+        "azure:storage", 
+        "azure:network",
+        "azure:authorization",
+        "azure:containerservice",
+        "azure:keyvault",
+        "azure:sql",
+        "azure:web",
+    ]
+    
+    for service in expected_azure_services:
+        assert service in services
+
+
+def test_register_gcp_extractors_success(monkeypatch, tmp_path):
+    """Test GCP extractor registration when GCP session is available"""
+    from app.cloud.base import CloudProvider
+
+    # Create registry with GCP session
+    gcp_session = SimpleNamespace()
+    sessions = {CloudProvider.GCP: gcp_session}
+    settings = Settings()
+    
+    # Mock GCP extractors (just a few key ones for coverage)
+    gcp_modules = {
+        "app.extractors.gcp.compute": SimpleNamespace(
+            GCPComputeExtractor=make_dummy_extractor("compute")
+        ),
+        "app.extractors.gcp.storage": SimpleNamespace(
+            GCPStorageExtractor=make_dummy_extractor("storage")
+        ),
+        "app.extractors.gcp.iam": SimpleNamespace(
+            GCPIAMExtractor=make_dummy_extractor("iam")
+        ),
+        "app.extractors.gcp.bigquery": SimpleNamespace(
+            GCPBigQueryExtractor=make_dummy_extractor("bigquery")
+        ),
+        "app.extractors.gcp.cloudbuild": SimpleNamespace(
+            GCPCloudBuildExtractor=make_dummy_extractor("cloudbuild")
+        ),
+        "app.extractors.gcp.cloudrun": SimpleNamespace(
+            GCPCloudRunExtractor=make_dummy_extractor("cloudrun")
+        ),
+        "app.extractors.gcp.kubernetes": SimpleNamespace(
+            GCPKubernetesExtractor=make_dummy_extractor("kubernetes")
+        ),
+        "app.extractors.gcp.networking": SimpleNamespace(
+            GCPNetworkingExtractor=make_dummy_extractor("networking")
+        ),
+        "app.extractors.gcp.firestore": SimpleNamespace(
+            GCPFirestoreExtractor=make_dummy_extractor("firestore")
+        ),
+        "app.extractors.gcp.bigtable": SimpleNamespace(
+            GCPBigtableExtractor=make_dummy_extractor("bigtable")
+        ),
+        "app.extractors.gcp.pubsub": SimpleNamespace(
+            GCPPubSubExtractor=make_dummy_extractor("pubsub")
+        ),
+        "app.extractors.gcp.dataflow": SimpleNamespace(
+            GCPDataflowExtractor=make_dummy_extractor("dataflow")
+        ),
+        "app.extractors.gcp.dataproc": SimpleNamespace(
+            GCPDataprocExtractor=make_dummy_extractor("dataproc")
+        ),
+        "app.extractors.gcp.spanner": SimpleNamespace(
+            GCPSpannerExtractor=make_dummy_extractor("spanner")
+        ),
+        "app.extractors.gcp.memorystore": SimpleNamespace(
+            GCPMemorystoreExtractor=make_dummy_extractor("memorystore")
+        ),
+        "app.extractors.gcp.dns": SimpleNamespace(
+            GCPDNSExtractor=make_dummy_extractor("dns")
+        ),
+        "app.extractors.gcp.logging": SimpleNamespace(
+            GCPLoggingExtractor=make_dummy_extractor("logging")
+        ),
+        "app.extractors.gcp.monitoring": SimpleNamespace(
+            GCPMonitoringExtractor=make_dummy_extractor("monitoring")
+        ),
+        "app.extractors.gcp.filestore": SimpleNamespace(
+            GCPFilestoreExtractor=make_dummy_extractor("filestore")
+        ),
+        "app.extractors.gcp.iap": SimpleNamespace(
+            GCPIAPExtractor=make_dummy_extractor("iap")
+        ),
+        "app.extractors.gcp.resource_manager": SimpleNamespace(
+            GCPResourceManagerExtractor=make_dummy_extractor("resource_manager")
+        ),
+        "app.extractors.gcp.billing": SimpleNamespace(
+            GCPBillingExtractor=make_dummy_extractor("billing")
+        ),
+        "app.extractors.gcp.tasks": SimpleNamespace(
+            GCPTasksExtractor=make_dummy_extractor("tasks")
+        ),
+        "app.extractors.gcp.scheduler": SimpleNamespace(
+            GCPSchedulerExtractor=make_dummy_extractor("scheduler")
+        ),
+        "app.extractors.gcp.functions": SimpleNamespace(
+            GCPFunctionsExtractor=make_dummy_extractor("functions")
+        ),
+        "app.extractors.gcp.armor": SimpleNamespace(
+            GCPArmorExtractor=make_dummy_extractor("armor")
+        ),
+        "app.extractors.gcp.interconnect": SimpleNamespace(
+            GCPInterconnectExtractor=make_dummy_extractor("interconnect")
+        ),
+        "app.extractors.gcp.loadbalancer": SimpleNamespace(
+            GCPLoadBalancerExtractor=make_dummy_extractor("loadbalancer")
+        ),
+    }
+
+    for name, module in gcp_modules.items():
+        monkeypatch.setitem(sys.modules, name, module)
+
+    with patch.object(
+        ExtractorRegistry, "_register_default_extractors", lambda self: None
+    ):
+        reg = ExtractorRegistry(sessions, settings)
+
+    # Manually call GCP registration
+    reg._register_gcp_extractors()
+    
+    services = reg.list_services()
+    # Check that some GCP services are registered
+    assert any(service.startswith("gcp:") for service in services)
+
+
+def test_get_extractor_fallback_search(registry):
+    """Test get method fallback search when no provider specified"""
+    from app.cloud.base import CloudProvider
+    from unittest.mock import MagicMock
+    
+    # Register extractors for different providers
+    registry.register(DummyExtractor)
+    
+    # Manually add Azure extractor with same service name
+    class AzureDummyExtractor(DummyExtractor):
+        def get_metadata(self) -> ExtractorMetadata:
+            return ExtractorMetadata(
+                service_name="dummy",
+                version="1.0",
+                description="Azure dummy",
+                resource_types=["dummy"],
+                cloud_provider="azure",
+            )
+    
+    mock_azure_session = MagicMock()
+    mock_azure_session.provider = CloudProvider.AZURE
+    registry.sessions[CloudProvider.AZURE] = mock_azure_session
+    azure_extractor = AzureDummyExtractor(mock_azure_session, {})
+    registry._extractors["azure:dummy"] = azure_extractor
+    
+    # Manually add an extractor with key exactly matching service name
+    registry._extractors["dummy"] = azure_extractor
+    
+    # Get without provider should return one of them (first match)
+    extractor = registry.get("dummy")
+    assert extractor is not None
+    assert extractor.metadata.service_name == "dummy"
+
+
+def test_register_deprecated_method(registry):
+    """Test the deprecated register method"""
+    # The register method should work for backward compatibility
+    registry.register(DummyExtractor)
+    
+    extractor = registry.get("dummy")
+    assert extractor is not None
+    assert extractor.metadata.service_name == "dummy"
+
+
+def test_register_extractor_edge_cases(registry, caplog):
+    """Test edge cases in _register_extractor method"""
+    from app.cloud.base import CloudProvider
+    from unittest.mock import MagicMock
+    
+    # Test with extractor that has no config
+    class NoConfigExtractor(DummyExtractor):
+        def get_metadata(self) -> ExtractorMetadata:
+            return ExtractorMetadata(
+                service_name="noconfig",
+                version="1.0",
+                description="No config extractor",
+                resource_types=["noconfig"],
+            )
+    
+    mock_session = MagicMock()
+    mock_session.provider = CloudProvider.AWS
+    reg = ExtractorRegistry({CloudProvider.AWS: mock_session}, Settings())
+    
+    # Should handle missing config gracefully
+    reg._register_extractor(NoConfigExtractor, mock_session, {}, CloudProvider.AWS)
+    
+    extractor = reg.get("noconfig", CloudProvider.AWS)
+    assert extractor is not None
