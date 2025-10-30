@@ -56,6 +56,17 @@ class GCPKubernetesExtractor(BaseExtractor):
         # Cast session to GCPSession for type checking
         gcp_session = cast(GCPSession, self.session)
 
+        # Check if Kubernetes API is enabled
+        from app.cloud.gcp_api_check import is_gcp_api_enabled, API_SERVICE_MAP
+
+        project_id = gcp_session.project_id
+        api_service = API_SERVICE_MAP["kubernetes"]
+        if not is_gcp_api_enabled(project_id, api_service, gcp_session.credentials):
+            logger.warning(
+                f"GCP Kubernetes API is not enabled for project {project_id}. Skipping extraction."
+            )
+            return []
+
         # Get list of zones to query (GKE clusters can be zonal or regional)
         zones = []
         if region:

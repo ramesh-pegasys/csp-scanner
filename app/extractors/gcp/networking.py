@@ -58,7 +58,22 @@ class GCPNetworkingExtractor(BaseExtractor):
 
         Args:
             region: Optional region to filter resources. If None, extracts global and regional resources.
-            filters: Optional filters to apply (not currently used)
+
+        # Cast session to GCPSession for type checking
+        gcp_session = cast(GCPSession, self.session)
+
+        # Check if Networking (Compute) API is enabled
+        from app.cloud.gcp_api_check import is_gcp_api_enabled, API_SERVICE_MAP
+        project_id = gcp_session.project_id
+        api_service = API_SERVICE_MAP["networking"]
+        if not is_gcp_api_enabled(project_id, api_service, gcp_session.credentials):
+            logger.warning(
+                f"GCP Networking (Compute) API is not enabled for project {project_id}. "
+                "Skipping extraction."
+            )
+            return []
+
+        filters: Optional filters to apply (not currently used)
 
         Returns:
             List of raw resource dictionaries from GCP API
@@ -230,17 +245,25 @@ class GCPNetworkingExtractor(BaseExtractor):
                     ],
                     "allowed": [
                         {
-                            "ip_protocol": rule.ip_protocol,
-                            "ports": [port for port in rule.ports],
+                            "ip_protocol": getattr(rule, "ip_protocol", ""),
+                            "ports": (
+                                [port for port in getattr(rule, "ports", [])]
+                                if hasattr(rule, "ports")
+                                else []
+                            ),
                         }
-                        for rule in firewall.allowed
+                        for rule in getattr(firewall, "allowed", [])
                     ],
                     "denied": [
                         {
-                            "ip_protocol": rule.ip_protocol,
-                            "ports": [port for port in rule.ports],
+                            "ip_protocol": getattr(rule, "ip_protocol", ""),
+                            "ports": (
+                                [port for port in getattr(rule, "ports", [])]
+                                if hasattr(rule, "ports")
+                                else []
+                            ),
                         }
-                        for rule in firewall.denied
+                        for rule in getattr(firewall, "denied", [])
                     ],
                     "disabled": firewall.disabled,
                 }

@@ -40,6 +40,31 @@ google-cloud-functions==1.21.0
 google-cloud-resource-manager==1.13.1
 google-cloud-asset==4.1.0
 
+# Google IAM
+google-cloud-iam
+google-cloud-run
+google-cloud-build
+google-cloud-compute
+google-cloud-storage
+google-cloud-bigquery
+google-cloud-pubsub
+google-cloud-container
+google-cloud-functions
+google-cloud-spanner
+google-cloud-dataproc
+google-cloud-firestore
+google-cloud-redis
+google-cloud-bigtable
+google-cloud-dns
+google-cloud-logging
+google-cloud-monitoring
+google-cloud-filestore
+google-cloud-iap
+google-cloud-resource-manager
+google-cloud-billing
+google-cloud-tasks
+google-cloud-scheduler
+google-cloud-dataflow-client
 # Development
 pytest==8.4.2
 pytest-asyncio==1.2.0
@@ -47,3 +72,25 @@ pytest-cov==7.0.0
 black==25.9.0
 flake8==6.1.0 # Latest stable is 6.1.0 (from the 6.x series)
 mypy==1.18.2
+types-requests==2.31.0
+# typing-extensions must be >=4.14.1 to satisfy pydantic>=2.12.0
+typing-extensions>=4.14.1
+
+# Recommended Google client libraries (ensure typing support)
+google-api-python-client==2.91.0
+google-api-core==2.15.0
+google-auth-httplib2==0.1.0
+
+# Prefer binary wheels and refuse source builds for grpcio to avoid C-extension compilation
+--prefer-binary
+--only-binary=grpcio
+
+grpcio>=1.59.0,<2.0
+protobuf==4.24.1
+
+# Optional: install specific google-cloud-* packages if needed (uncomment to pin)
+# google-cloud-pubsub==3.14.0
+# google-cloud-dns==0.36.0
+# google-cloud-billing==1.20.0
+# google-cloud-redis==2.11.0
+# google-cloud-firestore==2.10.0
