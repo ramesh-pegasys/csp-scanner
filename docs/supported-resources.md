@@ -2,19 +2,24 @@
 layout: default
 title: Supported Resources
 nav_order: 5
+has_children: true
 ---
 
 # Supported Resources
 
-This document provides comprehensive information about all cloud resources supported by the CSP Scanner across AWS, Azure, and GCP.
+This document provides a comprehensive overview of all cloud resources supported by the CSP Scanner across AWS, Azure, and GCP. For detailed information about each provider's resources, see the provider-specific pages:
+
+- [AWS Supported Resources](supported-resources-aws.html)
+- [Azure Supported Resources](supported-resources-azure.html)
+- [GCP Supported Resources](supported-resources-gcp.html)
 
 ## Overview
 
 The scanner currently supports **3 cloud providers** with **50+ resource types**:
 
-- **AWS**: 13 services, 20+ resource types
-- **Azure**: 8 services, 20+ resource types
-- **GCP**: 5 services, 10+ resource types
+- **AWS**: 13 services, 20+ resource types ([see full list](supported-resources-aws.html))
+- **Azure**: 8 services, 20+ resource types ([see full list](supported-resources-azure.html))
+- **GCP**: 5 services, 10+ resource types ([see full list](supported-resources-gcp.html))
 
 ## Resource Type Naming Convention
 
@@ -54,7 +59,136 @@ All extracted resources include standardized metadata:
 }
 ```
 
-## Amazon Web Services (AWS)
+## Resource Coverage Summary
+
+| Category | AWS | Azure | GCP | Total |
+|----------|-----|-------|-----|-------|
+| **Compute** | 2 (EC2, ECS) | 2 (VM, VMSS) | 2 (Compute, Instance Groups) | 6 |
+| **Storage** | 1 (S3) | 1 (Storage) | 1 (Storage) | 3 |
+| **Database** | 2 (RDS, Aurora) | 2 (SQL Server, DB) | 0 | 4 |
+| **Networking** | 4 (VPC, ELB, CloudFront, API GW) | 3 (NSG, VNet, LB) | 4 (VPC, Firewall, LB, Subnets) | 11 |
+| **Serverless** | 2 (Lambda, App Runner) | 2 (Web Apps, Functions) | 0 | 4 |
+| **Identity** | 3 (IAM Users/Roles/Policies) | 2 (Role Defs/Assignments) | 3 (Service Accounts, Policies, Roles) | 8 |
+| **Containers** | 2 (ECS, EKS) | 1 (AKS) | 1 (GKE) | 4 |
+| **Security** | 1 (KMS) | 1 (Key Vault) | 0 | 2 |
+| **Total Services** | 13 | 8 | 5 | 26 |
+| **Total Resources** | 20+ | 20+ | 10+ | 50+ |
+
+## Configuration Options
+
+### Global Extractor Settings
+
+```yaml
+# config/extractors.yaml
+global:
+  max_concurrent_extractors: 5
+  batch_size: 50
+  batch_delay_seconds: 0.5
+  enable_progress_tracking: true
+  extraction_timeout_seconds: 300
+```
+
+### Provider-Specific Settings
+
+Each provider has service-specific configuration options for controlling extraction behavior, parallelization, and filtering.
+
+## Performance Considerations
+
+### Parallel Extraction
+- **AWS**: Uses boto3's built-in pagination and parallel processing
+- **Azure**: ThreadPoolExecutor for concurrent API calls
+- **GCP**: ThreadPoolExecutor with zone-level parallelization
+
+### Rate Limiting
+- **AWS**: Service-specific limits (EC2: 100 req/sec, S3: 5500 req/sec)
+- **Azure**: Subscription-level limits (varies by service)
+- **GCP**: Project-level quotas (Compute: 1000 req/min, Storage: 1000 req/sec)
+
+### Memory Usage
+- Large resource lists are processed in batches
+- Raw API responses are included but can be filtered
+- Configurable worker counts prevent resource exhaustion
+
+## Filtering and Selection
+
+### By Region
+```json
+{
+  "services": ["ec2", "s3"],
+  "regions": ["us-east-1", "us-west-2"]
+}
+```
+
+### By Service
+```json
+{
+  "services": ["compute", "storage"],
+  "provider": "azure"
+}
+```
+
+### By Resource Type
+```json
+{
+  "services": ["ec2:instance", "s3:bucket"]
+}
+```
+
+## Future Resource Support
+
+### Planned Additions
+
+#### AWS
+- **Organizations**: Accounts and organizational units
+- **Config**: Configuration items and rules
+- **CloudTrail**: Audit trails and events
+- **GuardDuty**: Security findings
+- **SecurityHub**: Security findings aggregation
+
+#### Azure
+- **Resource Groups**: Resource organization
+- **Policy**: Azure Policy definitions and assignments
+- **Monitor**: Alerts and diagnostic settings
+- **Security Center**: Security recommendations
+
+#### GCP
+- **Networking**: VPC networks, firewalls, load balancers
+- **Kubernetes**: GKE clusters and workloads
+- **Databases**: Cloud SQL, Cloud Spanner
+- **Serverless**: Cloud Functions, Cloud Run
+- **Security**: IAM, KMS, Security Command Center
+
+## Custom Resource Types
+
+The scanner is designed to be extensible. To add support for new resource types:
+
+1. Create extractor class inheriting from `BaseExtractor`
+2. Implement `get_metadata()`, `extract()`, and `transform()` methods
+3. Register in the provider's registry
+4. Add configuration options
+5. Update documentation
+
+See the [Development Guide](/csp-scanner/development.html) for detailed instructions.
+
+## Data Quality and Validation
+
+All extracted resources include:
+- **Schema validation** against expected structure
+- **Required field checking** (resource_id, cloud_provider, etc.)
+- **Type validation** for configuration fields
+- **Error handling** for malformed API responses
+- **Logging** of extraction failures and warnings
+
+## Compliance and Security Focus
+
+Resources are extracted with security and compliance in mind:
+- **Access controls** and permissions
+- **Encryption settings** and key management
+- **Network security** configurations
+- **Public exposure** assessments
+- **Compliance metadata** and tags
+
+This enables downstream policy scanners to perform comprehensive security analysis across all supported cloud providers.
 
 ### Compute Services
 

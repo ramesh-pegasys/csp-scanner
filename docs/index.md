@@ -4,6 +4,12 @@ title: Home
 nav_order: 1
 ---
 
+<div class="hero">
+  <div class="hero-title">Cloud Artifact Extractor</div>
+  <div class="hero-subtitle">A modern FastAPI service for extracting and managing cloud service artifacts from AWS, Azure, and GCP.<br>Beautiful, secure, and multi-cloud ready.</div>
+  <a href="/csp-scanner/getting-started.html" class="btn">Get Started</a>
+</div>
+
 # Cloud Artifact Extractor
 
 [![CI](https://github.com/ramesh-pegasys/csp-scanner/actions/workflows/ci.yml/badge.svg)](https://github.com/ramesh-pegasys/csp-scanner/actions/workflows/ci.yml)
@@ -80,27 +86,48 @@ View the complete list of [supported cloud resources](/csp-scanner/supported-res
 
 The scanner follows a modular architecture designed for extensibility:
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   FastAPI Application                │
-├─────────────────────────────────────────────────────┤
-│  CloudSession Abstraction Layer                     │
-│  ├── AWSSession (boto3)                            │
-│  ├── AzureSession (Azure SDK)                      │
-│  └── GCPSession (Google Cloud SDK)                 │
-├─────────────────────────────────────────────────────┤
-│  ExtractorRegistry (Multi-Cloud)                   │
-│  ├── AWS Extractors (EC2, S3, RDS, etc.)           │
-│  ├── Azure Extractors (Compute, Storage, etc.)     │
-│  └── GCP Extractors (Compute, Storage, etc.)       │
-├─────────────────────────────────────────────────────┤
-│  ExtractionOrchestrator (Cloud-Agnostic)           │
-├─────────────────────────────────────────────────────┤
-│  Transport Layer (Cloud-Agnostic)                  │
-│  ├── HTTP Transport                                │
-│  ├── Filesystem Transport                          │
-│  └── Null Transport                                │
-└─────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph FastAPI["FastAPI Application"]
+        API[REST API Endpoints]
+    end
+    
+    subgraph CloudSession["CloudSession Abstraction Layer"]
+        AWS[AWSSession<br/>boto3]
+        Azure[AzureSession<br/>Azure SDK]
+        GCP[GCPSession<br/>Google Cloud SDK]
+    end
+    
+    subgraph Registry["ExtractorRegistry (Multi-Cloud)"]
+        AWSE[AWS Extractors<br/>EC2, S3, RDS, etc.]
+        AzureE[Azure Extractors<br/>Compute, Storage, etc.]
+        GCPE[GCP Extractors<br/>Compute, Storage, etc.]
+    end
+    
+    subgraph Orchestrator["ExtractionOrchestrator"]
+        Orch[Cloud-Agnostic Orchestration]
+    end
+    
+    subgraph Transport["Transport Layer"]
+        HTTP[HTTP Transport]
+        FS[Filesystem Transport]
+        Null[Null Transport]
+    end
+    
+    API --> CloudSession
+    AWS --> AWSE
+    Azure --> AzureE
+    GCP --> GCPE
+    AWSE --> Orch
+    AzureE --> Orch
+    GCPE --> Orch
+    Orch --> Transport
+    
+    style FastAPI fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style CloudSession fill:#e0f2fe,stroke:#1a4fa3,stroke-width:2px
+    style Registry fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style Orchestrator fill:#e0f2fe,stroke:#1a4fa3,stroke-width:2px
+    style Transport fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
 ```
 
 ## 📊 Use Cases
