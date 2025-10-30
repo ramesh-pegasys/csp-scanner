@@ -3,7 +3,11 @@ app_name: "Cloud Artifact Extractor"
 environment: "development"
 debug: true
 
-aws_default_region: "us-east-1"
+enabled_providers:
+  - "gcp"
+
+gcp_project_id: "pegasus-437722"
+gcp_default_region: "us-central1"
 
 scanner_endpoint_url: "http://localhost:8001/api/scan"
 transport_timeout_seconds: 30

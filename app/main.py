@@ -155,8 +155,9 @@ app.include_router(schedules.router, prefix="/api/v1/schedules", tags=["schedule
 app.include_router(health.router, prefix="/api/v1/health", tags=["health"])  # type: ignore[attr-defined]
 
 
-@app.get("/")  # type: ignore[attr-defined]
+@app.get("/", include_in_schema=False)
 async def root():
+    """Root endpoint used by tests and health checks."""
     return {
         "service": "Cloud Artifact Extractor",
         "version": "1.0.0",

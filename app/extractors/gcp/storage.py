@@ -57,6 +57,17 @@ class GCPStorageExtractor(BaseExtractor):
         # Cast session to GCPSession for type checking
         gcp_session = cast(GCPSession, self.session)
 
+        # Check if Storage API is enabled
+        from app.cloud.gcp_api_check import is_gcp_api_enabled, API_SERVICE_MAP
+
+        project_id = gcp_session.project_id
+        api_service = API_SERVICE_MAP["storage"]
+        if not is_gcp_api_enabled(project_id, api_service, gcp_session.credentials):
+            logger.warning(
+                f"GCP Storage API is not enabled for project {project_id}. Skipping extraction."
+            )
+            return []
+
         logger.info(
             f"Extracting GCP Cloud Storage buckets for project {gcp_session.project_id}"
         )
@@ -198,14 +209,14 @@ class GCPStorageExtractor(BaseExtractor):
                         )
 
                 # Extract logging configuration
-                if bucket.logging:
+                if hasattr(bucket, "logging") and bucket.logging:
                     bucket_dict["logging"] = {
                         "log_bucket": bucket.logging.get("logBucket", ""),
                         "log_object_prefix": bucket.logging.get("logObjectPrefix", ""),
                     }
 
                 # Extract website configuration
-                if bucket.website:
+                if hasattr(bucket, "website") and bucket.website:
                     bucket_dict["website"] = {
                         "main_page_suffix": bucket.website.get("mainPageSuffix", ""),
                         "not_found_page": bucket.website.get("notFoundPage", ""),

@@ -56,23 +56,24 @@ class GCPSession:
                     f"Failed to load GCP credentials from {credentials_path}: {e}"
                 )
                 raise
-        else:
-            # Use application default credentials (environment variable, gcloud, etc.)
-            try:
-                from google.auth import default  # type: ignore[import-untyped]
+        try:
+            from google.auth import default
 
-                self.credentials, _ = default()
-                logger.info(
-                    "Initialized GCP session with application default credentials"
-                )
-            except ImportError:
-                logger.error(
-                    "google-auth not installed. Please install: pip install google-auth"
-                )
-                raise
-            except Exception as e:
-                logger.error(f"Failed to get default GCP credentials: {e}")
-                raise
+            # Disable file cache
+            self.credentials, _ = default(
+                scopes=["https://www.googleapis.com/auth/cloud-platform"]
+            )
+
+            # Example of building a client with caching disabled
+            # self.compute_client = build('compute', 'v1', credentials=self.credentials, cache_discovery=False)
+
+            logger.info("Initialized GCP session with application default credentials")
+        except ImportError:
+            logger.error("google-api-python-client or google-auth not installed.")
+            raise
+        except Exception as e:
+            logger.error(f"Failed to get default GCP credentials: {e}")
+            raise
 
     @property
     def provider(self) -> CloudProvider:
@@ -114,91 +115,62 @@ class GCPSession:
 
     def _create_client(self, service: str, region: Optional[str] = None) -> Any:
         """Create appropriate GCP client"""
+
         try:
-            if service == "compute":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
+            from google.cloud import compute_v1  # type: ignore[import-untyped]
 
+            if service == "instances":
                 return compute_v1.InstancesClient(credentials=self.credentials)
-
+            elif service == "instance_group_managers":
+                return compute_v1.InstanceGroupManagersClient(
+                    credentials=self.credentials
+                )
             elif service == "compute_zones":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
-
                 return compute_v1.ZonesClient(credentials=self.credentials)
-
             elif service == "compute_regions":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
-
                 return compute_v1.RegionsClient(credentials=self.credentials)
-
             elif service == "compute_firewalls":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
-
                 return compute_v1.FirewallsClient(credentials=self.credentials)
-
             elif service == "compute_networks":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
-
                 return compute_v1.NetworksClient(credentials=self.credentials)
-
             elif service == "compute_subnetworks":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
-
                 return compute_v1.SubnetworksClient(credentials=self.credentials)
-
             elif service == "compute_backend_services":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
-
                 return compute_v1.BackendServicesClient(credentials=self.credentials)
-
             elif service == "compute_url_maps":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
-
                 return compute_v1.UrlMapsClient(credentials=self.credentials)
-
             elif service == "compute_target_proxies":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
-
                 return compute_v1.TargetHttpProxiesClient(credentials=self.credentials)
-
             elif service == "compute_forwarding_rules":
-                from google.cloud import compute_v1  # type: ignore[import-untyped]
-
                 return compute_v1.ForwardingRulesClient(credentials=self.credentials)
-
             elif service == "storage":
                 from google.cloud import storage  # type: ignore[attr-defined,import-untyped]
 
                 return storage.Client(
                     project=self.project_id, credentials=self.credentials
                 )
-
             elif service == "container":
                 from google.cloud import container_v1  # type: ignore[import-untyped]
 
                 return container_v1.ClusterManagerClient(credentials=self.credentials)
-
             elif service == "asset":
                 from google.cloud import asset_v1  # type: ignore[import-untyped]
 
                 return asset_v1.AssetServiceClient(credentials=self.credentials)
-
             elif service == "functions":
                 from google.cloud import functions_v1  # type: ignore[import-untyped]
 
                 return functions_v1.CloudFunctionsServiceClient(
                     credentials=self.credentials
                 )
-
             elif service == "iam":
                 from google.cloud import iam_v1  # type: ignore[attr-defined,import-untyped]
 
                 return iam_v1.IAMClient(credentials=self.credentials)
-
             elif service == "resource_manager":
                 from google.cloud import resourcemanager_v3  # type: ignore[import-untyped]
 
                 return resourcemanager_v3.ProjectsClient(credentials=self.credentials)
-
             else:
                 raise ValueError(f"Unknown GCP service: {service}")
 

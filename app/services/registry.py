@@ -139,15 +139,61 @@ class ExtractorRegistry:
             from app.extractors.gcp.compute import GCPComputeExtractor
             from app.extractors.gcp.storage import GCPStorageExtractor
             from app.extractors.gcp.iam import GCPIAMExtractor
+            from app.extractors.gcp.bigquery import GCPBigQueryExtractor
+            from app.extractors.gcp.cloudbuild import GCPCloudBuildExtractor
+            from app.extractors.gcp.cloudrun import GCPCloudRunExtractor
             from app.extractors.gcp.kubernetes import GCPKubernetesExtractor
             from app.extractors.gcp.networking import GCPNetworkingExtractor
+            from app.extractors.gcp.firestore import GCPFirestoreExtractor
+            from app.extractors.gcp.bigtable import GCPBigtableExtractor
+            from app.extractors.gcp.pubsub import GCPPubSubExtractor
+            from app.extractors.gcp.dataflow import GCPDataflowExtractor
+            from app.extractors.gcp.dataproc import GCPDataprocExtractor
+            from app.extractors.gcp.spanner import GCPSpannerExtractor
+            from app.extractors.gcp.memorystore import GCPMemorystoreExtractor
+            from app.extractors.gcp.dns import GCPDNSExtractor
+            from app.extractors.gcp.logging import GCPLoggingExtractor
+            from app.extractors.gcp.monitoring import GCPMonitoringExtractor
+            from app.extractors.gcp.filestore import GCPFilestoreExtractor
+            from app.extractors.gcp.iap import GCPIAPExtractor
+            from app.extractors.gcp.resource_manager import GCPResourceManagerExtractor
+            from app.extractors.gcp.billing import GCPBillingExtractor
+            from app.extractors.gcp.tasks import GCPTasksExtractor
+            from app.extractors.gcp.scheduler import GCPSchedulerExtractor
+            from app.extractors.gcp.functions import GCPFunctionsExtractor
+            from app.extractors.gcp.armor import GCPArmorExtractor
+            from app.extractors.gcp.interconnect import GCPInterconnectExtractor
+            from app.extractors.gcp.loadbalancer import GCPLoadBalancerExtractor
 
             extractor_classes = [
-                GCPComputeExtractor,  # type: ignore[type-abstract]
-                GCPStorageExtractor,  # type: ignore[type-abstract]
-                GCPIAMExtractor,  # type: ignore[type-abstract]
-                GCPKubernetesExtractor,  # type: ignore[type-abstract]
-                GCPNetworkingExtractor,  # type: ignore[type-abstract]
+                GCPComputeExtractor,
+                GCPStorageExtractor,
+                GCPIAMExtractor,
+                GCPBigQueryExtractor,
+                GCPCloudBuildExtractor,
+                GCPCloudRunExtractor,
+                GCPKubernetesExtractor,
+                GCPNetworkingExtractor,
+                GCPFirestoreExtractor,
+                GCPBigtableExtractor,
+                GCPPubSubExtractor,
+                GCPDataflowExtractor,
+                GCPDataprocExtractor,
+                GCPSpannerExtractor,
+                GCPMemorystoreExtractor,
+                GCPDNSExtractor,
+                GCPLoggingExtractor,
+                GCPMonitoringExtractor,
+                GCPFilestoreExtractor,
+                GCPIAPExtractor,
+                GCPResourceManagerExtractor,
+                GCPBillingExtractor,
+                GCPTasksExtractor,
+                GCPSchedulerExtractor,
+                GCPFunctionsExtractor,
+                GCPArmorExtractor,
+                GCPInterconnectExtractor,
+                GCPLoadBalancerExtractor,
             ]
 
             gcp_session = self.sessions[CloudProvider.GCP]
@@ -156,7 +202,7 @@ class ExtractorRegistry:
             for extractor_class in extractor_classes:
                 self._register_extractor(
                     extractor_class, gcp_session, gcp_config, CloudProvider.GCP
-                )  # type: ignore[type-abstract]
+                )
         except ImportError as e:
             logger.warning(f"GCP extractors not available: {e}")
 
