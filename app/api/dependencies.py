@@ -142,7 +142,7 @@ class RateLimiter:
     In production, use Redis-backed rate limiting.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._requests: Dict[str, list] = {}
         self._max_requests = 100
         self._time_window = 3600  # 1 hour in seconds
@@ -442,7 +442,7 @@ def get_request_context(request: Request) -> RequestContext:
 class BackgroundTaskTracker:
     """Track background tasks for monitoring"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._tasks: Dict[str, Dict[str, Any]] = {}
 
     def add_task(

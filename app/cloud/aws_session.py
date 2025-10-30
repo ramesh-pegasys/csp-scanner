@@ -40,7 +40,10 @@ class AWSSession:
         Returns:
             boto3 service client
         """
-        return self._session.client(service, region_name=region)
+        kwargs = {}
+        if region is not None:
+            kwargs["region_name"] = region
+        return self._session.client(service, **kwargs)  # type: ignore[call-overload]
 
     def list_regions(self) -> List[str]:
         """
