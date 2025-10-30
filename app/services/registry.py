@@ -105,7 +105,9 @@ class ExtractorRegistry:
             from app.extractors.azure.storage import AzureStorageExtractor
             from app.extractors.azure.network import AzureNetworkExtractor
             from app.extractors.azure.authorization import AzureAuthorizationExtractor
-            from app.extractors.azure.containerservice import AzureContainerServiceExtractor
+            from app.extractors.azure.containerservice import (
+                AzureContainerServiceExtractor,
+            )
             from app.extractors.azure.keyvault import AzureKeyVaultExtractor
             from app.extractors.azure.sql import AzureSQLExtractor
             from app.extractors.azure.web import AzureWebExtractor
