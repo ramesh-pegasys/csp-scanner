@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class APIGatewayExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract REST APIs and their components"""
         artifacts = []
-        client = self.session.client("apigateway", region_name=region)
+        client = self._get_client("apigateway", region=region)
 
         try:
             paginator = client.get_paginator("get_rest_apis")

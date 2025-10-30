@@ -3,9 +3,9 @@
 import pytest
 from types import SimpleNamespace
 from unittest.mock import Mock, patch, AsyncMock
-from fastapi.testclient import TestClient
-from app.main import app, lifespan
+from app.main import app, lifespan, root
 from app.core.config import Settings
+from app.cloud.base import CloudProvider
 
 
 @pytest.mark.asyncio
@@ -82,7 +82,14 @@ async def test_lifespan_startup():
                 aws_secret_access_key="test-secret",
                 region_name="us-east-1",
             )
-            mock_registry_class.assert_called_once_with(mock_session, mock_settings)
+            mock_registry_class.assert_called_once()
+            registry_args, registry_kwargs = mock_registry_class.call_args
+            assert registry_kwargs == {}
+            assert len(registry_args) == 2
+            sessions_arg = registry_args[0]
+            assert isinstance(sessions_arg, dict)
+            assert list(sessions_arg.keys()) == [CloudProvider.AWS]
+            assert registry_args[1] == mock_settings
             mock_transport_factory.assert_called_once_with(
                 mock_settings.transport_type, mock_settings.transport_config
             )
@@ -142,17 +149,18 @@ async def test_lifespan_shutdown_disconnect():
 def test_app_creation():
     """Test FastAPI app creation"""
     assert app.title == "Cloud Artifact Extractor"
-    assert app.description == "Extract AWS cloud artifacts and send to policy scanner"
-    assert app.version == "1.0.0"
+    assert (
+        app.description
+        == "Extract AWS and Azure cloud artifacts and send to policy scanner"
+    )
+    assert app.version == "2.0.0"
     assert len(app.routes) > 1  # Should have multiple routes
 
 
-def test_root_endpoint():
+@pytest.mark.asyncio
+async def test_root_endpoint():
     """Test root endpoint"""
-    client = TestClient(app)
-    response = client.get("/")
-    assert response.status_code == 200
-    data = response.json()
+    data = await root()
     assert data["service"] == "Cloud Artifact Extractor"
     assert data["version"] == "1.0.0"
     assert data["status"] == "running"

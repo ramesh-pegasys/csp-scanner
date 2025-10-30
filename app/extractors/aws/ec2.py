@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class EC2Extractor(BaseExtractor):
         self, region: str, filters: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Extract EC2 resources from a specific region"""
-        ec2_client = self.session.client("ec2", region_name=region)
+        ec2_client = self._get_client("ec2", region)
         artifacts = []
 
         # Extract instances
@@ -121,7 +121,7 @@ class EC2Extractor(BaseExtractor):
 
     def _get_all_regions(self) -> List[str]:
         """Get all enabled EC2 regions"""
-        ec2_client = self.session.client("ec2")
+        ec2_client = self._get_client("ec2")
         response = ec2_client.describe_regions(AllRegions=False)
         return [region["RegionName"] for region in response["Regions"]]
 
@@ -132,12 +132,18 @@ class EC2Extractor(BaseExtractor):
         resource_type = raw_data["resource_type"]
 
         if resource_type == "instance":
+            tags = {tag["Key"]: tag["Value"] for tag in resource.get("Tags", [])}
+
             return {
-                "resource_id": resource["InstanceId"],
-                "resource_type": "ec2:instance",
-                "service": "ec2",
-                "region": region,
-                "account_id": resource.get("OwnerId"),
+                "cloud_provider": "aws",
+                "resource_type": "aws:ec2:instance",
+                "metadata": self.create_metadata_object(
+                    resource_id=resource["InstanceId"],
+                    service="ec2",
+                    region=region,
+                    account_id=resource.get("OwnerId"),
+                    tags=tags,
+                ),
                 "configuration": {
                     "instance_type": resource.get("InstanceType"),
                     "state": resource.get("State", {}).get("Name"),
@@ -147,9 +153,6 @@ class EC2Extractor(BaseExtractor):
                         sg["GroupId"] for sg in resource.get("SecurityGroups", [])
                     ],
                     "iam_instance_profile": resource.get("IamInstanceProfile"),
-                    "tags": {
-                        tag["Key"]: tag["Value"] for tag in resource.get("Tags", [])
-                    },
                     "monitoring": resource.get("Monitoring", {}).get("State"),
                     "public_ip": resource.get("PublicIpAddress"),
                     "private_ip": resource.get("PrivateIpAddress"),
@@ -157,21 +160,24 @@ class EC2Extractor(BaseExtractor):
                 "raw": resource,  # Include full resource for comprehensive scanning
             }
         elif resource_type == "security-group":
+            tags = {tag["Key"]: tag["Value"] for tag in resource.get("Tags", [])}
+
             return {
-                "resource_id": resource["GroupId"],
-                "resource_type": "ec2:security-group",
-                "service": "ec2",
-                "region": region,
-                "account_id": resource.get("OwnerId"),
+                "cloud_provider": "aws",
+                "resource_type": "aws:ec2:security-group",
+                "metadata": self.create_metadata_object(
+                    resource_id=resource["GroupId"],
+                    service="ec2",
+                    region=region,
+                    account_id=resource.get("OwnerId"),
+                    tags=tags,
+                ),
                 "configuration": {
                     "group_name": resource.get("GroupName"),
                     "description": resource.get("Description"),
                     "vpc_id": resource.get("VpcId"),
                     "ingress_rules": resource.get("IpPermissions", []),
                     "egress_rules": resource.get("IpPermissionsEgress", []),
-                    "tags": {
-                        tag["Key"]: tag["Value"] for tag in resource.get("Tags", [])
-                    },
                 },
                 "raw": resource,
             }

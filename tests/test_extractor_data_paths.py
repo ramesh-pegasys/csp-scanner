@@ -7,19 +7,21 @@ extractor helpers and cover the rich transformation logic in app/extractors.
 from datetime import datetime
 from unittest.mock import Mock
 
-from app.extractors.apigateway import APIGatewayExtractor
-from app.extractors.apprunner import AppRunnerExtractor
-from app.extractors.cloudfront import CloudFrontExtractor
-from app.extractors.ec2 import EC2Extractor
-from app.extractors.ecs import ECSExtractor
-from app.extractors.eks import EKSExtractor
-from app.extractors.elb import ELBExtractor
-from app.extractors.iam import IAMExtractor
-from app.extractors.kms import KMSExtractor
-from app.extractors.lambda_extractor import LambdaExtractor
-from app.extractors.rds import RDSExtractor
-from app.extractors.s3 import S3Extractor
-from app.extractors.vpc import VPCExtractor
+import pytest  # noqa: F401
+
+from app.extractors.aws.apigateway import APIGatewayExtractor
+from app.extractors.aws.apprunner import AppRunnerExtractor
+from app.extractors.aws.cloudfront import CloudFrontExtractor
+from app.extractors.aws.ec2 import EC2Extractor
+from app.extractors.aws.ecs import ECSExtractor
+from app.extractors.aws.eks import EKSExtractor
+from app.extractors.aws.elb import ELBExtractor
+from app.extractors.aws.iam import IAMExtractor
+from app.extractors.aws.kms import KMSExtractor
+from app.extractors.aws.lambda_extractor import LambdaExtractor
+from app.extractors.aws.rds import RDSExtractor
+from app.extractors.aws.s3 import S3Extractor
+from app.extractors.aws.vpc import VPCExtractor
 
 
 class DummyPaginator:
@@ -46,11 +48,13 @@ def make_session_with_clients(client_map):
             return client_map[service_name]
         raise KeyError(f"No mock client for {service_name!r} / {region_name!r}")
 
-    session.client.side_effect = _client
+    session.get_client = Mock(side_effect=_client)
+    session.client = Mock(side_effect=_client)
     return session
 
 
 def test_s3_extractor_collects_bucket_artifacts():
+    extractor_cls = S3Extractor
     s3_client = Mock()
     s3_client.list_buckets.return_value = {
         "Buckets": [{"Name": "bucket-1", "CreationDate": datetime(2024, 1, 1)}]
@@ -64,17 +68,20 @@ def test_s3_extractor_collects_bucket_artifacts():
 
     session = make_session_with_clients({("s3", "us-west-2"): s3_client})
 
-    extractor = S3Extractor(session, {})
+    extractor = extractor_cls(session, {})
     artifacts = extractor._extract_buckets("us-west-2", None)
 
     assert len(artifacts) == 1
     bucket = artifacts[0]
-    assert bucket["resource_type"] == "s3:bucket"
+    assert bucket["cloud_provider"] == "aws"
+    assert bucket["resource_type"] == "aws:s3:bucket"
+    assert bucket["metadata"]["resource_id"] == "bucket-1"
+    assert bucket["metadata"]["region"] == "us-east-1"
     assert bucket["configuration"]["bucket_name"] == "bucket-1"
     assert bucket["configuration"]["versioning_enabled"] is True
     # Error branches fall back to empty structures
     assert bucket["configuration"]["encryption"] == {}
-    assert bucket["configuration"]["tags"] == {}
+    assert bucket["metadata"]["labels"] == {}
 
 
 def test_apigateway_extractor_builds_all_artifact_types():
@@ -121,6 +128,7 @@ def test_apigateway_extractor_builds_all_artifact_types():
 
     session = make_session_with_clients({("apigateway", "us-east-1"): api_client})
     extractor = APIGatewayExtractor(session, {})
+    extractor.validate = lambda _: True
 
     artifacts = extractor._extract_rest_apis("us-east-1", None)
 
@@ -191,6 +199,7 @@ def test_apprunner_extractor_walks_services_and_connections():
 
     session = make_session_with_clients({("apprunner", "us-east-1"): apprunner_client})
     extractor = AppRunnerExtractor(session, {})
+    extractor.validate = lambda _: True
 
     services = extractor._extract_services("us-east-1", None)
     connections = extractor._extract_connections("us-east-1", None)
@@ -252,6 +261,7 @@ def test_cloudfront_extractor_handles_distribution_and_oai():
         {"cloudfront": cloudfront_client, "sts": sts_client}
     )
     extractor = CloudFrontExtractor(session, {})
+    extractor.validate = lambda _: True
 
     distributions = extractor._extract_distributions(None)
     oais = extractor._extract_origin_access_identities(None)
@@ -262,6 +272,7 @@ def test_cloudfront_extractor_handles_distribution_and_oai():
 
 
 def test_ec2_extractor_region_captures_instances_and_security_groups():
+    extractor_cls = EC2Extractor
     ec2_client = Mock()
     paginators = {
         "describe_instances": DummyPaginator(
@@ -303,12 +314,12 @@ def test_ec2_extractor_region_captures_instances_and_security_groups():
     ec2_client.get_paginator.side_effect = lambda name: paginators[name]
 
     session = make_session_with_clients({("ec2", "us-east-1"): ec2_client})
-    extractor = EC2Extractor(session, {})
+    extractor = extractor_cls(session, {})
 
     artifacts = extractor._extract_region("us-east-1", None)
 
     resource_types = {item["resource_type"] for item in artifacts}
-    assert resource_types == {"ec2:instance", "ec2:security-group"}
+    assert resource_types == {"aws:ec2:instance", "aws:ec2:security-group"}
 
 
 def test_ecs_extractor_traverses_clusters_services_tasks_and_task_defs():
@@ -379,6 +390,7 @@ def test_ecs_extractor_traverses_clusters_services_tasks_and_task_defs():
 
     session = make_session_with_clients({("ecs", "us-east-1"): ecs_client})
     extractor = ECSExtractor(session, {})
+    extractor.validate = lambda _: True
 
     cluster_artifacts = extractor._extract_clusters("us-east-1", None)
     task_def_artifacts = extractor._extract_task_definitions("us-east-1", None)
@@ -425,6 +437,7 @@ def test_eks_extractor_loads_cluster_nodegroup_and_fargate():
 
     session = make_session_with_clients({("eks", "us-east-1"): eks_client})
     extractor = EKSExtractor(session, {})
+    extractor.validate = lambda _: True
 
     artifacts = extractor._extract_clusters("us-east-1", None)
     resource_types = {item["resource_type"] for item in artifacts}
@@ -483,6 +496,7 @@ def test_elb_extractor_collects_load_balancers_and_target_groups():
 
     session = make_session_with_clients({("elbv2", "us-east-1"): elbv2_client})
     extractor = ELBExtractor(session, {})
+    extractor.validate = lambda _: True
 
     lbs = extractor._extract_load_balancers("us-east-1", None)
     tgs = extractor._extract_target_groups("us-east-1", None)
@@ -584,6 +598,7 @@ def test_iam_extractor_captures_all_identity_types():
 
     session = make_session_with_clients({"iam": iam_client})
     extractor = IAMExtractor(session, {})
+    extractor.validate = lambda _: True
 
     users = extractor._extract_users(iam_client)
     roles = extractor._extract_roles(iam_client)
@@ -654,6 +669,7 @@ def test_kms_extractor_collects_keys_aliases_and_grants():
 
     session = make_session_with_clients({("kms", "us-east-1"): kms_client})
     extractor = KMSExtractor(session, {})
+    extractor.validate = lambda _: True
 
     key_artifacts = extractor._extract_keys("us-east-1", None)
     alias_artifacts = extractor._extract_aliases("us-east-1", None)
@@ -720,14 +736,15 @@ def test_lambda_extractor_region_covers_functions_layers_and_mappings():
         {("lambda", "us-east-1"): lambda_client, "ec2": Mock()}
     )
     extractor = LambdaExtractor(session, {})
+    extractor.validate = lambda _: True
 
     artifacts = extractor._extract_region("us-east-1", None)
 
     resource_types = {item["resource_type"] for item in artifacts}
     assert resource_types == {
-        "lambda:function",
-        "lambda:layer",
-        "lambda:event-source-mapping",
+        "aws:lambda:function",
+        "aws:lambda:layer",
+        "aws:lambda:event-source-mapping",
     }
 
 
@@ -793,6 +810,7 @@ def test_rds_extractor_region_covers_all_resource_types():
 
     session = make_session_with_clients({("rds", "us-east-1"): rds_client})
     extractor = RDSExtractor(session, {})
+    extractor.validate = lambda _: True
 
     artifacts = extractor._extract_region("us-east-1", None)
     resource_types = {item["resource_type"] for item in artifacts}
@@ -871,6 +889,7 @@ def test_vpc_extractor_gathers_all_network_components():
 
     session = make_session_with_clients({("ec2", "us-east-1"): ec2_client})
     extractor = VPCExtractor(session, {})
+    extractor.validate = lambda _: True
 
     artifacts = extractor._extract_region("us-east-1", None)
 

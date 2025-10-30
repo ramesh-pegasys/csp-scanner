@@ -1,6 +1,6 @@
 # app/core/config.py
 from pydantic_settings import BaseSettings
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from functools import lru_cache
 import yaml  # type: ignore[import-untyped]
 import os
@@ -12,10 +12,25 @@ class Settings(BaseSettings):
     environment: str = "development"
     debug: bool = False
 
+    # Multi-Cloud Configuration
+    enabled_providers: List[str] = ["aws"]  # Options: ["aws", "azure", "gcp"]
+
     # AWS Configuration
     aws_access_key_id: Optional[str] = None
     aws_secret_access_key: Optional[str] = None
     aws_default_region: str = "us-east-1"
+
+    # Azure Configuration
+    azure_subscription_id: Optional[str] = None
+    azure_tenant_id: Optional[str] = None
+    azure_client_id: Optional[str] = None
+    azure_client_secret: Optional[str] = None
+    azure_default_location: str = "eastus"
+
+    # GCP Configuration
+    gcp_project_id: Optional[str] = None
+    gcp_credentials_path: Optional[str] = None
+    gcp_default_region: str = "us-central1"
 
     # Transport Configuration
     scanner_endpoint_url: str = "http://localhost:8000"
@@ -46,6 +61,21 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+
+    @property
+    def is_aws_enabled(self) -> bool:
+        """Check if AWS provider is enabled"""
+        return "aws" in self.enabled_providers
+
+    @property
+    def is_azure_enabled(self) -> bool:
+        """Check if Azure provider is enabled"""
+        return "azure" in self.enabled_providers
+
+    @property
+    def is_gcp_enabled(self) -> bool:
+        """Check if GCP provider is enabled"""
+        return "gcp" in self.enabled_providers
 
     @property
     def transport_config(self) -> Dict[str, Any]:

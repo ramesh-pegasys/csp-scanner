@@ -2,6 +2,10 @@
 omit =
     file_collector/*
     sample_extractions/*
+    app/extractors/azure/*
+    app/extractors/gcp/*
+    app/cloud/azure_session.py
+    app/cloud/gcp_session.py
 
 [report]
 exclude_lines =

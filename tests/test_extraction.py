@@ -1,7 +1,20 @@
 """Tests for extraction endpoints"""
 
 from fastapi.testclient import TestClient
+from types import SimpleNamespace
 import uuid
+
+
+def _make_extractor(service: str, provider: str = "aws") -> SimpleNamespace:
+    return SimpleNamespace(
+        cloud_provider=provider,
+        metadata=SimpleNamespace(
+            service_name=service,
+            description=f"Extracts {service}",
+            resource_types=[service],
+            version="1.0.0",
+        ),
+    )
 
 
 def test_trigger_extraction_success(client: TestClient, mock_orchestrator):
@@ -59,9 +72,116 @@ def test_list_jobs(client: TestClient, mock_orchestrator):
 
 def test_list_services(client: TestClient, mock_registry):
     """Test listing available services"""
-    mock_registry.list_services.return_value = ["s3", "ec2", "lambda", "rds"]
+    mock_registry.get_extractors.return_value = [
+        _make_extractor("s3"),
+        _make_extractor("ec2"),
+    ]
 
     response = client.get("/api/v1/extraction/services")
     assert response.status_code == 200
     data = response.json()
-    assert data["services"] == ["s3", "ec2", "lambda", "rds"]
+    assert data["total_services"] == 2
+    assert "aws" in data["services_by_provider"]
+    service_names = [item["service"] for item in data["services_by_provider"]["aws"]]
+    assert service_names == ["s3", "ec2"]
+
+
+def test_trigger_extraction_invalid_provider(client: TestClient):
+    response = client.post(
+        "/api/v1/extraction/trigger", json={"provider": "digitalocean"}
+    )
+    assert response.status_code == 400
+    assert "Invalid provider" in response.json()["detail"]
+
+
+def test_trigger_extraction_provider_validates_services(
+    client: TestClient, mock_registry
+):
+    # Override the side_effect to return only s3 extractor
+    def _get_extractors_override(services=None, provider=None):
+        extractors = [_make_extractor("s3")]
+        if provider:
+            provider_key = getattr(provider, "value", provider)
+            extractors = [e for e in extractors if e.cloud_provider == provider_key]
+        if services:
+            extractors = [
+                e for e in extractors if e.metadata.service_name in set(services)
+            ]
+        return extractors
+
+    mock_registry.get_extractors.side_effect = _get_extractors_override
+
+    payload = {"provider": "aws", "services": ["ec2"]}
+    response = client.post("/api/v1/extraction/trigger", json=payload)
+    assert response.status_code == 400
+    body = response.json()
+    assert "Invalid services" in body["detail"]
+
+
+def test_trigger_extraction_provider_autofills_services(
+    client: TestClient, mock_registry, mock_orchestrator
+):
+    mock_registry.get_extractors.return_value = [
+        _make_extractor("s3"),
+        _make_extractor("ec2"),
+    ]
+
+    response = client.post("/api/v1/extraction/trigger", json={"provider": "aws"})
+    assert response.status_code == 200
+    args = mock_orchestrator.run_extraction.await_args.kwargs
+    assert args["services"] == ["s3", "ec2"]
+
+
+def test_list_services_invalid_provider(client: TestClient):
+    response = client.get(
+        "/api/v1/extraction/services", params={"provider": "digitalocean"}
+    )
+    assert response.status_code == 400
+
+
+def test_list_services_filtered_by_provider(client: TestClient, mock_registry):
+    aws_extractor = _make_extractor("s3", provider="aws")
+    azure_extractor = _make_extractor("compute", provider="azure")
+
+    def _side_effect(services=None, provider=None):
+        provider_value = getattr(provider, "value", provider)
+        data = [aws_extractor, azure_extractor]
+        if provider_value:
+            data = [e for e in data if e.cloud_provider == provider_value]
+        if services:
+            svc = set(services)
+            data = [e for e in data if e.metadata.service_name in svc]
+        return data
+
+    mock_registry.get_extractors.side_effect = _side_effect
+
+    response = client.get("/api/v1/extraction/services", params={"provider": "azure"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_services"] == 1
+    assert list(data["services_by_provider"].keys()) == ["azure"]
+    assert data["services_by_provider"]["azure"][0]["service"] == "compute"
+
+
+def test_list_providers(client: TestClient, mock_registry):
+    # Override the side_effect to return both aws and azure extractors
+    def _get_extractors_override(services=None, provider=None):
+        extractors = [
+            _make_extractor("s3", "aws"),
+            _make_extractor("compute", "azure"),
+        ]
+        if provider:
+            provider_key = getattr(provider, "value", provider)
+            extractors = [e for e in extractors if e.cloud_provider == provider_key]
+        if services:
+            extractors = [
+                e for e in extractors if e.metadata.service_name in set(services)
+            ]
+        return extractors
+
+    mock_registry.get_extractors.side_effect = _get_extractors_override
+
+    response = client.get("/api/v1/extraction/providers")
+    assert response.status_code == 200
+    providers = set(response.json()["providers"])
+    assert providers == {"aws", "azure"}

@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ class IAMExtractor(BaseExtractor):
         self, region: Optional[str] = None, filters: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """Extract IAM resources"""
-        iam_client = self.session.client("iam")
+        iam_client = self._get_client("iam")
         artifacts = []
 
         # Extract different IAM resource types concurrently

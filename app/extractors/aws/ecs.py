@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class ECSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract ECS clusters and their services/tasks"""
         artifacts = []
-        client = self.session.client("ecs", region_name=region)
+        client = self._get_client("ecs", region=region)
 
         try:
             # List clusters
@@ -178,7 +178,7 @@ class ECSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract ECS task definitions"""
         artifacts = []
-        client = self.session.client("ecs", region_name=region)
+        client = self._get_client("ecs", region=region)
 
         try:
             paginator = client.get_paginator("list_task_definitions")
