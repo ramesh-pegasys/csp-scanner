@@ -4,10 +4,10 @@
 # requested for review.
 
 # Global owners - all code
-* @ramesh
+* @ramesh @rnsv
 
 # Core application code
-/app/ @ramesh
+/app/ @ramesh @rnsv
 /app/**/*.py @ramesh
 
 # Tests
