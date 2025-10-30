@@ -77,7 +77,7 @@ export AWS_PROFILE="production"
 
 Uses the specified profile from `~/.aws/credentials`.
 
-### Required IAM Permissions
+### Required Permissions
 
 For comprehensive scanning, your credentials should have read-only access to these services:
 
@@ -334,7 +334,7 @@ export GCP_PROJECT_ID="your-project-id"
 
 When running on GCP resources (Compute Engine, Cloud Run, etc.), ADC automatically uses the instance's service account.
 
-### Required IAM Permissions
+### Required Permissions
 
 **Compute Engine:**
 - `compute.instances.list`
