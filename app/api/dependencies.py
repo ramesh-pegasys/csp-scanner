@@ -105,7 +105,7 @@ async def verify_api_key(
         )
 
     if x_api_key != expected_key:
-        logger.warning(f"Invalid API key provided: {x_api_key[:8]}...")
+        logger.warning("Invalid API key provided")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API key",
