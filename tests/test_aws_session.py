@@ -41,7 +41,7 @@ def test_aws_session_get_client_no_region(mock_boto_session):
     client = aws_session.get_client("s3")
 
     assert client == mock_client
-    mock_boto_session.client.assert_called_once_with("s3", region_name=None)
+    mock_boto_session.client.assert_called_once_with("s3")
 
 
 def test_aws_session_list_regions_success(mock_boto_session):

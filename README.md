@@ -25,119 +25,103 @@ enabled_providers:
   - gcp
 ```
 
-For detailed setup instructions:
-- **AWS Setup**: See AWS Credentials Setup section below
-- **Azure Setup**: See [AZURE_SETUP.md](./AZURE_SETUP.md)
-- **GCP Setup**: See [GCP_SETUP.md](./GCP_SETUP.md)
+For detailed setup instructions see the consolidated provider guide in the docs: [Cloud Providers Guide](./docs/cloud-providers.md)
 
-## AWS Credentials Setup
+- **AWS Setup**: [Amazon Web Services (AWS)](./docs/cloud-providers.md#amazon-web-services-aws)
+- **Azure Setup**: [Microsoft Azure](./docs/cloud-providers.md#microsoft-azure)
+- **GCP Setup**: [Google Cloud Platform (GCP)](./docs/cloud-providers.md#google-cloud-platform-gcp)
 
-The application requires AWS credentials to access and extract data from AWS services. Here are the different ways to provide AWS credentials:
+## Cloud Provider Credentials Setup
 
-### 1. Using Environment Variables
+The application requires credentials to access and extract data from your cloud providers. Below is a quick reference for each provider - for comprehensive setup instructions, see the [Cloud Providers Guide](./docs/cloud-providers.md).
 
-Set environment variables before running the application:
+### AWS Credentials Setup
 
+**Quick Setup with Environment Variables:**
 ```bash
 export AWS_ACCESS_KEY_ID="your-access-key-id"
 export AWS_SECRET_ACCESS_KEY="your-secret-access-key"
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
-### 2. Using a .env File
+**Alternative Methods:**
+- AWS credentials file (`~/.aws/credentials`)
+- AWS CLI configuration (`aws configure`)
+- IAM roles (recommended for production on EC2/ECS/EKS)
+- `.env` file in project root
 
-Create a `.env` file in the project root directory:
-
-```bash
-# .env
-AWS_ACCESS_KEY_ID=your-access-key-id
-AWS_SECRET_ACCESS_KEY=your-secret-access-key
-AWS_DEFAULT_REGION=us-east-1
-```
-
-### 3. Using AWS Credentials File
-
-Create or update the AWS credentials file at `~/.aws/credentials`:
-
-```ini
-[default]
-aws_access_key_id = your-access-key-id
-aws_secret_access_key = your-secret-access-key
-region = us-east-1
-```
-
-### 4. Using AWS CLI Configuration
-
-If you have the AWS CLI installed, configure credentials:
-
-```bash
-aws configure
-```
-
-This will prompt you to enter your AWS Access Key ID, Secret Access Key, default region, and output format.
-
-### Creating AWS Credentials
-
-#### Option A: IAM User (for development/testing)
-1. Go to AWS IAM Console
-2. Create a new IAM user
-3. Attach appropriate policies (e.g., `ReadOnlyAccess` or specific service read permissions)
-4. Generate access keys
-5. Use the Access Key ID and Secret Access Key
-
-#### Option B: IAM Role (recommended for production)
-- Use IAM roles if running on EC2/ECS/EKS
-- The application will automatically use the role's credentials
-
-### Required Permissions
-
-For the CSP scanner to work properly, your AWS credentials should have read-only access to these services:
-- EC2, S3, RDS, Lambda, VPC, CloudFront, API Gateway, ELB, ECS, EKS, App Runner, KMS, IAM
-
-Example IAM policy:
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "ec2:Describe*",
-                "s3:List*",
-                "s3:Get*",
-                "rds:Describe*",
-                "lambda:List*",
-                "lambda:Get*",
-                "vpc:Describe*",
-                "cloudfront:List*",
-                "apigateway:GET",
-                "elasticloadbalancing:Describe*",
-                "ecs:Describe*",
-                "ecs:List*",
-                "eks:Describe*",
-                "eks:List*",
-                "apprunner:Describe*",
-                "apprunner:List*",
-                "kms:Describe*",
-                "kms:List*",
-                "iam:List*",
-                "iam:Get*"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-```
-
-### Verification
-
-After setting up credentials, verify they work by running:
-
+**Verification:**
 ```bash
 python -c "import boto3; print(boto3.Session().get_credentials())"
 ```
 
-Or start the application and check the logs for any authentication errors.
+**Required Permissions:** Read-only access to EC2, S3, RDS, Lambda, VPC, CloudFront, API Gateway, ELB, ECS, EKS, App Runner, KMS, IAM
+
+See [AWS Setup Guide](./docs/cloud-providers.md#amazon-web-services-aws) for IAM policies and detailed instructions.
+
+### Azure Credentials Setup
+
+**Quick Setup with Environment Variables:**
+```bash
+export AZURE_SUBSCRIPTION_ID="your-subscription-id"
+export AZURE_TENANT_ID="your-tenant-id"
+export AZURE_CLIENT_ID="your-client-id"
+export AZURE_CLIENT_SECRET="your-client-secret"
+export AZURE_DEFAULT_LOCATION="eastus"
+```
+
+**Alternative Methods:**
+- Azure CLI authentication (`az login`)
+- DefaultAzureCredential (automatic credential chain)
+- Managed Identity (recommended for production on Azure VMs/App Services)
+- `.env` file in project root
+
+**Create Service Principal:**
+```bash
+az ad sp create-for-rbac --name "csp-scanner-sp" --role "Reader" --scopes /subscriptions/{subscription-id}
+```
+
+**Verification:**
+```bash
+az account show
+```
+
+**Required Permissions:** Reader role at subscription level or custom role with read access to VMs, Storage, Network, Web, SQL, AKS, Key Vault
+
+See [Azure Setup Guide](./docs/cloud-providers.md#microsoft-azure) for service principal creation and detailed instructions.
+
+### GCP Credentials Setup
+
+**Quick Setup with Environment Variables:**
+```bash
+export GCP_PROJECT_ID="your-project-id"
+export GCP_CREDENTIALS_PATH="/path/to/service-account-key.json"
+export GCP_DEFAULT_REGION="us-central1"
+```
+
+**Alternative Methods:**
+- Application Default Credentials (`gcloud auth application-default login`)
+- Service account attached to Compute Engine/Cloud Run (recommended for production)
+- `.env` file in project root
+
+**Create Service Account:**
+```bash
+gcloud iam service-accounts create csp-scanner \
+    --description="Service account for CSP Scanner" \
+    --display-name="CSP Scanner"
+
+gcloud iam service-accounts keys create csp-scanner-key.json \
+    --iam-account=csp-scanner@PROJECT_ID.iam.gserviceaccount.com
+```
+
+**Verification:**
+```bash
+gcloud compute instances list --project=your-project-id
+```
+
+**Required Permissions:** Viewer roles for Compute Engine, Cloud Storage, and Resource Manager
+
+See [GCP Setup Guide](./docs/cloud-providers.md#google-cloud-platform-gcp) for IAM roles and detailed instructions.
 
 ## Configuration
 
