@@ -159,3 +159,180 @@ def test_register_default_extractors(monkeypatch, registry):
         assert f"aws:{service_name}" in services
 
     assert len(registry.get_extractors()) == len(services)
+
+
+def test_registry_with_boto3_session_backward_compat(tmp_path):
+    """Test registry with boto3.Session for backward compatibility"""
+    import boto3
+    from unittest.mock import MagicMock
+    
+    mock_boto_session = MagicMock(spec=boto3.Session)
+    settings = Settings()
+    
+    with patch.object(
+        ExtractorRegistry, "_register_default_extractors", lambda self: None
+    ):
+        reg = ExtractorRegistry(mock_boto_session, settings)
+    
+    # Should have wrapped the boto3 session as AWS session
+    from app.cloud.base import CloudProvider
+    assert CloudProvider.AWS in reg.sessions
+
+
+def test_registry_with_cloud_session_dict():
+    """Test registry with CloudSession dict"""
+    from app.cloud.base import CloudProvider
+    
+    aws_session = SimpleNamespace()
+    azure_session = SimpleNamespace()
+    
+    sessions = {
+        CloudProvider.AWS: aws_session,
+        CloudProvider.AZURE: azure_session,
+    }
+    
+    settings = Settings()
+    with patch.object(
+        ExtractorRegistry, "_register_default_extractors", lambda self: None
+    ):
+        reg = ExtractorRegistry(sessions, settings)
+    
+    assert CloudProvider.AWS in reg.sessions
+    assert CloudProvider.AZURE in reg.sessions
+    assert reg.sessions[CloudProvider.AWS] == aws_session
+    assert reg.sessions[CloudProvider.AZURE] == azure_session
+
+
+def test_register_azure_extractors_import_error(registry, monkeypatch, caplog):
+    """Test Azure extractor registration when imports fail"""
+    from app.cloud.base import CloudProvider
+    
+    # Add Azure session
+    registry.sessions[CloudProvider.AZURE] = SimpleNamespace()
+    
+    # Mock the import to fail
+    def mock_import(name, *args, **kwargs):
+        if "azure" in name:
+            raise ImportError("Azure SDK not installed")
+        return __import__(name, *args, **kwargs)
+    
+    with caplog.at_level("WARNING"):
+        with patch("builtins.__import__", side_effect=mock_import):
+            registry._register_azure_extractors()
+    
+    assert any("Azure extractors not available" in message for message in caplog.messages)
+
+
+def test_register_gcp_extractors_import_error(registry, monkeypatch, caplog):
+    """Test GCP extractor registration when imports fail"""
+    from app.cloud.base import CloudProvider
+    
+    # Add GCP session
+    registry.sessions[CloudProvider.GCP] = SimpleNamespace()
+    
+    # Mock the import to fail
+    def mock_import(name, *args, **kwargs):
+        if "gcp" in name:
+            raise ImportError("GCP SDK not installed")
+        return __import__(name, *args, **kwargs)
+    
+    with caplog.at_level("WARNING"):
+        with patch("builtins.__import__", side_effect=mock_import):
+            registry._register_gcp_extractors()
+    
+    assert any("GCP extractors not available" in message for message in caplog.messages)
+
+
+def test_get_extractor_with_provider(registry):
+    """Test getting extractor with specific provider"""
+    from app.cloud.base import CloudProvider
+    
+    registry.register(DummyExtractor)
+    
+    # Get with provider specified
+    extractor = registry.get("dummy", provider=CloudProvider.AWS)
+    assert extractor is not None
+    assert extractor.metadata.service_name == "dummy"
+    
+    # Try to get with wrong provider
+    extractor = registry.get("dummy", provider=CloudProvider.AZURE)
+    assert extractor is None
+
+
+def test_get_extractors_filtered_by_provider(registry):
+    """Test getting extractors filtered by provider"""
+    from app.cloud.base import CloudProvider
+    from unittest.mock import MagicMock
+    
+    # Create extractors for different providers
+    class AzureDummyExtractor(DummyExtractor):
+        def get_metadata(self) -> ExtractorMetadata:
+            return ExtractorMetadata(
+                service_name="azuredummy",
+                version="1.0",
+                description="Azure dummy",
+                resource_types=["azuredummy"],
+                cloud_provider="azure",
+            )
+    
+    registry.register(DummyExtractor)
+    
+    # Manually add Azure extractor
+    mock_azure_session = MagicMock()
+    registry.sessions[CloudProvider.AZURE] = mock_azure_session
+    azure_extractor = AzureDummyExtractor(mock_azure_session, {})
+    registry._extractors["azure:azuredummy"] = azure_extractor
+    
+    # Get all extractors
+    all_extractors = registry.get_extractors()
+    assert len(all_extractors) == 2
+    
+    # Get only AWS extractors
+    aws_extractors = registry.get_extractors(provider=CloudProvider.AWS)
+    assert len(aws_extractors) == 1
+    assert aws_extractors[0].metadata.service_name == "dummy"
+    
+    # Get only Azure extractors
+    azure_extractors = registry.get_extractors(provider=CloudProvider.AZURE)
+    assert len(azure_extractors) == 1
+    assert azure_extractors[0].metadata.service_name == "azuredummy"
+
+
+def test_list_services_filtered_by_provider(registry):
+    """Test listing services filtered by provider"""
+    from app.cloud.base import CloudProvider
+    from unittest.mock import MagicMock
+    
+    class AzureDummyExtractor(DummyExtractor):
+        def get_metadata(self) -> ExtractorMetadata:
+            return ExtractorMetadata(
+                service_name="azuredummy",
+                version="1.0",
+                description="Azure dummy",
+                resource_types=["azuredummy"],
+                cloud_provider="azure",
+            )
+    
+    registry.register(DummyExtractor)
+    
+    # Manually add Azure extractor
+    mock_azure_session = MagicMock()
+    registry.sessions[CloudProvider.AZURE] = mock_azure_session
+    azure_extractor = AzureDummyExtractor(mock_azure_session, {})
+    registry._extractors["azure:azuredummy"] = azure_extractor
+    
+    # List all services
+    all_services = registry.list_services()
+    assert len(all_services) == 2
+    assert "aws:dummy" in all_services
+    assert "azure:azuredummy" in all_services
+    
+    # List only AWS services
+    aws_services = registry.list_services(provider=CloudProvider.AWS)
+    assert len(aws_services) == 1
+    assert "aws:dummy" in aws_services
+    
+    # List only Azure services
+    azure_services = registry.list_services(provider=CloudProvider.AZURE)
+    assert len(azure_services) == 1
+    assert "azure:azuredummy" in azure_services

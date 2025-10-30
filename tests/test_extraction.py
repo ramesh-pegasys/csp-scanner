@@ -95,7 +95,19 @@ def test_trigger_extraction_invalid_provider(client: TestClient):
 def test_trigger_extraction_provider_validates_services(
     client: TestClient, mock_registry
 ):
-    mock_registry.get_extractors.return_value = [_make_extractor("s3")]
+    # Override the side_effect to return only s3 extractor
+    def _get_extractors_override(services=None, provider=None):
+        extractors = [_make_extractor("s3")]
+        if provider:
+            provider_key = getattr(provider, "value", provider)
+            extractors = [e for e in extractors if e.cloud_provider == provider_key]
+        if services:
+            extractors = [
+                e for e in extractors if e.metadata.service_name in set(services)
+            ]
+        return extractors
+    
+    mock_registry.get_extractors.side_effect = _get_extractors_override
 
     payload = {"provider": "aws", "services": ["ec2"]}
     response = client.post("/api/v1/extraction/trigger", json=payload)
@@ -148,10 +160,22 @@ def test_list_services_filtered_by_provider(client: TestClient, mock_registry):
 
 
 def test_list_providers(client: TestClient, mock_registry):
-    mock_registry.get_extractors.return_value = [
-        _make_extractor("s3", "aws"),
-        _make_extractor("compute", "azure"),
-    ]
+    # Override the side_effect to return both aws and azure extractors
+    def _get_extractors_override(services=None, provider=None):
+        extractors = [
+            _make_extractor("s3", "aws"),
+            _make_extractor("compute", "azure"),
+        ]
+        if provider:
+            provider_key = getattr(provider, "value", provider)
+            extractors = [e for e in extractors if e.cloud_provider == provider_key]
+        if services:
+            extractors = [
+                e for e in extractors if e.metadata.service_name in set(services)
+            ]
+        return extractors
+    
+    mock_registry.get_extractors.side_effect = _get_extractors_override
 
     response = client.get("/api/v1/extraction/providers")
     assert response.status_code == 200
