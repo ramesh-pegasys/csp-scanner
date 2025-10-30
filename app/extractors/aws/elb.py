@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class ELBExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract load balancers (ALB, NLB, CLB)"""
         artifacts = []
-        client = self._get_client("elbv2", region_name=region)
+        client = self._get_client("elbv2", region=region)
 
         try:
             paginator = client.get_paginator("describe_load_balancers")
@@ -116,7 +116,7 @@ class ELBExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract target groups"""
         artifacts = []
-        client = self._get_client("elbv2", region_name=region)
+        client = self._get_client("elbv2", region=region)
 
         try:
             paginator = client.get_paginator("describe_target_groups")

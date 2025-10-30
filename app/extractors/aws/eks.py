@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class EKSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract EKS clusters and their associated resources"""
         artifacts = []
-        client = self._get_client("eks", region_name=region)
+        client = self._get_client("eks", region=region)
 
         try:
             paginator = client.get_paginator("list_clusters")

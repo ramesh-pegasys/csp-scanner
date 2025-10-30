@@ -31,6 +31,7 @@ class BaseExtractor(ABC):
         self, session: Union[boto3.Session, "CloudSession"], config: Dict[str, Any]
     ):
         # Support both old boto3.Session and new CloudSession for backward compatibility
+        self.session: "CloudSession"
         if isinstance(session, boto3.Session):
             # Wrap boto3 session for backward compatibility
             from app.cloud.aws_session import AWSSession

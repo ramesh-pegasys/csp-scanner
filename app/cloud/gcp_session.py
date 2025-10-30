@@ -166,7 +166,7 @@ class GCPSession:
                 return compute_v1.ForwardingRulesClient(credentials=self.credentials)
 
             elif service == "storage":
-                from google.cloud import storage  # type: ignore[import-untyped]
+                from google.cloud import storage  # type: ignore[attr-defined,import-untyped]
 
                 return storage.Client(
                     project=self.project_id, credentials=self.credentials
@@ -190,7 +190,7 @@ class GCPSession:
                 )
 
             elif service == "iam":
-                from google.cloud import iam_v1  # type: ignore[import-untyped]
+                from google.cloud import iam_v1  # type: ignore[attr-defined,import-untyped]
 
                 return iam_v1.IAMClient(credentials=self.credentials)
 

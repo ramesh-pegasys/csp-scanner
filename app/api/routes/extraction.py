@@ -1,6 +1,6 @@
 # app/api/routes/extraction.py
 from fastapi import APIRouter, HTTPException, Request
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 from app.models.job import Job
 from app.cloud.base import CloudProvider
@@ -9,9 +9,9 @@ router = APIRouter()
 
 
 class ExtractionRequest(BaseModel):
-    provider: Optional[
-        str
-    ] = None  # Cloud provider filter (None = all enabled providers)
+    provider: Optional[str] = (
+        None  # Cloud provider filter (None = all enabled providers)
+    )
     services: Optional[List[str]] = None
     regions: Optional[List[str]] = None
     filters: Optional[dict] = None
@@ -120,7 +120,7 @@ async def list_services(app_request: Request, provider: Optional[str] = None):
     extractors = registry.get_extractors(provider=provider_filter)
 
     # Group by provider
-    services_by_provider = {}
+    services_by_provider: Dict[str, List[Dict[str, Any]]] = {}
     for extractor in extractors:
         provider_key = extractor.cloud_provider
         if provider_key not in services_by_provider:

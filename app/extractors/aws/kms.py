@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ class KMSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract KMS keys"""
         artifacts = []
-        client = self._get_client("kms", region_name=region)
+        client = self._get_client("kms", region=region)
 
         try:
             paginator = client.get_paginator("list_keys")
@@ -157,7 +157,7 @@ class KMSExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract KMS aliases"""
         artifacts = []
-        client = self._get_client("kms", region_name=region)
+        client = self._get_client("kms", region=region)
 
         try:
             paginator = client.get_paginator("list_aliases")

@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class VPCExtractor(BaseExtractor):
         self, region: str, filters: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Extract VPC resources from a specific region"""
-        ec2_client = self._get_client("ec2", region_name=region)
+        ec2_client = self._get_client("ec2", region=region)
         artifacts = []
 
         # Extract VPCs

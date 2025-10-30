@@ -91,7 +91,7 @@ class GCPIAMExtractor(BaseExtractor):
         """Extract service accounts"""
         resources = []
         try:
-            from google.cloud import iam_v1  # type: ignore[import-untyped]
+            from google.cloud import iam_v1  # type: ignore[attr-defined,import-untyped]
 
             client = gcp_session.get_client("iam")
             parent = f"projects/{gcp_session.project_id}"
@@ -127,8 +127,7 @@ class GCPIAMExtractor(BaseExtractor):
             client = gcp_session.get_client("resource_manager")
             resource = f"projects/{gcp_session.project_id}"
 
-            request = resourcemanager_v3.GetIamPolicyRequest(resource=resource)
-            policy = client.get_iam_policy(request=request)
+            policy = client.get_iam_policy(request={"resource": resource})
 
             policy_dict = {
                 "resource_type": "gcp:iam:iam-policy",
@@ -173,7 +172,7 @@ class GCPIAMExtractor(BaseExtractor):
         """Extract custom roles"""
         resources = []
         try:
-            from google.cloud import iam_v1  # type: ignore[import-untyped]
+            from google.cloud import iam_v1  # type: ignore[attr-defined,import-untyped]
 
             client = gcp_session.get_client("iam")
             parent = f"projects/{gcp_session.project_id}"

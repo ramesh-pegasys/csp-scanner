@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class AppRunnerExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract App Runner services"""
         artifacts = []
-        client = self._get_client("apprunner", region_name=region)
+        client = self._get_client("apprunner", region=region)
 
         try:
             # App Runner list_services doesn't support pagination
@@ -100,7 +100,7 @@ class AppRunnerExtractor(BaseExtractor):
     ) -> List[Dict[str, Any]]:
         """Extract App Runner connections"""
         artifacts = []
-        client = self._get_client("apprunner", region_name=region)
+        client = self._get_client("apprunner", region=region)
 
         try:
             # App Runner list_connections doesn't support pagination

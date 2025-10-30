@@ -87,34 +87,36 @@ class AzureKeyVaultExtractor(BaseExtractor):
 
         # Build configuration
         config: Dict[str, Any] = {
-            "vault_uri": resource.properties.vault_uri
-            if hasattr(resource, "properties") and resource.properties
-            else None,
-            "enabled_for_deployment": getattr(
-                resource.properties, "enabled_for_deployment", False
-            )
-            if hasattr(resource, "properties") and resource.properties
-            else False,
-            "enabled_for_disk_encryption": getattr(
-                resource.properties, "enabled_for_disk_encryption", False
-            )
-            if hasattr(resource, "properties") and resource.properties
-            else False,
-            "enabled_for_template_deployment": getattr(
-                resource.properties, "enabled_for_template_deployment", False
-            )
-            if hasattr(resource, "properties") and resource.properties
-            else False,
-            "enable_soft_delete": getattr(
-                resource.properties, "enable_soft_delete", True
-            )
-            if hasattr(resource, "properties") and resource.properties
-            else True,
-            "soft_delete_retention_in_days": getattr(
-                resource.properties, "soft_delete_retention_in_days", 90
-            )
-            if hasattr(resource, "properties") and resource.properties
-            else 90,
+            "vault_uri": (
+                resource.properties.vault_uri
+                if hasattr(resource, "properties") and resource.properties
+                else None
+            ),
+            "enabled_for_deployment": (
+                getattr(resource.properties, "enabled_for_deployment", False)
+                if hasattr(resource, "properties") and resource.properties
+                else False
+            ),
+            "enabled_for_disk_encryption": (
+                getattr(resource.properties, "enabled_for_disk_encryption", False)
+                if hasattr(resource, "properties") and resource.properties
+                else False
+            ),
+            "enabled_for_template_deployment": (
+                getattr(resource.properties, "enabled_for_template_deployment", False)
+                if hasattr(resource, "properties") and resource.properties
+                else False
+            ),
+            "enable_soft_delete": (
+                getattr(resource.properties, "enable_soft_delete", True)
+                if hasattr(resource, "properties") and resource.properties
+                else True
+            ),
+            "soft_delete_retention_in_days": (
+                getattr(resource.properties, "soft_delete_retention_in_days", 90)
+                if hasattr(resource, "properties") and resource.properties
+                else 90
+            ),
         }
 
         # Add SKU information

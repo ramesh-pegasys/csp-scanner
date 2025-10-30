@@ -218,22 +218,24 @@ class AzureSQLExtractor(BaseExtractor):
             # Add SKU information
             if hasattr(resource, "sku") and resource.sku:
                 config["sku"] = {
-                    "name": resource.sku.name
-                    if hasattr(resource.sku, "name")
-                    else None,
-                    "tier": resource.sku.tier
-                    if hasattr(resource.sku, "tier")
-                    else None,
-                    "capacity": resource.sku.capacity
-                    if hasattr(resource.sku, "capacity")
-                    else None,
+                    "name": (
+                        resource.sku.name if hasattr(resource.sku, "name") else None
+                    ),
+                    "tier": (
+                        resource.sku.tier if hasattr(resource.sku, "tier") else None
+                    ),
+                    "capacity": (
+                        resource.sku.capacity
+                        if hasattr(resource.sku, "capacity")
+                        else None
+                    ),
                 }
 
             # Add security settings
             if hasattr(resource, "default_secondary_location"):
-                config[
-                    "default_secondary_location"
-                ] = resource.default_secondary_location
+                config["default_secondary_location"] = (
+                    resource.default_secondary_location
+                )
 
             if hasattr(resource, "zone_redundant"):
                 config["zone_redundant"] = resource.zone_redundant

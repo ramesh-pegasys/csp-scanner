@@ -2,7 +2,7 @@
 from typing import List, Dict, Any, Optional, cast
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from .base import BaseExtractor, ExtractorMetadata
+from app.extractors.base import BaseExtractor, ExtractorMetadata
 import logging
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ class RDSExtractor(BaseExtractor):
         self, region: str, filters: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Extract RDS resources from a specific region"""
-        rds_client = self._get_client("rds", region_name=region)
+        rds_client = self._get_client("rds", region=region)
         artifacts = []
 
         # Extract DB instances
