@@ -114,9 +114,7 @@ def mock_registry():
             provider_key = getattr(provider, "value", provider)
             results = [e for e in results if e.cloud_provider == provider_key]
         if services:
-            results = [
-                e for e in results if e.metadata.service_name in set(services)
-            ]
+            results = [e for e in results if e.metadata.service_name in set(services)]
         return results
 
     mock.get_extractors = Mock(side_effect=_get_extractors)

@@ -87,7 +87,9 @@ def test_list_services(client: TestClient, mock_registry):
 
 
 def test_trigger_extraction_invalid_provider(client: TestClient):
-    response = client.post("/api/v1/extraction/trigger", json={"provider": "digitalocean"})
+    response = client.post(
+        "/api/v1/extraction/trigger", json={"provider": "digitalocean"}
+    )
     assert response.status_code == 400
     assert "Invalid provider" in response.json()["detail"]
 
@@ -106,7 +108,7 @@ def test_trigger_extraction_provider_validates_services(
                 e for e in extractors if e.metadata.service_name in set(services)
             ]
         return extractors
-    
+
     mock_registry.get_extractors.side_effect = _get_extractors_override
 
     payload = {"provider": "aws", "services": ["ec2"]}
@@ -131,7 +133,9 @@ def test_trigger_extraction_provider_autofills_services(
 
 
 def test_list_services_invalid_provider(client: TestClient):
-    response = client.get("/api/v1/extraction/services", params={"provider": "digitalocean"})
+    response = client.get(
+        "/api/v1/extraction/services", params={"provider": "digitalocean"}
+    )
     assert response.status_code == 400
 
 
@@ -174,7 +178,7 @@ def test_list_providers(client: TestClient, mock_registry):
                 e for e in extractors if e.metadata.service_name in set(services)
             ]
         return extractors
-    
+
     mock_registry.get_extractors.side_effect = _get_extractors_override
 
     response = client.get("/api/v1/extraction/providers")

@@ -122,8 +122,6 @@ class GCPIAMExtractor(BaseExtractor):
         """Extract project-level IAM policy"""
         resources = []
         try:
-            from google.cloud import resourcemanager_v3  # type: ignore[import-untyped]
-
             client = gcp_session.get_client("resource_manager")
             resource = f"projects/{gcp_session.project_id}"
 
