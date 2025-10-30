@@ -82,7 +82,7 @@ def is_gcp_api_enabled(
             return data.get("state") == "ENABLED"
         else:
             logger.warning(
-                f"Failed to check API {api_service} for project {project_id}: {resp.text}"
+                f"Failed to check API {api_service} for project {project_id}. Status: {resp.status_code}"
             )
             return False
     except Exception as e:
