@@ -1,6 +1,7 @@
 import os
 import sys
 import uuid
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -86,6 +87,39 @@ def mock_registry():
     """Mock registry fixture"""
     mock = Mock()
     mock.list_services = Mock(return_value=["s3", "ec2", "lambda"])
+    extractors = [
+        SimpleNamespace(
+            cloud_provider="aws",
+            metadata=SimpleNamespace(
+                service_name="s3",
+                description="Extracts S3 buckets",
+                resource_types=["bucket"],
+                version="1.0.0",
+            ),
+        ),
+        SimpleNamespace(
+            cloud_provider="aws",
+            metadata=SimpleNamespace(
+                service_name="ec2",
+                description="Extracts EC2 instances",
+                resource_types=["instance"],
+                version="1.0.0",
+            ),
+        ),
+    ]
+
+    def _get_extractors(services=None, provider=None):
+        results = extractors
+        if provider:
+            provider_key = getattr(provider, "value", provider)
+            results = [e for e in results if e.cloud_provider == provider_key]
+        if services:
+            results = [
+                e for e in results if e.metadata.service_name in set(services)
+            ]
+        return results
+
+    mock.get_extractors = Mock(side_effect=_get_extractors)
     return mock
 
 

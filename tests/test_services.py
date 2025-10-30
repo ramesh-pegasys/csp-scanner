@@ -2,6 +2,7 @@
 
 import pytest
 from unittest.mock import Mock, patch, AsyncMock
+from app.cloud.base import CloudProvider
 from app.services.registry import ExtractorRegistry
 from app.services.orchestrator import ExtractionOrchestrator
 from app.services.scheduler import SchedulerService
@@ -35,8 +36,9 @@ def test_registry_initialization(mock_session, mock_config):
     """Test registry initialization"""
     with patch("app.services.registry.ExtractorRegistry._register_default_extractors"):
         registry = ExtractorRegistry(mock_session, mock_config)
-        assert registry.session == mock_session
         assert registry.config == mock_config
+        assert isinstance(registry.sessions, dict)
+        assert CloudProvider.AWS in registry.sessions
         assert isinstance(registry._extractors, dict)
 
 
@@ -47,7 +49,7 @@ def test_registry_get_extractor(mock_session, mock_config):
         # Manually add an extractor
         mock_extractor = Mock()
         mock_extractor.metadata.service_name = "ec2"
-        registry._extractors["ec2"] = mock_extractor
+        registry._extractors["aws:ec2"] = mock_extractor
 
         extractor = registry.get("ec2")
         assert extractor == mock_extractor
@@ -68,15 +70,15 @@ def test_registry_list_services(mock_session, mock_config):
         # Manually add extractors
         mock_ec2 = Mock()
         mock_ec2.metadata.service_name = "ec2"
-        registry._extractors["ec2"] = mock_ec2
+        registry._extractors["aws:ec2"] = mock_ec2
 
         mock_s3 = Mock()
         mock_s3.metadata.service_name = "s3"
-        registry._extractors["s3"] = mock_s3
+        registry._extractors["aws:s3"] = mock_s3
 
         services = registry.list_services()
-        assert "ec2" in services
-        assert "s3" in services
+        assert "aws:ec2" in services
+        assert "aws:s3" in services
 
 
 def test_registry_get_extractors(mock_session, mock_config):
@@ -86,11 +88,11 @@ def test_registry_get_extractors(mock_session, mock_config):
         # Manually add extractors
         mock_ec2 = Mock()
         mock_ec2.metadata.service_name = "ec2"
-        registry._extractors["ec2"] = mock_ec2
+        registry._extractors["aws:ec2"] = mock_ec2
 
         mock_s3 = Mock()
         mock_s3.metadata.service_name = "s3"
-        registry._extractors["s3"] = mock_s3
+        registry._extractors["aws:s3"] = mock_s3
 
         extractors = registry.get_extractors(["ec2", "s3"])
         assert len(extractors) == 2

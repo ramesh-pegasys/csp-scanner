@@ -3,19 +3,19 @@
 import pytest
 from unittest.mock import Mock, patch
 from app.extractors.base import BaseExtractor, ExtractorMetadata
-from app.extractors.s3 import S3Extractor
-from app.extractors.ec2 import EC2Extractor
-from app.extractors.apigateway import APIGatewayExtractor
-from app.extractors.apprunner import AppRunnerExtractor
-from app.extractors.cloudfront import CloudFrontExtractor
-from app.extractors.ecs import ECSExtractor
-from app.extractors.eks import EKSExtractor
-from app.extractors.elb import ELBExtractor
-from app.extractors.iam import IAMExtractor
-from app.extractors.kms import KMSExtractor
-from app.extractors.lambda_extractor import LambdaExtractor
-from app.extractors.rds import RDSExtractor
-from app.extractors.vpc import VPCExtractor
+from app.extractors.aws.s3 import S3Extractor
+from app.extractors.aws.ec2 import EC2Extractor
+from app.extractors.aws.apigateway import APIGatewayExtractor
+from app.extractors.aws.apprunner import AppRunnerExtractor
+from app.extractors.aws.cloudfront import CloudFrontExtractor
+from app.extractors.aws.ecs import ECSExtractor
+from app.extractors.aws.eks import EKSExtractor
+from app.extractors.aws.elb import ELBExtractor
+from app.extractors.aws.iam import IAMExtractor
+from app.extractors.aws.kms import KMSExtractor
+from app.extractors.aws.lambda_extractor import LambdaExtractor
+from app.extractors.aws.rds import RDSExtractor
+from app.extractors.aws.vpc import VPCExtractor
 
 
 def test_extractor_metadata():
@@ -61,9 +61,9 @@ def test_base_extractor_validation_valid():
     extractor = TestExtractor(mock_session, mock_config)
 
     valid_artifact = {
-        "resource_id": "test-123",
+        "cloud_provider": "aws",
         "resource_type": "test",
-        "service": "test",
+        "metadata": {"resource_id": "test-123"},
         "configuration": {"key": "value"},
     }
 
@@ -93,9 +93,8 @@ def test_base_extractor_validation_invalid():
     extractor = TestExtractor(mock_session, mock_config)
 
     invalid_artifact = {
-        "resource_id": "test-123",
         "resource_type": "test",
-        # Missing service and configuration
+        # Missing cloud_provider/metadata/configuration
     }
 
     assert extractor.validate(invalid_artifact) is False
@@ -215,7 +214,7 @@ def test_ec2_extractor_get_all_regions():
 
     # Mock EC2 client
     mock_client = Mock()
-    mock_session.client.return_value = mock_client
+    mock_session.get_client.return_value = mock_client
     mock_client.describe_regions.return_value = {
         "Regions": [
             {"RegionName": "us-east-1"},
@@ -226,7 +225,7 @@ def test_ec2_extractor_get_all_regions():
 
     regions = extractor._get_all_regions()
     assert regions == ["us-east-1", "us-west-2", "eu-west-1"]
-    mock_session.client.assert_called_once_with("ec2")
+    mock_session.get_client.assert_called_once_with("ec2", None)
 
 
 # API Gateway Extractor Tests
@@ -537,7 +536,7 @@ async def test_iam_extractor_extract():
     mock_session = Mock()
     mock_config = {}
     mock_client = Mock()
-    mock_session.client.return_value = mock_client
+    mock_session.get_client.return_value = mock_client
 
     extractor = IAMExtractor(mock_session, mock_config)
 
@@ -545,7 +544,13 @@ async def test_iam_extractor_extract():
     mock_users = [{"resource_id": "user1", "resource_type": "iam:user"}]
     with patch.object(
         extractor, "_extract_users", return_value=mock_users
-    ) as mock_extract:
+    ) as mock_extract, patch.object(
+        extractor, "_extract_roles", return_value=[]
+    ), patch.object(
+        extractor, "_extract_policies", return_value=[]
+    ), patch.object(
+        extractor, "_extract_groups", return_value=[]
+    ):
         artifacts = await extractor.extract()
 
         assert len(artifacts) == 1

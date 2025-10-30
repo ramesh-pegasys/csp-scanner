@@ -325,8 +325,8 @@ class ExtractorRegistry:
     
     def _register_aws_extractors(self, session: CloudSession):
         """Register AWS extractors"""
-        from app.extractors.ec2 import EC2Extractor
-        from app.extractors.s3 import S3Extractor
+        from app.extractors.aws.ec2 import EC2Extractor
+        from app.extractors.aws.s3 import S3Extractor
         # ... import other AWS extractors ...
         
         aws_config = self.config.extractors.get("aws", {})

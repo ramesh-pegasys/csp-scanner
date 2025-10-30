@@ -54,7 +54,7 @@ def test_register_and_retrieve_extractor(registry):
     assert extractor.metadata.service_name == "dummy"
 
     all_services = registry.list_services()
-    assert "dummy" in all_services
+    assert "aws:dummy" in all_services
 
     multiple = registry.get_extractors(["dummy"])
     assert len(multiple) == 1
@@ -93,27 +93,45 @@ def make_dummy_extractor(service_name):
 
 def test_register_default_extractors(monkeypatch, registry):
     modules = {
-        "app.extractors.ec2": SimpleNamespace(EC2Extractor=make_dummy_extractor("ec2")),
-        "app.extractors.s3": SimpleNamespace(S3Extractor=make_dummy_extractor("s3")),
-        "app.extractors.rds": SimpleNamespace(RDSExtractor=make_dummy_extractor("rds")),
-        "app.extractors.lambda_extractor": SimpleNamespace(
+        "app.extractors.aws.ec2": SimpleNamespace(
+            EC2Extractor=make_dummy_extractor("ec2")
+        ),
+        "app.extractors.aws.s3": SimpleNamespace(
+            S3Extractor=make_dummy_extractor("s3")
+        ),
+        "app.extractors.aws.rds": SimpleNamespace(
+            RDSExtractor=make_dummy_extractor("rds")
+        ),
+        "app.extractors.aws.lambda_extractor": SimpleNamespace(
             LambdaExtractor=make_dummy_extractor("lambda")
         ),
-        "app.extractors.iam": SimpleNamespace(IAMExtractor=make_dummy_extractor("iam")),
-        "app.extractors.vpc": SimpleNamespace(VPCExtractor=make_dummy_extractor("vpc")),
-        "app.extractors.apprunner": SimpleNamespace(
+        "app.extractors.aws.iam": SimpleNamespace(
+            IAMExtractor=make_dummy_extractor("iam")
+        ),
+        "app.extractors.aws.vpc": SimpleNamespace(
+            VPCExtractor=make_dummy_extractor("vpc")
+        ),
+        "app.extractors.aws.apprunner": SimpleNamespace(
             AppRunnerExtractor=make_dummy_extractor("apprunner")
         ),
-        "app.extractors.ecs": SimpleNamespace(ECSExtractor=make_dummy_extractor("ecs")),
-        "app.extractors.eks": SimpleNamespace(EKSExtractor=make_dummy_extractor("eks")),
-        "app.extractors.elb": SimpleNamespace(ELBExtractor=make_dummy_extractor("elb")),
-        "app.extractors.cloudfront": SimpleNamespace(
+        "app.extractors.aws.ecs": SimpleNamespace(
+            ECSExtractor=make_dummy_extractor("ecs")
+        ),
+        "app.extractors.aws.eks": SimpleNamespace(
+            EKSExtractor=make_dummy_extractor("eks")
+        ),
+        "app.extractors.aws.elb": SimpleNamespace(
+            ELBExtractor=make_dummy_extractor("elb")
+        ),
+        "app.extractors.aws.cloudfront": SimpleNamespace(
             CloudFrontExtractor=make_dummy_extractor("cloudfront")
         ),
-        "app.extractors.apigateway": SimpleNamespace(
+        "app.extractors.aws.apigateway": SimpleNamespace(
             APIGatewayExtractor=make_dummy_extractor("apigateway")
         ),
-        "app.extractors.kms": SimpleNamespace(KMSExtractor=make_dummy_extractor("kms")),
+        "app.extractors.aws.kms": SimpleNamespace(
+            KMSExtractor=make_dummy_extractor("kms")
+        ),
     }
 
     for name, module in modules.items():
@@ -138,6 +156,6 @@ def test_register_default_extractors(monkeypatch, registry):
         "kms",
     ]
     for service_name in expected_services:
-        assert service_name in services
+        assert f"aws:{service_name}" in services
 
     assert len(registry.get_extractors()) == len(services)
