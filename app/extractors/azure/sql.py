@@ -233,9 +233,9 @@ class AzureSQLExtractor(BaseExtractor):
 
             # Add security settings
             if hasattr(resource, "default_secondary_location"):
-                config["default_secondary_location"] = (
-                    resource.default_secondary_location
-                )
+                config[
+                    "default_secondary_location"
+                ] = resource.default_secondary_location
 
             if hasattr(resource, "zone_redundant"):
                 config["zone_redundant"] = resource.zone_redundant

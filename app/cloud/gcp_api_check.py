@@ -81,10 +81,8 @@ def is_gcp_api_enabled(
             data = resp.json()
             return data.get("state") == "ENABLED"
         else:
-            logger.warning(
-                f"Failed to check GCP API. Status: {resp.status_code}"
-            )
+            logger.warning(f"Failed to check GCP API. Status: {resp.status_code}")
             return False
     except Exception as e:
-        logger.error(f"Error checking GCP API")
+        logger.error(f"Error checking GCP API: {e}")
         return False

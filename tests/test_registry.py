@@ -349,7 +349,7 @@ def test_register_azure_extractors_success(monkeypatch, tmp_path):
     azure_session = SimpleNamespace()
     sessions = {CloudProvider.AZURE: azure_session}
     settings = Settings()
-    
+
     # Mock Azure extractors
     azure_modules = {
         "app.extractors.azure.compute": SimpleNamespace(
@@ -388,11 +388,11 @@ def test_register_azure_extractors_success(monkeypatch, tmp_path):
 
     # Manually call Azure registration
     reg._register_azure_extractors()
-    
+
     services = reg.list_services()
     expected_azure_services = [
         "azure:compute",
-        "azure:storage", 
+        "azure:storage",
         "azure:network",
         "azure:authorization",
         "azure:containerservice",
@@ -400,7 +400,7 @@ def test_register_azure_extractors_success(monkeypatch, tmp_path):
         "azure:sql",
         "azure:web",
     ]
-    
+
     for service in expected_azure_services:
         assert service in services
 
@@ -413,7 +413,7 @@ def test_register_gcp_extractors_success(monkeypatch, tmp_path):
     gcp_session = SimpleNamespace()
     sessions = {CloudProvider.GCP: gcp_session}
     settings = Settings()
-    
+
     # Mock GCP extractors (just a few key ones for coverage)
     gcp_modules = {
         "app.extractors.gcp.compute": SimpleNamespace(
@@ -512,7 +512,7 @@ def test_register_gcp_extractors_success(monkeypatch, tmp_path):
 
     # Manually call GCP registration
     reg._register_gcp_extractors()
-    
+
     services = reg.list_services()
     # Check that some GCP services are registered
     assert any(service.startswith("gcp:") for service in services)
@@ -522,10 +522,10 @@ def test_get_extractor_fallback_search(registry):
     """Test get method fallback search when no provider specified"""
     from app.cloud.base import CloudProvider
     from unittest.mock import MagicMock
-    
+
     # Register extractors for different providers
     registry.register(DummyExtractor)
-    
+
     # Manually add Azure extractor with same service name
     class AzureDummyExtractor(DummyExtractor):
         def get_metadata(self) -> ExtractorMetadata:
@@ -536,16 +536,16 @@ def test_get_extractor_fallback_search(registry):
                 resource_types=["dummy"],
                 cloud_provider="azure",
             )
-    
+
     mock_azure_session = MagicMock()
     mock_azure_session.provider = CloudProvider.AZURE
     registry.sessions[CloudProvider.AZURE] = mock_azure_session
     azure_extractor = AzureDummyExtractor(mock_azure_session, {})
     registry._extractors["azure:dummy"] = azure_extractor
-    
+
     # Manually add an extractor with key exactly matching service name
     registry._extractors["dummy"] = azure_extractor
-    
+
     # Get without provider should return one of them (first match)
     extractor = registry.get("dummy")
     assert extractor is not None
@@ -556,7 +556,7 @@ def test_register_deprecated_method(registry):
     """Test the deprecated register method"""
     # The register method should work for backward compatibility
     registry.register(DummyExtractor)
-    
+
     extractor = registry.get("dummy")
     assert extractor is not None
     assert extractor.metadata.service_name == "dummy"
@@ -566,7 +566,7 @@ def test_register_extractor_edge_cases(registry, caplog):
     """Test edge cases in _register_extractor method"""
     from app.cloud.base import CloudProvider
     from unittest.mock import MagicMock
-    
+
     # Test with extractor that has no config
     class NoConfigExtractor(DummyExtractor):
         def get_metadata(self) -> ExtractorMetadata:
@@ -576,13 +576,13 @@ def test_register_extractor_edge_cases(registry, caplog):
                 description="No config extractor",
                 resource_types=["noconfig"],
             )
-    
+
     mock_session = MagicMock()
     mock_session.provider = CloudProvider.AWS
     reg = ExtractorRegistry({CloudProvider.AWS: mock_session}, Settings())
-    
+
     # Should handle missing config gracefully
     reg._register_extractor(NoConfigExtractor, mock_session, {}, CloudProvider.AWS)
-    
+
     extractor = reg.get("noconfig", CloudProvider.AWS)
     assert extractor is not None
