@@ -25,10 +25,11 @@ enabled_providers:
   - gcp
 ```
 
-For detailed setup instructions:
-- **AWS Setup**: See AWS Credentials Setup section below
-- **Azure Setup**: See [AZURE_SETUP.md](./AZURE_SETUP.md)
-- **GCP Setup**: See [GCP_SETUP.md](./GCP_SETUP.md)
+For detailed setup instructions see the consolidated provider guide in the docs:
+
+- **AWS Setup**: See the AWS section in `docs/cloud-providers.md` - [AWS](./docs/cloud-providers.md#amazon-web-services-aws)
+- **Azure Setup**: See the Azure section in `docs/cloud-providers.md` - [Azure](./docs/cloud-providers.md#microsoft-azure)
+- **GCP Setup**: See the GCP section in `docs/cloud-providers.md` - [GCP](./docs/cloud-providers.md#google-cloud-platform-gcp)
 
 ## AWS Credentials Setup
 
