@@ -176,12 +176,27 @@ class Transport(ABC):
 
 ### Data Flow
 
-```
-API Request → Orchestrator → Registry → Extractors → Transport → Destination
-     ↓             ↓           ↓         ↓           ↓           ↓
-  Trigger      Coordinate  Get Extractor  Extract    Transform  Send
-  Job          Execution   by Service     Resources  to Standard Deliver
-                                                        Format   Artifacts
+```mermaid
+flowchart LR
+    A[API Request] --> B[Orchestrator]
+    B --> C[Registry]
+    C --> D[Extractors]
+    D --> E[Transport]
+    E --> F[Destination]
+    
+    A1[Trigger Job] -.-> A
+    B1[Coordinate<br/>Execution] -.-> B
+    C1[Get Extractor<br/>by Service] -.-> C
+    D1[Extract<br/>Resources] -.-> D
+    E1[Transform to<br/>Standard Format] -.-> E
+    F1[Deliver<br/>Artifacts] -.-> F
+    
+    style A fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style B fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style C fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style D fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style E fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style F fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
 ```
 
 ## Development Workflow

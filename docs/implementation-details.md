@@ -12,24 +12,48 @@ This document provides technical details about the Cloud Artifact Extractor's ar
 
 The Cloud Artifact Extractor follows a modular, cloud-agnostic architecture designed for scalability, maintainability, and extensibility.
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Cloud APIs    │    │   Extractors    │    │   Transports    │
-│                 │    │                 │    │                 │
-│ • AWS SDK       │    │ • AWS Extractors│    │ • HTTP API      │
-│ • Azure SDK     │    │ • Azure Extractors│  │ • Filesystem    │
-│ • GCP SDK       │    │ • GCP Extractors│    │ • Null Transport│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │   Core Engine   │
-                    │                 │
-                    │ • Session Mgmt  │
-                    │ • Orchestration │
-                    │ • Error Handling│
-                    └─────────────────┘
+```mermaid
+graph TB
+    subgraph APIs["Cloud APIs"]
+        AWS_SDK[AWS SDK]
+        Azure_SDK[Azure SDK]
+        GCP_SDK[GCP SDK]
+    end
+    
+    subgraph Extractors["Extractors"]
+        AWS_EXT[AWS Extractors]
+        Azure_EXT[Azure Extractors]
+        GCP_EXT[GCP Extractors]
+    end
+    
+    subgraph Transports["Transports"]
+        HTTP[HTTP API]
+        FS[Filesystem]
+        NULL[Null Transport]
+    end
+    
+    subgraph Core["Core Engine"]
+        SESSION[Session Management]
+        ORCH[Orchestration]
+        ERROR[Error Handling]
+    end
+    
+    AWS_SDK --> Core
+    Azure_SDK --> Core
+    GCP_SDK --> Core
+    
+    Core --> AWS_EXT
+    Core --> Azure_EXT
+    Core --> GCP_EXT
+    
+    AWS_EXT --> Transports
+    Azure_EXT --> Transports
+    GCP_EXT --> Transports
+    
+    style APIs fill:#e0f2fe,stroke:#1a4fa3,stroke-width:2px
+    style Extractors fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style Transports fill:#e0f2fe,stroke:#1a4fa3,stroke-width:2px
+    style Core fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
 ```
 
 ## Core Components

@@ -1,6 +1,6 @@
 # requirements.txt
 # Core Framework
-fastapi==0.119.1
+fastapi==0.120.2
 uvicorn[standard]==0.37.0
 pydantic==2.12.0 # Assuming Pydantic v2 as you were using Pydantic-Settings v2
 pydantic-settings==2.11.0
