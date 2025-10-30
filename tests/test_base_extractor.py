@@ -1,6 +1,6 @@
 """Tests for base extractor functionality"""
 
-import pytest
+import pytest  # noqa: F401
 from unittest.mock import Mock, MagicMock
 from app.extractors.base import BaseExtractor, ExtractorMetadata
 

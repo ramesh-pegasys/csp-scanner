@@ -7,7 +7,7 @@ extractor helpers and cover the rich transformation logic in app/extractors.
 from datetime import datetime
 from unittest.mock import Mock
 
-import pytest
+import pytest  # noqa: F401
 
 from app.extractors.aws.apigateway import APIGatewayExtractor
 from app.extractors.aws.apprunner import AppRunnerExtractor

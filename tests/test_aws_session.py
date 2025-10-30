@@ -1,7 +1,7 @@
 """Tests for AWS session wrapper"""
 
-import pytest
-from unittest.mock import Mock, MagicMock
+import pytest  # noqa: F401
+from unittest.mock import Mock
 from app.cloud.aws_session import AWSSession
 from app.cloud.base import CloudProvider
 
