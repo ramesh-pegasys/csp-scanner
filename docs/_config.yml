@@ -10,39 +10,33 @@ highlighter: rouge
 theme: minima
 
 # Plugins
-# plugins:
-#   - jekyll-feed
-#   - jekyll-sitemap
-#   - jekyll-seo-tag
-
-# Collections
-collections:
-  docs:
-    output: true
-    permalink: /:collection/:name/
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  # - jekyll-seo-tag
 
 # Navigation
 navigation:
   - title: "Home"
-    url: "/"
+    url: "/csp-scanner/index.html"
   - title: "Getting Started"
-    url: "/getting-started"
+    url: "/csp-scanner/getting-started.html"
   - title: "Configuration"
-    url: "/configuration"
+    url: "/csp-scanner/configuration.html"
   - title: "Cloud Providers"
-    url: "/cloud-providers"
+    url: "/csp-scanner/cloud-providers.html"
   - title: "Supported Resources"
-    url: "/supported-resources"
+    url: "/csp-scanner/supported-resources.html"
   - title: "Metadata Structure"
-    url: "/metadata-structure"
+    url: "/csp-scanner/metadata-structure.html"
   - title: "Implementation Details"
-    url: "/implementation-details"
+    url: "/csp-scanner/implementation-details.html"
   - title: "API Reference"
-    url: "/api-reference"
+    url: "/csp-scanner/api-reference.html"
   - title: "Troubleshooting"
-    url: "/troubleshooting"
+    url: "/csp-scanner/troubleshooting.html"
   - title: "Development"
-    url: "/development"
+    url: "/csp-scanner/development.html"
 
 # Exclude from processing
 exclude:
@@ -60,15 +54,15 @@ include:
   - _pages
 
 # SEO and social
-author: "Cloud Security Team"
+author: "Pegasys.ai"
 social:
   name: Cloud Artifact Extractor
   links:
-    - https://github.com/yourusername/csp-scanner
+    - https://www.pegasys.ai
 
 # Custom variables
 logo: /assets/images/logo.png
-github_username: yourusername
+github_username: ramesh-pegasys
 repo: csp-scanner
 
 # Markdown settings
@@ -76,7 +70,7 @@ kramdown:
   input: GFM
   syntax_highlighter: rouge
   syntax_highlighter_opts:
-    default_lang: bash
+    default_lang: python
     css_class: 'highlight'
     span:
       line_numbers: false
@@ -88,12 +82,10 @@ sass:
   sass_dir: _sass
   style: compressed
 
-# Collections settings
+# Defaults
 defaults:
   - scope:
       path: ""
-      type: docs
     values:
-      layout: page
+      layout: default
       author: "Cloud Security Team"
-      permalink: /:collection/:name/

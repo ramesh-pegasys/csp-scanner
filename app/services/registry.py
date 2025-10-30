@@ -104,11 +104,21 @@ class ExtractorRegistry:
             from app.extractors.azure.compute import AzureComputeExtractor
             from app.extractors.azure.storage import AzureStorageExtractor
             from app.extractors.azure.network import AzureNetworkExtractor
+            from app.extractors.azure.authorization import AzureAuthorizationExtractor
+            from app.extractors.azure.containerservice import AzureContainerServiceExtractor
+            from app.extractors.azure.keyvault import AzureKeyVaultExtractor
+            from app.extractors.azure.sql import AzureSQLExtractor
+            from app.extractors.azure.web import AzureWebExtractor
 
             extractor_classes = [
                 AzureComputeExtractor,  # type: ignore[type-abstract]
                 AzureStorageExtractor,  # type: ignore[type-abstract]
                 AzureNetworkExtractor,  # type: ignore[type-abstract]
+                AzureAuthorizationExtractor,  # type: ignore[type-abstract]
+                AzureContainerServiceExtractor,  # type: ignore[type-abstract]
+                AzureKeyVaultExtractor,  # type: ignore[type-abstract]
+                AzureSQLExtractor,  # type: ignore[type-abstract]
+                AzureWebExtractor,  # type: ignore[type-abstract]
             ]
 
             azure_session = self.sessions[CloudProvider.AZURE]
@@ -126,10 +136,16 @@ class ExtractorRegistry:
         try:
             from app.extractors.gcp.compute import GCPComputeExtractor
             from app.extractors.gcp.storage import GCPStorageExtractor
+            from app.extractors.gcp.iam import GCPIAMExtractor
+            from app.extractors.gcp.kubernetes import GCPKubernetesExtractor
+            from app.extractors.gcp.networking import GCPNetworkingExtractor
 
             extractor_classes = [
                 GCPComputeExtractor,  # type: ignore[type-abstract]
                 GCPStorageExtractor,  # type: ignore[type-abstract]
+                GCPIAMExtractor,  # type: ignore[type-abstract]
+                GCPKubernetesExtractor,  # type: ignore[type-abstract]
+                GCPNetworkingExtractor,  # type: ignore[type-abstract]
             ]
 
             gcp_session = self.sessions[CloudProvider.GCP]

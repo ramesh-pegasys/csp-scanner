@@ -560,4 +560,4 @@ export GCP_CREDENTIALS_PATH="/path/to/service-account-key.json"
 5. **Set up automated scanning** with schedules
 6. **Configure transport** to send artifacts to your policy scanner
 
-For detailed configuration options, see the [Configuration Guide](configuration.md).
+For detailed configuration options, see the [Configuration Guide](/csp-scanner/configuration.html).

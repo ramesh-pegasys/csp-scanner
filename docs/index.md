@@ -17,54 +17,55 @@ A FastAPI-based service for extracting and managing cloud service artifacts from
 
 ## 🚀 Quick Start
 
+
 Get up and running in minutes:
 
-- **[Installation & Setup](getting-started.md)** - Install dependencies and configure your environment
-- **[Configuration Guide](configuration.md)** - Learn about configuration options and transport methods
-- **[API Reference](api-reference.md)** - Explore available API endpoints
+- **[Installation & Setup](/csp-scanner/getting-started.html)** - Install dependencies and configure your environment
+- **[Configuration Guide](/csp-scanner/configuration.html)** - Learn about configuration options and transport methods
+- **[API Reference](/csp-scanner/api-reference.html)** - Explore available API endpoints
 
 ## ☁️ Cloud Providers
 
 The CSP Scanner supports extracting resources from multiple cloud providers:
 
 ### Amazon Web Services (AWS)
-- **Setup**: [AWS Configuration](cloud-providers.md#aws-setup)
+- **Setup**: [AWS Configuration](/csp-scanner/cloud-providers.html#aws-setup)
 - **Resources**: 13+ services including EC2, S3, RDS, Lambda, IAM, VPC
 - **Authentication**: Access keys, IAM roles, environment variables
 
 ### Microsoft Azure
-- **Setup**: [Azure Configuration](cloud-providers.md#azure-setup)
+- **Setup**: [Azure Configuration](/csp-scanner/cloud-providers.html#azure-setup)
 - **Resources**: 8+ services including Compute, Storage, Network, Web Apps, SQL
 - **Authentication**: Service Principal, Managed Identity, Azure CLI
 
 ### Google Cloud Platform (GCP)
-- **Setup**: [GCP Configuration](cloud-providers.md#gcp-setup)
+- **Setup**: [GCP Configuration](/csp-scanner/cloud-providers.html#gcp-setup)
 - **Resources**: 2+ services including Compute Engine, Cloud Storage
 - **Authentication**: Service Account keys, Application Default Credentials
 
 ## 📋 Supported Resources
 
-View the complete list of [supported cloud resources](supported-resources.md) across all providers.
+View the complete list of [supported cloud resources](/csp-scanner/supported-resources.html) across all providers.
 
 ## 🛠️ Development
 
-- **[Contributing Guide](development.md)** - How to contribute to the project
-- **[Architecture Overview](development.md#architecture)** - Understanding the codebase
-- **[Testing](development.md#testing)** - Running tests and coverage
+- **[Contributing Guide](/csp-scanner/development.html)** - How to contribute to the project
+- **[Architecture Overview](/csp-scanner/development.html#architecture)** - Understanding the codebase
+- **[Testing](/csp-scanner/development.html#testing)** - Running tests and coverage
 
 ## 📖 Documentation Sections
 
 ### User Guides
-- [Getting Started](getting-started.md) - Installation and basic setup
-- [Configuration](configuration.md) - Detailed configuration options
-- [Cloud Providers](cloud-providers.md) - Provider-specific setup guides
-- [Supported Resources](supported-resources.md) - Complete resource coverage
-- [API Reference](api-reference.md) - REST API documentation
+- [Getting Started](/csp-scanner/getting-started.html) - Installation and basic setup
+- [Configuration](/csp-scanner/configuration.html) - Detailed configuration options
+- [Cloud Providers](/csp-scanner/cloud-providers.html) - Provider-specific setup guides
+- [Supported Resources](/csp-scanner/supported-resources.html) - Complete resource coverage
+- [API Reference](/csp-scanner/api-reference.html) - REST API documentation
 
 ### Developer Resources
-- [Development](development.md) - Contributing and development setup
-- [Metadata Structure](metadata-structure.md) - Cloud-agnostic data format
-- [Implementation Details](implementation-details.md) - Architecture and design
+- [Development](/csp-scanner/development.html) - Contributing and development setup
+- [Metadata Structure](/csp-scanner/metadata-structure.html) - Cloud-agnostic data format
+- [Implementation Details](/csp-scanner/implementation-details.html) - Architecture and design
 
 ## 🔧 Key Features
 
@@ -112,7 +113,7 @@ The scanner follows a modular architecture designed for extensibility:
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [Contributing Guide](development.md) for details on:
+We welcome contributions! See our [Contributing Guide](/csp-scanner/development.html) for details on:
 
 - Setting up a development environment
 - Running tests and code quality checks

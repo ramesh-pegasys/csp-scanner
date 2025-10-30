@@ -309,7 +309,7 @@ csp-scanner/
 
 - **API Documentation**: Visit `http://localhost:8000/docs` for interactive API docs
 - **Logs**: Check console output for detailed error messages
-- **Configuration**: See [Configuration Guide](configuration.md) for advanced options
+- **Configuration**: See [Configuration Guide](/csp-scanner/configuration.html) for advanced options
 - **Troubleshooting**: See provider-specific setup guides for detailed troubleshooting
 
 ## Development Setup
@@ -332,4 +332,4 @@ flake8 app tests
 mypy app
 ```
 
-See the [Development Guide](development.md) for detailed contribution instructions.
+See the [Development Guide](/csp-scanner/development.html) for detailed contribution instructions.

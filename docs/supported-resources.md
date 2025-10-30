@@ -10,11 +10,11 @@ This document provides comprehensive information about all cloud resources suppo
 
 ## Overview
 
-The scanner currently supports **3 cloud providers** with **40+ resource types**:
+The scanner currently supports **3 cloud providers** with **50+ resource types**:
 
 - **AWS**: 13 services, 20+ resource types
-- **Azure**: 8 services, 15+ resource types
-- **GCP**: 2 services, 3 resource types
+- **Azure**: 8 services, 20+ resource types
+- **GCP**: 5 services, 10+ resource types
 
 ## Resource Type Naming Convention
 
@@ -407,6 +407,86 @@ All extracted resources include standardized metadata:
   - CORS configuration and website settings
   - IAM policies and public access prevention
 
+### Identity & Access Management
+
+#### Service Accounts (`gcp:iam:service-account`)
+- **Description**: GCP service accounts
+- **Extracted Data**:
+  - Email and unique ID
+  - Display name and description
+  - OAuth2 client ID
+  - Project membership
+
+#### IAM Policies (`gcp:iam:iam-policy`)
+- **Description**: Project-level IAM policies
+- **Extracted Data**:
+  - Bindings (role to members mapping)
+  - Audit configs
+  - Version and etag
+
+#### Roles (`gcp:iam:role`)
+- **Description**: Custom IAM roles
+- **Extracted Data**:
+  - Role name and title
+  - Permissions list
+  - Stage (ALPHA, BETA, GA, DISABLED)
+  - Description
+
+### Kubernetes Services
+
+#### GKE Clusters (`gcp:kubernetes:cluster`)
+- **Description**: Google Kubernetes Engine clusters
+- **Extracted Data**:
+  - Cluster configuration and status
+  - Node pool configurations
+  - Master and node versions
+  - Network policy and add-ons
+  - Authentication and authorization settings
+  - Monitoring and logging configuration
+
+#### Node Pools (`gcp:kubernetes:node-pool`)
+- **Description**: GKE node pools
+- **Extracted Data**:
+  - Machine type and disk configuration
+  - Auto-scaling settings
+  - Management settings (auto-repair, auto-upgrade)
+  - Network configuration
+  - Node taints and labels
+
+### Networking Services
+
+#### VPC Networks (`gcp:networking:network`)
+- **Description**: Virtual Private Cloud networks
+- **Extracted Data**:
+  - Network mode (auto, custom, legacy)
+  - Routing configuration
+  - Peerings
+  - Subnetworks
+
+#### Subnets (`gcp:networking:subnetwork`)
+- **Description**: VPC subnetworks
+- **Extracted Data**:
+  - IP CIDR range
+  - Region
+  - Private Google access settings
+  - Flow logs configuration
+
+#### Firewall Rules (`gcp:networking:firewall`)
+- **Description**: VPC firewall rules
+- **Extracted Data**:
+  - Priority and direction
+  - Allowed/denied protocols and ports
+  - Source/destination ranges
+  - Target tags and service accounts
+
+#### Load Balancers (`gcp:networking:backend-service`)
+- **Description**: Load balancer configurations
+- **Extracted Data**:
+  - Backend services and health checks
+  - URL maps and target proxies
+  - Forwarding rules
+  - Protocol and port settings
+
 ## Resource Coverage Summary
 
 | Category | AWS | Azure | GCP | Total |
@@ -414,13 +494,13 @@ All extracted resources include standardized metadata:
 | **Compute** | 2 (EC2, ECS) | 2 (VM, VMSS) | 2 (Compute, Instance Groups) | 6 |
 | **Storage** | 1 (S3) | 1 (Storage) | 1 (Storage) | 3 |
 | **Database** | 2 (RDS, Aurora) | 2 (SQL Server, DB) | 0 | 4 |
-| **Networking** | 4 (VPC, ELB, CloudFront, API GW) | 3 (NSG, VNet, LB) | 0 | 7 |
+| **Networking** | 4 (VPC, ELB, CloudFront, API GW) | 3 (NSG, VNet, LB) | 4 (VPC, Firewall, LB, Subnets) | 11 |
 | **Serverless** | 2 (Lambda, App Runner) | 2 (Web Apps, Functions) | 0 | 4 |
-| **Identity** | 3 (IAM Users/Roles/Policies) | 2 (Role Defs/Assignments) | 0 | 5 |
-| **Containers** | 2 (ECS, EKS) | 1 (AKS) | 0 | 3 |
+| **Identity** | 3 (IAM Users/Roles/Policies) | 2 (Role Defs/Assignments) | 3 (Service Accounts, Policies, Roles) | 8 |
+| **Containers** | 2 (ECS, EKS) | 1 (AKS) | 1 (GKE) | 4 |
 | **Security** | 1 (KMS) | 1 (Key Vault) | 0 | 2 |
-| **Total Services** | 13 | 8 | 2 | 23 |
-| **Total Resources** | 20+ | 15+ | 3 | 40+ |
+| **Total Services** | 13 | 8 | 5 | 26 |
+| **Total Resources** | 20+ | 20+ | 10+ | 50+ |
 
 ## Configuration Options
 
@@ -516,7 +596,7 @@ The scanner is designed to be extensible. To add support for new resource types:
 4. Add configuration options
 5. Update documentation
 
-See the [Development Guide](development.md) for detailed instructions.
+See the [Development Guide](/csp-scanner/development.html) for detailed instructions.
 
 ## Data Quality and Validation
 
