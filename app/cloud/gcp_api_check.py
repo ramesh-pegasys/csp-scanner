@@ -86,5 +86,5 @@ def is_gcp_api_enabled(
             )
             return False
     except Exception as e:
-        logger.error(f"Error checking GCP API {api_service}: {e}")
+        logger.error(f"Error checking GCP API")
         return False
