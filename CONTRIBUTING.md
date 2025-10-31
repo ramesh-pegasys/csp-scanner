@@ -219,9 +219,14 @@ Types:
 
 ### Before Submitting
 
-1. **Ensure all tests pass**
-2. **Verify test coverage >90%**
-3. **Run code quality checks**
+1. **Run pre-commit checks**
+   ```bash
+   python precommit_checks.py
+   ```
+   This will run all code quality checks, tests, and update coverage badges and documentation dates.
+
+2. **Ensure all tests pass**
+3. **Verify test coverage >90%**
 4. **Update documentation**
 5. **Test manually** if applicable
 

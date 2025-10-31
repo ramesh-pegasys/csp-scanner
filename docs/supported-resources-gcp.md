@@ -10,11 +10,34 @@ has_children: false
 
 The following GCP resource extractors are supported:
 
+- armor
+- bigquery
+- bigtable
+- billing
+- cloudbuild
+- cloudrun
 - compute
+- dataflow
+- dataproc
+- dns
+- filestore
+- firestore
+- functions
 - iam
+- iap
+- interconnect
 - kubernetes
+- loadbalancer
+- logging
+- memorystore
+- monitoring
 - networking
+- pubsub
+- resource_manager
+- scheduler
+- spanner
 - storage
+- tasks
 
 ## Detailed Resource Information
 
@@ -127,3 +150,181 @@ The following GCP resource extractors are supported:
   - URL maps and target proxies
   - Forwarding rules
   - Protocol and port settings
+
+## Big Data & Analytics Services
+
+### BigQuery (`gcp:bigquery:dataset`, `gcp:bigquery:table`)
+- **Description**: BigQuery datasets and tables
+- **Extracted Data**:
+  - Dataset metadata and access controls
+  - Table schemas and partitioning
+  - Dataset locations and encryption settings
+
+### Bigtable (`gcp:bigtable:instance`, `gcp:bigtable:cluster`, `gcp:bigtable:table`)
+- **Description**: Cloud Bigtable instances, clusters, and tables
+- **Extracted Data**:
+  - Instance configurations and clusters
+  - Table schemas and column families
+  - Storage types and replication settings
+
+### Dataproc (`gcp:dataproc:cluster`, `gcp:dataproc:job`, `gcp:dataproc:workflowtemplate`)
+- **Description**: Dataproc clusters, jobs, and workflow templates
+- **Extracted Data**:
+  - Cluster configurations and node pools
+  - Job definitions and execution history
+  - Workflow templates and dependencies
+
+### Dataflow (`gcp:dataflow:job`)
+- **Description**: Dataflow streaming and batch jobs
+- **Extracted Data**:
+  - Job configurations and pipeline definitions
+  - Execution environments and worker pools
+  - Job states and performance metrics
+
+### Spanner (`gcp:spanner:instance`, `gcp:spanner:database`)
+- **Description**: Spanner instances and databases
+- **Extracted Data**:
+  - Instance configurations and node counts
+  - Database schemas and DDL statements
+  - Backup schedules and retention policies
+
+## Storage & Database Services
+
+### Firestore (`gcp:firestore:database`, `gcp:firestore:collection`)
+- **Description**: Firestore databases and collections
+- **Extracted Data**:
+  - Database configurations and locations
+  - Collection structures and indexes
+  - Security rules and IAM policies
+
+### Memorystore (`gcp:memorystore:instance`, `gcp:memorystore:backup`)
+- **Description**: Memorystore Redis instances and backups
+- **Extracted Data**:
+  - Instance configurations and tiers
+  - Network settings and maintenance windows
+  - Backup schedules and retention
+
+### Filestore (`gcp:filestore:instance`, `gcp:filestore:backup`)
+- **Description**: Filestore NFS instances and backups
+- **Extracted Data**:
+  - Instance configurations and capacity
+  - Network settings and access controls
+  - Backup configurations and schedules
+
+## Messaging & Integration Services
+
+### Pub/Sub (`gcp:pubsub:topic`, `gcp:pubsub:subscription`)
+- **Description**: Pub/Sub topics and subscriptions
+- **Extracted Data**:
+  - Topic configurations and schemas
+  - Subscription settings and filters
+  - Message retention and dead letter topics
+
+### Cloud Tasks (`gcp:tasks:queue`, `gcp:tasks:task`)
+- **Description**: Cloud Tasks queues and tasks
+- **Extracted Data**:
+  - Queue configurations and routing
+  - Task definitions and schedules
+  - Retry policies and rate limits
+
+### Cloud Scheduler (`gcp:scheduler:job`)
+- **Description**: Cloud Scheduler jobs
+- **Extracted Data**:
+  - Job schedules and targets
+  - Authentication and retry settings
+  - Execution history and status
+
+## Compute & Serverless Services
+
+### Cloud Run (`gcp:run:service`)
+- **Description**: Cloud Run services
+- **Extracted Data**:
+  - Service configurations and revisions
+  - Traffic splits and scaling settings
+  - Environment variables and secrets
+
+### Cloud Functions (`gcp:functions:function`)
+- **Description**: Cloud Functions
+- **Extracted Data**:
+  - Function configurations and triggers
+  - Runtime environments and dependencies
+  - Execution settings and timeouts
+
+### Cloud Build (`gcp:cloudbuild:build`, `gcp:cloudbuild:trigger`)
+- **Description**: Cloud Build configurations and triggers
+- **Extracted Data**:
+  - Build configurations and steps
+  - Trigger definitions and repositories
+  - Build history and artifacts
+
+## Security & Identity Services
+
+### Cloud Armor (`gcp:armor:securitypolicy`, `gcp:armor:securityrule`)
+- **Description**: Cloud Armor security policies and rules
+- **Extracted Data**:
+  - Security policy configurations
+  - Rule definitions and priorities
+  - Adaptive protection settings
+
+### Identity-Aware Proxy (`gcp:iap:web`, `gcp:iap:appengine`, `gcp:iap:compute`)
+- **Description**: IAP configurations for web, App Engine, and Compute Engine
+- **Extracted Data**:
+  - IAP settings and OAuth configurations
+  - Access policies and user groups
+  - Resource-level access controls
+
+## Networking & Connectivity Services
+
+### Cloud DNS (`gcp:dns:managedzone`, `gcp:dns:recordset`)
+- **Description**: Cloud DNS managed zones and record sets
+- **Extracted Data**:
+  - Zone configurations and name servers
+  - DNS records and TTL settings
+  - Private zone configurations
+
+### Cloud Interconnect (`gcp:interconnect:attachment`, `gcp:interconnect:location`)
+- **Description**: Interconnect attachments and locations
+- **Extracted Data**:
+  - Attachment configurations and bandwidth
+  - Interconnect locations and availability
+  - VLAN configurations and routing
+
+### Load Balancer (`gcp:loadbalancer:urlmap`, `gcp:loadbalancer:forwardingrule`, `gcp:loadbalancer:targetproxy`, `gcp:loadbalancer:backendservice`)
+- **Description**: Load balancer components
+- **Extracted Data**:
+  - URL maps and routing rules
+  - Forwarding rules and IP addresses
+  - Target proxies and SSL certificates
+  - Backend services and health checks
+
+## Management & Monitoring Services
+
+### Cloud Logging (`gcp:logging:sink`, `gcp:logging:metric`, `gcp:logging:exclusion`)
+- **Description**: Cloud Logging sinks, metrics, and exclusions
+- **Extracted Data**:
+  - Log sink destinations and filters
+  - Custom metrics and aggregations
+  - Log exclusions and retention
+
+### Cloud Monitoring (`gcp:monitoring:alertpolicy`, `gcp:monitoring:notificationchannel`, `gcp:monitoring:uptimecheckconfig`)
+- **Description**: Cloud Monitoring alert policies, notification channels, and uptime checks
+- **Extracted Data**:
+  - Alert policy conditions and thresholds
+  - Notification channel configurations
+  - Uptime check targets and settings
+
+## Resource Management Services
+
+### Resource Manager (`gcp:resourcemanager:project`, `gcp:resourcemanager:folder`, `gcp:resourcemanager:organization`, `gcp:resourcemanager:project-iam-policy`, `gcp:resourcemanager:folder-iam-policy`, `gcp:resourcemanager:org-iam-policy`)
+- **Description**: GCP resource hierarchy and IAM policies
+- **Extracted Data**:
+  - Project, folder, and organization metadata
+  - IAM policies at all levels
+  - Resource labels and tags
+
+### Cloud Billing (`gcp:billing:account`, `gcp:billing:budget`, `gcp:billing:project`)
+- **Description**: Cloud Billing accounts, budgets, and project billing configurations
+- **Extracted Data**:
+  - Billing account information
+  - Budget definitions and thresholds
+  - Project billing settings

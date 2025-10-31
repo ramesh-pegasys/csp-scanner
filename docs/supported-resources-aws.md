@@ -217,3 +217,175 @@ The following AWS resource extractors are supported:
   - Source configuration and runtime
   - Network settings and custom domains
   - Health checks and scaling configuration
+
+#### App Runner Connections (`aws:apprunner:connection`)
+- **Description**: App Runner source connections
+- **Extracted Data**:
+  - Connection configurations and providers
+  - Authentication settings
+
+### Additional EC2 Resources
+
+#### EC2 Network Interfaces (`aws:ec2:network-interface`)
+- **Description**: Elastic Network Interfaces
+- **Extracted Data**:
+  - Network interface configurations
+  - IP addresses and security groups
+  - Attachment information
+
+### Additional RDS Resources
+
+#### RDS DB Snapshots (`aws:rds:db-snapshot`)
+- **Description**: RDS database snapshots
+- **Extracted Data**:
+  - Snapshot metadata and status
+  - Source database information
+  - Encryption and backup settings
+
+#### RDS DB Cluster Snapshots (`aws:rds:db-cluster-snapshot`)
+- **Description**: RDS cluster snapshots
+- **Extracted Data**:
+  - Cluster snapshot metadata
+  - Source cluster information
+  - Encryption settings
+
+### Additional Lambda Resources
+
+#### Lambda Layers (`aws:lambda:layer`)
+- **Description**: Lambda layers
+- **Extracted Data**:
+  - Layer configurations and versions
+  - Compatible runtimes
+  - Layer ARNs and permissions
+
+#### Lambda Event Source Mappings (`aws:lambda:event-source-mapping`)
+- **Description**: Lambda event source mappings
+- **Extracted Data**:
+  - Event source configurations
+  - Batch sizes and error handling
+  - Function associations
+
+### Additional IAM Resources
+
+#### IAM Groups (`aws:iam:group`)
+- **Description**: IAM user groups
+- **Extracted Data**:
+  - Group membership and policies
+  - Attached managed policies
+
+### Additional VPC Resources
+
+#### Internet Gateways (`aws:vpc:internet-gateway`)
+- **Description**: VPC internet gateways
+- **Extracted Data**:
+  - Gateway attachments and routes
+  - State and ownership information
+
+#### NAT Gateways (`aws:vpc:nat-gateway`)
+- **Description**: VPC NAT gateways
+- **Extracted Data**:
+  - Gateway configurations and subnets
+  - Elastic IP associations
+  - State and connectivity type
+
+#### Route Tables (`aws:vpc:route-table`)
+- **Description**: VPC route tables
+- **Extracted Data**:
+  - Route configurations and associations
+  - Gateway and subnet attachments
+
+#### Network ACLs (`aws:vpc:network-acl`)
+- **Description**: VPC network access control lists
+- **Extracted Data**:
+  - Inbound and outbound rules
+  - Association information
+
+### Additional ECS Resources
+
+#### ECS Tasks (`aws:ecs:task`)
+- **Description**: ECS task instances
+- **Extracted Data**:
+  - Task definitions and states
+  - Container information
+  - Network configurations
+
+#### ECS Task Definitions (`aws:ecs:task-definition`)
+- **Description**: ECS task definitions
+- **Extracted Data**:
+  - Container definitions and images
+  - CPU and memory allocations
+  - Networking and logging configurations
+
+### Additional EKS Resources
+
+#### EKS Node Groups (`aws:eks:nodegroup`)
+- **Description**: EKS managed node groups
+- **Extracted Data**:
+  - Node group configurations
+  - Instance types and scaling settings
+  - AMI and networking information
+
+#### EKS Fargate Profiles (`aws:eks:fargate-profile`)
+- **Description**: EKS Fargate profiles
+- **Extracted Data**:
+  - Profile configurations and selectors
+  - Pod execution role
+  - Subnet associations
+
+### Additional ELB Resources
+
+#### ELB Target Groups (`aws:elb:target-group`)
+- **Description**: Load balancer target groups
+- **Extracted Data**:
+  - Target configurations and health checks
+  - Protocol and port settings
+  - Registered targets
+
+### Additional CloudFront Resources
+
+#### CloudFront Origin Access Identities (`aws:cloudfront:origin-access-identity`)
+- **Description**: CloudFront origin access identities
+- **Extracted Data**:
+  - Identity configurations and S3 canonical user IDs
+  - Associated distributions
+
+### Additional API Gateway Resources
+
+#### API Gateway Resources (`aws:apigateway:resource`)
+- **Description**: API Gateway resources
+- **Extracted Data**:
+  - Resource paths and parent IDs
+  - Method configurations
+
+#### API Gateway Methods (`aws:apigateway:method`)
+- **Description**: API Gateway methods
+- **Extracted Data**:
+  - HTTP methods and authorization
+  - Integration settings
+
+#### API Gateway Deployments (`aws:apigateway:deployment`)
+- **Description**: API Gateway deployments
+- **Extracted Data**:
+  - Deployment configurations and stages
+  - API versions and descriptions
+
+#### API Gateway Stages (`aws:apigateway:stage`)
+- **Description**: API Gateway stages
+- **Extracted Data**:
+  - Stage configurations and variables
+  - Deployment associations
+  - Access logging and throttling
+
+### Additional KMS Resources
+
+#### KMS Aliases (`aws:kms:alias`)
+- **Description**: KMS key aliases
+- **Extracted Data**:
+  - Alias names and target keys
+  - Creation and update timestamps
+
+#### KMS Grants (`aws:kms:grant`)
+- **Description**: KMS key grants
+- **Extracted Data**:
+  - Grant configurations and permissions
+  - Grantee principals and constraints
