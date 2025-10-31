@@ -15,11 +15,11 @@ This document provides a comprehensive overview of all cloud resources supported
 
 ## Overview
 
-The scanner currently supports **3 cloud providers** with **50+ resource types**:
+The scanner currently supports **3 cloud providers** with **127+ resource types**:
 
-- **AWS**: 13 services, 20+ resource types ([see full list](supported-resources-aws.html))
-- **Azure**: 8 services, 20+ resource types ([see full list](supported-resources-azure.html))
-- **GCP**: 5 services, 10+ resource types ([see full list](supported-resources-gcp.html))
+- **AWS**: 13 services, 41 resource types ([see full list](supported-resources-aws.html))
+- **Azure**: 8 services, 15 resource types ([see full list](supported-resources-azure.html))
+- **GCP**: 28 services, 71+ resource types ([see full list](supported-resources-gcp.html))
 
 ## Resource Type Naming Convention
 

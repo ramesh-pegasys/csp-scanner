@@ -1,9 +1,0 @@
-# requirements-wheels.txt
-# Prefer binary wheels and refuse source builds for grpcio to avoid long C builds on macOS.
-# Install this first to ensure a wheel for grpcio is available for your Python/platform.
-
---prefer-binary
---only-binary=grpcio
-
-# Pin a compatible grpcio range that has published wheels for common platforms
-grpcio>=1.59.0,<2.0
