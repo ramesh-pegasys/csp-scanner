@@ -7,12 +7,14 @@ This script performs the following checks:
 - Runs black for code formatting (check mode)
 - Runs mypy for type checking
 - Runs pytest with coverage and updates badges in README.md and docs/index.md
+- Updates the last modified date in docs/index.md
 """
 
 import subprocess
 import re
 import sys
 from pathlib import Path
+from datetime import datetime
 
 
 def get_python_executable():
@@ -142,6 +144,49 @@ def update_badge_in_file(file_path, percentage):
         print(f"Coverage badge not found in {file_path}")
 
 
+def update_last_modified_date(file_path):
+    """Update the last modified date in the given file."""
+    with open(file_path, 'r') as f:
+        content = f.read()
+
+    # Get the last commit date for the docs directory
+    try:
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%cd", "--date=format:%B %d, %Y", "--", "docs/"],
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).parent
+        )
+        if result.returncode == 0:
+            current_date = result.stdout.strip()
+        else:
+            # Fallback to current date if git command fails
+            current_date = datetime.now().strftime("%B %d, %Y")
+    except Exception:
+        # Fallback to current date if git is not available
+        current_date = datetime.now().strftime("%B %d, %Y")
+    
+    # Pattern to match the last updated line
+    pattern = r'\*\*Last Updated\*\*: .*'
+
+    # New last updated line
+    new_line = f'**Last Updated**: {current_date}'
+
+    if re.search(pattern, content):
+        updated_content = re.sub(pattern, new_line, content)
+        with open(file_path, 'w') as f:
+            f.write(updated_content)
+        print(f"Updated last modified date in {file_path} to {current_date}")
+    else:
+        # If no existing date, add it at the end
+        if not content.endswith('\n'):
+            content += '\n'
+        content += f'\n---\n\n{new_line}'
+        with open(file_path, 'w') as f:
+            f.write(content)
+        print(f"Added last modified date to {file_path}: {current_date}")
+
+
 def main():
     """Run all pre-commit checks."""
     print("🚀 Running pre-commit checks...\n")
@@ -168,6 +213,9 @@ def main():
             
             update_badge_in_file(readme_path, percentage)
             update_badge_in_file(docs_index_path, percentage)
+            
+            # Update last modified date in docs
+            update_last_modified_date(docs_index_path)
         else:
             print("❌ Could not extract coverage percentage")
     else:
