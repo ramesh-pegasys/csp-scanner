@@ -90,17 +90,25 @@ export LOG_LEVEL="INFO"
 
 ### AWS Configuration
 
-#### Basic AWS Settings
+
+#### Basic AWS Settings (Multi-Account)
 
 ```yaml
 # config/production.yaml
-aws_access_key_id: "your-access-key-id"
+aws_accounts:
+  - account_id: "123456789012"
+    regions:
+      - "us-west-2"
+      - "us-east-1"
+  - account_id: "987654321098"
+    regions:
+      - "eu-west-1"
+aws_access_key_id: "your-access-key-id"  # Global or per-account
 aws_secret_access_key: "your-secret-access-key"
-aws_default_region: "us-east-1"
 aws_session_token: null  # Optional, for temporary credentials
 ```
 
-**Environment Variables:**
+**Environment Variables (legacy single-account config):**
 ```bash
 export AWS_ACCESS_KEY_ID="your-access-key-id"
 export AWS_SECRET_ACCESS_KEY="your-secret-access-key"
@@ -122,18 +130,25 @@ export AWS_PROFILE="production"
 
 ### Azure Configuration
 
-#### Basic Azure Settings
+#### Multi-Subscription & Multi-Location (Recommended)
 
 ```yaml
 # config/production.yaml
-azure_subscription_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-azure_tenant_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-azure_client_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+azure_accounts:
+  - subscription_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    locations:
+      - "eastus"
+      - "westeurope"
+  - subscription_id: "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
+    locations:
+      - "centralus"
+      - "uksouth"
+azure_tenant_id: "your-tenant-id"
+azure_client_id: "your-client-id"
 azure_client_secret: "your-client-secret"
-azure_default_location: "eastus"
 ```
 
-**Environment Variables:**
+**Environment Variables (legacy single-subscription):**
 ```bash
 export AZURE_SUBSCRIPTION_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 export AZURE_TENANT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -142,18 +157,28 @@ export AZURE_CLIENT_SECRET="your-client-secret"
 export AZURE_DEFAULT_LOCATION="eastus"
 ```
 
+Legacy config with a single subscription/location is still supported for backward compatibility.
+
 ### GCP Configuration
 
-#### Basic GCP Settings
+
+#### Basic GCP Settings (Multi-Project)
 
 ```yaml
 # config/production.yaml
-gcp_project_id: "your-project-id"
+gcp_projects:
+  - project_id: "pegasus-437722"
+    regions:
+      - "us-central1"
+      - "us-east1"
+  - project_id: "another-project"
+    regions:
+      - "us-west1"
+      - "europe-west1"
 gcp_credentials_path: "/path/to/service-account-key.json"  # Optional
-gcp_default_region: "us-central1"
 ```
 
-**Environment Variables:**
+**Environment Variables (legacy single-project config):**
 ```bash
 export GCP_PROJECT_ID="your-project-id"
 export GCP_CREDENTIALS_PATH="/path/to/service-account-key.json"

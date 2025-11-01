@@ -15,22 +15,65 @@ class Settings(BaseSettings):
     # Multi-Cloud Configuration
     enabled_providers: List[str] = ["aws"]  # Options: ["aws", "azure", "gcp"]
 
-    # AWS Configuration
+    # AWS Configuration (multi-account)
     aws_access_key_id: Optional[str] = None
     aws_secret_access_key: Optional[str] = None
-    aws_default_region: str = "us-east-1"
+    aws_accounts: Optional[List[Dict[str, Any]]] = None
 
-    # Azure Configuration
+    @property
+    def aws_accounts_list(self) -> List[Dict[str, Any]]:
+        """
+        Returns a list of AWS accounts and regions from config.
+        Example: [{"account_id": ..., "regions": [...]}, ...]
+        """
+        if self.aws_accounts:
+            return self.aws_accounts
+        # Fallback for legacy config
+        account_id = getattr(self, "aws_account_id", None)
+        region = getattr(self, "aws_default_region", None)
+        if account_id and region:
+            return [{"account_id": account_id, "regions": [region]}]
+        return []
+
+    # Azure Configuration (multi-subscription)
     azure_subscription_id: Optional[str] = None
     azure_tenant_id: Optional[str] = None
     azure_client_id: Optional[str] = None
     azure_client_secret: Optional[str] = None
-    azure_default_location: str = "eastus"
+    azure_accounts: Optional[List[Dict[str, Any]]] = None
 
-    # GCP Configuration
-    gcp_project_id: Optional[str] = None
+    @property
+    def azure_accounts_list(self) -> List[Dict[str, Any]]:
+        """
+        Returns a list of Azure subscriptions and locations from config.
+        Example: [{"subscription_id": ..., "locations": [...]}, ...]
+        """
+        if self.azure_accounts:
+            return self.azure_accounts
+        # Fallback for legacy config
+        subscription_id = getattr(self, "azure_subscription_id", None)
+        location = getattr(self, "azure_default_location", None)
+        if subscription_id and location:
+            return [{"subscription_id": subscription_id, "locations": [location]}]
+        return []
+
+    # GCP Configuration (multi-project)
+    gcp_projects: Optional[List[Dict[str, Any]]] = None
     gcp_credentials_path: Optional[str] = None
-    gcp_default_region: str = "us-central1"
+    @property
+    def gcp_projects_list(self) -> List[Dict[str, Any]]:
+        """
+        Returns a list of GCP projects and regions from config.
+        Example: [{"project_id": ..., "regions": [...]}, ...]
+        """
+        if self.gcp_projects:
+            return self.gcp_projects
+        # Fallback for legacy config
+        project_id = getattr(self, "gcp_project_id", None)
+        region = getattr(self, "gcp_default_region", None)
+        if project_id and region:
+            return [{"project_id": project_id, "regions": [region]}]
+        return []
 
     # Transport Configuration
     scanner_endpoint_url: str = "http://localhost:8000"

@@ -17,7 +17,22 @@ nav_order: 1
 3. Attach appropriate policies (e.g., `ReadOnlyAccess` or specific service read permissions)
 4. Generate access keys
 
-**Configure Credentials:**
+
+**Configure AWS Accounts in YAML:**
+```yaml
+aws_accounts:
+    - account_id: "123456789012"
+        regions:
+            - "us-west-2"
+            - "us-east-1"
+    - account_id: "987654321098"
+        regions:
+            - "eu-west-1"
+aws_access_key_id: "your-access-key-id"  # Global or per-account
+aws_secret_access_key: "your-secret-access-key"
+```
+
+**Environment Variables (optional, for legacy single-account config):**
 ```bash
 export AWS_ACCESS_KEY_ID="your-access-key-id"
 export AWS_SECRET_ACCESS_KEY="your-secret-access-key"

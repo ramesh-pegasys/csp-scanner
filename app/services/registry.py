@@ -87,16 +87,29 @@ class ExtractorRegistry:
             KMSExtractor,
         ]
 
-        aws_session = self.sessions[CloudProvider.AWS]
+        aws_sessions = self.sessions[CloudProvider.AWS]
         aws_config = self.config.extractors.get("aws", {})
 
-        for extractor_class in extractor_classes:
-            self._register_extractor(
-                extractor_class,  # type: ignore[type-abstract]
-                aws_session,
-                aws_config,
-                CloudProvider.AWS,
-            )
+        # Handle both list and single session
+        if isinstance(aws_sessions, list):
+            session_entries = aws_sessions
+        else:
+            # Fallback: single session object, wrap in list
+            session_entries = [{
+                "session": aws_sessions,
+                "account_id": getattr(aws_sessions, "account_id", "unknown"),
+                "regions": getattr(aws_sessions, "regions", ["us-west-2"])
+            }]
+
+        for aws_entry in session_entries:
+            aws_session = aws_entry["session"]
+            account_id = aws_entry["account_id"]
+            regions = aws_entry["regions"]
+            for extractor_class in extractor_classes:
+                # Key includes account_id for uniqueness if needed
+                self._register_extractor(
+                    extractor_class, aws_session, aws_config, CloudProvider.AWS
+                )
 
     def _register_azure_extractors(self):
         """Register Azure extractors"""
@@ -123,18 +136,34 @@ class ExtractorRegistry:
                 AzureWebExtractor,  # type: ignore[type-abstract]
             ]
 
-            azure_session = self.sessions[CloudProvider.AZURE]
+            azure_sessions = self.sessions[CloudProvider.AZURE]
             azure_config = self.config.extractors.get("azure", {})
 
-            for extractor_class in extractor_classes:
-                self._register_extractor(
-                    extractor_class, azure_session, azure_config, CloudProvider.AZURE
-                )  # type: ignore[type-abstract]
+            # Handle both list and single session
+            if isinstance(azure_sessions, list):
+                session_entries = azure_sessions
+            else:
+                # Fallback: single session object, wrap in list
+                session_entries = [{
+                    "session": azure_sessions,
+                    "subscription_id": getattr(azure_sessions, "subscription_id", "unknown"),
+                    "locations": getattr(azure_sessions, "locations", ["eastus"])
+                }]
+
+            for az_entry in session_entries:
+                azure_session = az_entry["session"]
+                subscription_id = az_entry["subscription_id"]
+                locations = az_entry["locations"]
+                for extractor_class in extractor_classes:
+                    # Key includes subscription_id for uniqueness if needed
+                    self._register_extractor(
+                        extractor_class, azure_session, azure_config, CloudProvider.AZURE
+                    )  # type: ignore[type-abstract]
         except ImportError as e:
             logger.warning(f"Azure extractors not available: {e}")
 
     def _register_gcp_extractors(self):
-        """Register GCP extractors"""
+        """Register GCP extractors for each project/session"""
         try:
             from app.extractors.gcp.compute import GCPComputeExtractor
             from app.extractors.gcp.storage import GCPStorageExtractor
@@ -196,13 +225,29 @@ class ExtractorRegistry:
                 GCPLoadBalancerExtractor,
             ]
 
-            gcp_session = self.sessions[CloudProvider.GCP]
+            gcp_sessions = self.sessions[CloudProvider.GCP]
             gcp_config = self.config.extractors.get("gcp", {})
 
-            for extractor_class in extractor_classes:
-                self._register_extractor(
-                    extractor_class, gcp_session, gcp_config, CloudProvider.GCP
-                )
+            # Handle both list and single session
+            if isinstance(gcp_sessions, list):
+                session_entries = gcp_sessions
+            else:
+                # Fallback: single session object, wrap in list
+                session_entries = [{
+                    "session": gcp_sessions,
+                    "project_id": getattr(gcp_sessions, "project_id", "unknown"),
+                    "regions": getattr(gcp_sessions, "regions", ["us-central1"])
+                }]
+
+            for gcp_entry in session_entries:
+                gcp_session = gcp_entry["session"]
+                project_id = gcp_entry["project_id"]
+                regions = gcp_entry["regions"]
+                for extractor_class in extractor_classes:
+                    # Key includes project_id for uniqueness
+                    self._register_extractor(
+                        extractor_class, gcp_session, gcp_config, CloudProvider.GCP
+                    )
         except ImportError as e:
             logger.warning(f"GCP extractors not available: {e}")
 
