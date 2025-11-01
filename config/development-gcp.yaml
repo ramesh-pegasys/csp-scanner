@@ -9,7 +9,7 @@ enabled_providers:
 
 # GCP multi-project configuration
 gcp_projects:
-  - project_id: "pegasus-437722"
+  - project_id: "first-project"
     regions:
       - "us-central1"
       - "us-east1"

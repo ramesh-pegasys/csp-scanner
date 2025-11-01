@@ -13,7 +13,7 @@ aws_accounts:
     regions:
       - "us-west-2"
       - "us-east-1"
-  - account_id: "987654321098"
+  - account_id: "123456789013"
     regions:
       - "eu-west-1"
 
