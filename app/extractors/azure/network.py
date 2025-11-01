@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from app.extractors.base import BaseExtractor, ExtractorMetadata
+from app.extractors.azure.utils import execute_azure_api_call
 import logging
 
 logger = logging.getLogger(__name__)
@@ -91,7 +92,15 @@ class AzureNetworkExtractor(BaseExtractor):
         """Extract Network Security Groups"""
         artifacts = []
 
-        nsgs = network_client.network_security_groups.list_all()
+        # List all NSGs with retry
+        async def get_nsgs():
+            return list(network_client.network_security_groups.list_all())
+
+        try:
+            nsgs = asyncio.run(execute_azure_api_call(get_nsgs, "get_network_security_groups"))
+        except Exception as e:
+            logger.error(f"Failed to list NSGs after retries: {e}")
+            return artifacts
 
         for nsg in nsgs:
             if nsg.location != location:
@@ -112,7 +121,15 @@ class AzureNetworkExtractor(BaseExtractor):
         """Extract Virtual Networks"""
         artifacts = []
 
-        vnets = network_client.virtual_networks.list_all()
+        # List all VNets with retry
+        async def get_vnets():
+            return list(network_client.virtual_networks.list_all())
+
+        try:
+            vnets = asyncio.run(execute_azure_api_call(get_vnets, "get_virtual_networks"))
+        except Exception as e:
+            logger.error(f"Failed to list VNets after retries: {e}")
+            return artifacts
 
         for vnet in vnets:
             if vnet.location != location:
@@ -133,7 +150,15 @@ class AzureNetworkExtractor(BaseExtractor):
         """Extract Load Balancers"""
         artifacts = []
 
-        lbs = network_client.load_balancers.list_all()
+        # List all Load Balancers with retry
+        async def get_lbs():
+            return list(network_client.load_balancers.list_all())
+
+        try:
+            lbs = asyncio.run(execute_azure_api_call(get_lbs, "get_load_balancers"))
+        except Exception as e:
+            logger.error(f"Failed to list Load Balancers after retries: {e}")
+            return artifacts
 
         for lb in lbs:
             if lb.location != location:

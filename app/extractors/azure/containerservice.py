@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from app.extractors.base import BaseExtractor, ExtractorMetadata
+from app.extractors.azure.utils import execute_azure_api_call
 import logging
 
 logger = logging.getLogger(__name__)
@@ -78,7 +79,15 @@ class AzureContainerServiceExtractor(BaseExtractor):
         """Extract AKS clusters"""
         artifacts = []
 
-        clusters = cs_client.managed_clusters.list()
+        # List all managed clusters with retry
+        async def get_clusters():
+            return list(cs_client.managed_clusters.list())
+
+        try:
+            clusters = asyncio.run(execute_azure_api_call(get_clusters, "get_aks_clusters"))
+        except Exception as e:
+            logger.error(f"Failed to list AKS clusters after retries: {e}")
+            return artifacts
 
         for cluster in clusters:
             if cluster.location != location:

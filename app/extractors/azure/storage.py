@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from app.extractors.base import BaseExtractor, ExtractorMetadata
+from app.extractors.azure.utils import execute_azure_api_call
 import logging
 
 logger = logging.getLogger(__name__)
@@ -54,8 +55,17 @@ class AzureStorageExtractor(BaseExtractor):
         try:
             storage_client = self.session.get_client("storage")
 
-            # List all storage accounts in subscription
-            storage_accounts = storage_client.storage_accounts.list()
+            # List all storage accounts in subscription with retry
+            async def get_storage_accounts():
+                return list(storage_client.storage_accounts.list())
+
+            try:
+                storage_accounts = asyncio.run(
+                    execute_azure_api_call(get_storage_accounts, "get_storage_accounts")
+                )
+            except Exception as e:
+                logger.error(f"Failed to list storage accounts after retries: {e}")
+                return artifacts
 
             for account in storage_accounts:
                 # Filter by location if specified
@@ -69,10 +79,15 @@ class AzureStorageExtractor(BaseExtractor):
                 blob_properties = None
                 if self.config.get("check_blob_encryption", True):
                     try:
-                        blob_properties = (
-                            storage_client.blob_services.get_service_properties(
+                        async def get_blob_properties():
+                            return storage_client.blob_services.get_service_properties(
                                 resource_group_name=resource_group,
                                 account_name=account.name,
+                            )
+
+                        blob_properties = asyncio.run(
+                            execute_azure_api_call(
+                                get_blob_properties, f"get_blob_properties_{account.name}", max_attempts=3
                             )
                         )
                     except Exception as e:
