@@ -7,7 +7,28 @@ nav_order: 2
 
 # Microsoft Azure
 
-## Authentication Methods
+## Multi-Subscription & Multi-Location Support
+
+The scanner now supports extracting resources from multiple Azure subscriptions and multiple locations per subscription. Configure this using the `azure_accounts` list in your YAML config:
+
+```yaml
+azure_accounts:
+  - subscription_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    locations:
+      - "eastus"
+      - "westeurope"
+  - subscription_id: "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
+    locations:
+      - "centralus"
+      - "uksouth"
+azure_tenant_id: "your-tenant-id"
+azure_client_id: "your-client-id"
+azure_client_secret: "your-client-secret"
+```
+
+Each entry in `azure_accounts` creates a session for the specified subscription and extracts resources from all listed locations. You can specify credentials globally or per session.
+
+Legacy single-subscription config is still supported for backward compatibility.
 
 ### 1. Service Principal (Recommended for Production)
 
@@ -30,7 +51,7 @@ This outputs:
 }
 ```
 
-**Configure Environment Variables:**
+**Configure Environment Variables (legacy single-subscription):**
 ```bash
 export AZURE_SUBSCRIPTION_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 export AZURE_TENANT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -49,7 +70,7 @@ Uses automatic credential chain:
 4. Visual Studio Code credentials
 5. Azure PowerShell credentials
 
-**Minimal Configuration:**
+**Minimal Configuration (legacy):**
 ```bash
 export AZURE_SUBSCRIPTION_ID="your-subscription-id"
 # Other credentials auto-detected
@@ -130,6 +151,8 @@ az account show
 ```
 
 ## Supported Azure Services
+
+Multi-subscription/location extraction is supported for all listed services. Each extractor will run for every subscription/location combination specified in your config.
 
 - **Compute**: Virtual Machines, VM Scale Sets
 - **Storage**: Storage Accounts with encryption and network rules

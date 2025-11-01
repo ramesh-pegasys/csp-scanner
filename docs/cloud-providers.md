@@ -9,11 +9,11 @@ has_children: true
 
 This guide provides detailed setup instructions for each supported cloud provider. For provider-specific information, see:
 
-- [AWS Setup](cloud-providers-aws.html)
-- [Azure Setup](cloud-providers-azure.html)
-- [GCP Setup](cloud-providers-gcp.html)
+- [AWS Setup]({{ '/cloud-providers-aws.html' | relative_url }})
+- [Azure Setup]({{ '/cloud-providers-azure.html' | relative_url }})
+- [GCP Setup]({{ '/cloud-providers-gcp.html' | relative_url }})
 
-For detailed configuration options, see the [Configuration Guide](/csp-scanner/configuration.html).
+For detailed configuration options, see the [Configuration Guide]({{ '/configuration.html' | relative_url }}).
 
 ## Multi-Cloud Configuration
 

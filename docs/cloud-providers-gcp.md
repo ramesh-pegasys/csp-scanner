@@ -38,7 +38,22 @@ gcloud iam service-accounts keys create csp-scanner-key.json \
     --iam-account=csp-scanner@PROJECT_ID.iam.gserviceaccount.com
 ```
 
-**Configure Environment Variables:**
+
+**Configure GCP Projects in YAML:**
+```yaml
+gcp_projects:
+    - project_id: "pegasus-437722"
+        regions:
+            - "us-central1"
+            - "us-east1"
+    - project_id: "another-project"
+        regions:
+            - "us-west1"
+            - "europe-west1"
+gcp_credentials_path: "/path/to/csp-scanner-key.json"
+```
+
+**Environment Variables (optional, for legacy single-project config):**
 ```bash
 export GCP_PROJECT_ID="your-project-id"
 export GCP_CREDENTIALS_PATH="/path/to/csp-scanner-key.json"

@@ -6,8 +6,16 @@ debug: true
 enabled_providers:
   - "azure"
 
-# Azure Configuration
-azure_default_location: "eastus"
+
+# Azure multi-subscription configuration
+azure_accounts:
+  - subscription_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    locations:
+      - "eastus"
+      - "westeurope"
+  - subscription_id: "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
+    locations:
+      - "centralus"
 
 scanner_endpoint_url: "http://localhost:8001/api/scan"
 transport_timeout_seconds: 30

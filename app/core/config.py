@@ -15,22 +15,79 @@ class Settings(BaseSettings):
     # Multi-Cloud Configuration
     enabled_providers: List[str] = ["aws"]  # Options: ["aws", "azure", "gcp"]
 
-    # AWS Configuration
+    # AWS Configuration (multi-account)
     aws_access_key_id: Optional[str] = None
     aws_secret_access_key: Optional[str] = None
+    aws_accounts: Optional[List[Dict[str, Any]]] = None
+    # Legacy single-account fields
+    aws_account_id: Optional[str] = None
     aws_default_region: str = "us-east-1"
 
-    # Azure Configuration
+    @property
+    def aws_accounts_list(self) -> List[Dict[str, Any]]:
+        """
+        Returns a list of AWS accounts and regions from config.
+        Example: [{"account_id": ..., "regions": [...]}, ...]
+        """
+        if self.aws_accounts:
+            return self.aws_accounts
+        # Fallback for legacy config
+        account_id = getattr(self, "aws_account_id", None)
+        region = getattr(self, "aws_default_region", None)
+        if (account_id and region) or (region and region != "us-east-1"):
+            return [{"account_id": account_id or "default", "regions": [region]}]
+        return []
+
+    # Azure Configuration (multi-subscription)
     azure_subscription_id: Optional[str] = None
     azure_tenant_id: Optional[str] = None
     azure_client_id: Optional[str] = None
     azure_client_secret: Optional[str] = None
+    azure_accounts: Optional[List[Dict[str, Any]]] = None
+    # Legacy single-subscription field
     azure_default_location: str = "eastus"
 
-    # GCP Configuration
-    gcp_project_id: Optional[str] = None
+    @property
+    def azure_accounts_list(self) -> List[Dict[str, Any]]:
+        """
+        Returns a list of Azure subscriptions and locations from config.
+        Example: [{"subscription_id": ..., "locations": [...]}, ...]
+        """
+        if self.azure_accounts:
+            return self.azure_accounts
+        # Fallback for legacy config
+        subscription_id = getattr(self, "azure_subscription_id", None)
+        location = getattr(self, "azure_default_location", None)
+        if (subscription_id and location) or (location and location != "eastus"):
+            return [
+                {
+                    "subscription_id": subscription_id or "default",
+                    "locations": [location],
+                }
+            ]
+        return []
+
+    # GCP Configuration (multi-project)
+    gcp_projects: Optional[List[Dict[str, Any]]] = None
     gcp_credentials_path: Optional[str] = None
+    # Legacy single-project fields
+    gcp_project_id: Optional[str] = None
     gcp_default_region: str = "us-central1"
+
+    @property
+    def gcp_projects_list(self) -> List[Dict[str, Any]]:
+        """
+        Returns a list of GCP projects and regions from config.
+        Example: [{"project_id": ..., "regions": [...]}, ...]
+        """
+        if self.gcp_projects:
+            return self.gcp_projects
+        # Fallback for legacy config
+        project_id = getattr(self, "gcp_project_id", None)
+        region = getattr(self, "gcp_default_region", None)
+        if (project_id and region) or (region and region != "us-central1"):
+            return [{"project_id": project_id or "default", "regions": [region]}]
+        return []
 
     # Transport Configuration
     scanner_endpoint_url: str = "http://localhost:8000"

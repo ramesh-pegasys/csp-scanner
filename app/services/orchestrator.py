@@ -72,16 +72,32 @@ class ExtractionOrchestrator:
         try:
             extractors = self.registry.get_extractors(services)
 
-            # Extract from all services concurrently
-            extraction_tasks = [
-                self._extract_service(extractor, regions, filters)
-                for extractor in extractors
-            ]
+            all_artifacts: List[Dict[str, Any]] = []
+            extraction_tasks = []
+
+            # Special handling for Azure multi-subscription/location
+            for extractor in extractors:
+                if getattr(extractor, "cloud_provider", None) == "azure":
+                    # If registry registered multiple Azure extractors per subscription/location, run for each
+                    if extractor.metadata.supports_regions:
+                        # Use locations from session if available
+                        locations = getattr(extractor.session, "locations", None)
+                        if not locations:
+                            locations = regions or extractor.session.list_regions()
+                        for location in locations:
+                            extraction_tasks.append(
+                                extractor.extract(location, filters)
+                            )
+                    else:
+                        extraction_tasks.append(extractor.extract(filters=filters))
+                else:
+                    # Non-Azure: keep legacy logic
+                    extraction_tasks.append(
+                        self._extract_service(extractor, regions, filters)
+                    )
 
             results = await asyncio.gather(*extraction_tasks, return_exceptions=True)
 
-            # Flatten all artifacts
-            all_artifacts: List[Dict[str, Any]] = []
             for result in results:
                 if isinstance(result, Exception):
                     logger.error(f"Service extraction failed: {result}")

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
     {% if site.favicon_ico %}
       <link rel="shortcut icon" href="{{ site.favicon_ico | relative_url }}" type="image/x-icon">
@@ -58,10 +61,15 @@
           <ul class="nav-list">
             {% for item in site.data.navigation.main %}
               {% assign item_url = item.url | prepend: site.baseurl %}
-              <li class="nav-list-item{% if page.url == item_url %} active{% endif %}">
-                <a href="{{ item_url }}" class="nav-list-link">{{ item.title }}</a>
+              <li class="nav-list-item{% if item.children %} has-children{% endif %}{% if page.url == item_url %} active{% endif %}">
+                <div class="nav-item-content">
+                  {% if item.children %}
+                    <button class="nav-toggle" aria-label="Expand submenu" aria-expanded="false" type="button">+</button>
+                  {% endif %}
+                  <a href="{{ item_url }}" class="nav-list-link">{{ item.title }}</a>
+                </div>
                 {% if item.children %}
-                  <ul class="nav-list-child">
+                  <ul class="nav-list-child" hidden>
                     {% for child in item.children %}
                       {% assign child_url = child.url | prepend: site.baseurl %}
                       <li class="nav-list-item{% if page.url == child_url %} active{% endif %}">
@@ -94,6 +102,113 @@
     
     <script>
       document.addEventListener('DOMContentLoaded', function() {
+        // Sidebar submenu toggles (+ / -), with localStorage persistence
+        const sidebar = document.querySelector('.side-nav');
+        if (sidebar) {
+          const STORAGE_KEY = 'csp-docs-nav-state';
+          
+          // Load saved state from localStorage
+          let savedState = {};
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+              savedState = JSON.parse(stored);
+            }
+          } catch (e) {
+            console.warn('Failed to load nav state:', e);
+          }
+
+          // Save state to localStorage
+          const saveState = () => {
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+            } catch (e) {
+              console.warn('Failed to save nav state:', e);
+            }
+          };
+
+          sidebar.querySelectorAll('.nav-list-item.has-children').forEach(function(li, index) {
+            const toggle = li.querySelector('.nav-toggle');
+            const submenu = li.querySelector('.nav-list-child');
+            const link = li.querySelector('.nav-list-link');
+            if (!toggle || !submenu || !link) return;
+
+            // Use link href as unique identifier
+            const itemKey = link.getAttribute('href');
+
+            const setExpanded = (expanded, persist = true) => {
+              toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+              toggle.setAttribute('aria-label', expanded ? 'Collapse submenu' : 'Expand submenu');
+              toggle.textContent = expanded ? '−' : '+'; // U+2212 minus sign
+              if (expanded) {
+                li.classList.add('expanded');
+                submenu.hidden = false;
+              } else {
+                li.classList.remove('expanded');
+                submenu.hidden = true;
+              }
+              
+              // Save to localStorage
+              if (persist) {
+                savedState[itemKey] = expanded;
+                saveState();
+              }
+            };
+
+            // Restore saved state or default to collapsed
+            const savedExpanded = savedState[itemKey];
+            setExpanded(savedExpanded === true, false);
+
+            // Toggle on click
+            toggle.addEventListener('click', function(e) {
+              e.preventDefault();
+              const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+              setExpanded(!isExpanded, true);
+            });
+          });
+
+          // Auto-expand the section containing the active page (overrides saved state)
+          const activeChild = sidebar.querySelector('.nav-list-child .nav-list-item.active');
+          if (activeChild) {
+            const parent = activeChild.closest('.nav-list-item.has-children');
+            if (parent) {
+              const toggle = parent.querySelector('.nav-toggle');
+              const submenu = parent.querySelector('.nav-list-child');
+              const link = parent.querySelector('.nav-list-link');
+              if (toggle && submenu && link) {
+                toggle.setAttribute('aria-expanded', 'true');
+                toggle.setAttribute('aria-label', 'Collapse submenu');
+                toggle.textContent = '−';
+                parent.classList.add('expanded');
+                submenu.hidden = false;
+                // Save expanded state
+                const itemKey = link.getAttribute('href');
+                savedState[itemKey] = true;
+                saveState();
+              }
+            }
+          }
+
+          // If the active page is a parent item with children, expand it (overrides saved state)
+          const activeParent = sidebar.querySelector('.nav-list-item.has-children.active');
+          if (activeParent) {
+            const toggle = activeParent.querySelector('.nav-toggle');
+            const submenu = activeParent.querySelector('.nav-list-child');
+            const link = activeParent.querySelector('.nav-list-link');
+            if (toggle && submenu && link) {
+              toggle.setAttribute('aria-expanded', 'true');
+              toggle.setAttribute('aria-label', 'Collapse submenu');
+              toggle.textContent = '−';
+              activeParent.classList.add('expanded');
+              submenu.hidden = false;
+              // Save expanded state
+              const itemKey = link.getAttribute('href');
+              savedState[itemKey] = true;
+              saveState();
+            }
+          }
+        }
+
         // Find all code blocks with language-mermaid class
         document.querySelectorAll('pre code.language-mermaid').forEach(function(codeBlock) {
           const pre = codeBlock.parentElement;
