@@ -1,8 +1,8 @@
 ---
-# Custom theme styles for Cloud Artifact Extractor
 ---
+/* Custom theme styles for Cloud Artifact Extractor */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Fonts are loaded via <link> in the HTML head */
 
 /* Reset and base styles */
 * {
@@ -118,20 +118,57 @@ body {
 }
 
 .nav-list-item {
-  margin-bottom: 0.05rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Container for toggle + link to align them horizontally */
+.nav-item-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .nav-list-link {
-  display: block;
+  display: inline-block;
   padding: 0.25rem 0;
   color: #24292f;
   text-decoration: none;
   font-weight: 500;
   transition: all 0.15s ease;
+  flex: 1; /* take remaining space */
 }
 
 .nav-list-link:hover {
   background: transparent;
+  color: #1a4fa3;
+}
+
+/* Parent item with submenu and toggle button */
+.nav-list-item.has-children {
+  position: relative;
+}
+
+.nav-toggle {
+  width: 1.1rem;
+  height: 1.1rem;
+  min-width: 1.1rem; /* prevent shrinking */
+  line-height: 1rem;
+  font-size: 0.875rem;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  background: #f6f8fa;
+  color: #24292f;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0; /* don't shrink */
+}
+
+.nav-toggle:hover {
+  background: #ffffff;
+  border-color: #1a4fa3;
   color: #1a4fa3;
 }
 
@@ -141,14 +178,20 @@ body {
   font-weight: 600;
 }
 
-/* Submenu styles */
+/* Align items without toggles - add padding to match toggle width + gap */
+.nav-list-item:not(.has-children) .nav-list-link {
+  padding-left: calc(1.1rem + 0.5rem);
+}
+
+/* Submenu styles (collapsed by default, expands with .expanded on parent) */
 .nav-list-child {
   list-style: none;
   padding-left: 1rem;
   margin-top: 0.05rem;
-  max-height: none;
-  overflow: visible;
-  display: block;
+  display: block; /* visibility is controlled by [hidden] and max-height */
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.2s ease;
 }
 
 .nav-list-item:has(.nav-list-child) > .nav-list-link:hover {
@@ -175,6 +218,11 @@ body {
   background: transparent;
   color: #1a4fa3;
   font-weight: 500;
+}
+
+/* Expanded state animates submenu visibility */
+.nav-list-item.expanded > .nav-list-child {
+  max-height: 1000px; /* large enough for content */
 }
 
 /* Main content area */

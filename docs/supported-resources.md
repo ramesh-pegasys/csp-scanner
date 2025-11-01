@@ -9,9 +9,9 @@ has_children: true
 
 This document provides a comprehensive overview of all cloud resources supported by the CSP Scanner across AWS, Azure, and GCP. For detailed information about each provider's resources, see the provider-specific pages:
 
-- [AWS Supported Resources](supported-resources-aws.html)
-- [Azure Supported Resources](supported-resources-azure.html)
-- [GCP Supported Resources](supported-resources-gcp.html)
+- [AWS Supported Resources]({{ '/supported-resources-aws.html' | relative_url }})
+- [Azure Supported Resources]({{ '/supported-resources-azure.html' | relative_url }})
+- [GCP Supported Resources]({{ '/supported-resources-gcp.html' | relative_url }})
 
 ## Overview
 
@@ -168,7 +168,7 @@ The scanner is designed to be extensible. To add support for new resource types:
 4. Add configuration options
 5. Update documentation
 
-See the [Development Guide](/csp-scanner/development.html) for detailed instructions.
+See the [Development Guide]({{ '/development.html' | relative_url }}) for detailed instructions.
 
 ## Data Quality and Validation
 
@@ -730,7 +730,7 @@ The scanner is designed to be extensible. To add support for new resource types:
 4. Add configuration options
 5. Update documentation
 
-See the [Development Guide](/csp-scanner/development.html) for detailed instructions.
+See the [Development Guide]({{ '/development.html' | relative_url }}) for detailed instructions.
 
 ## Data Quality and Validation
 

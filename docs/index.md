@@ -7,13 +7,13 @@ nav_order: 1
 <div class="hero">
   <div class="hero-title">Cloud Artifact Extractor</div>
   <div class="hero-subtitle">A modern FastAPI service for extracting and managing cloud service artifacts from AWS, Azure, and GCP.<br>Beautiful, secure, and multi-cloud ready.</div>
-  <a href="/csp-scanner/getting-started.html" class="btn">Get Started</a>
+    <a href="{{ '/getting-started.html' | relative_url }}" class="btn">Get Started</a>
 </div>
 
 # Cloud Artifact Extractor
 
 [![CI](https://github.com/ramesh-pegasys/csp-scanner/actions/workflows/ci.yml/badge.svg)](https://github.com/ramesh-pegasys/csp-scanner/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)](https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)
+[![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)](https://pytest-cov.readthedocs.io/)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
 [![Flake8](https://img.shields.io/badge/flake8-checked-blue.svg)](https://flake8.pycqa.org/)
@@ -21,57 +21,57 @@ nav_order: 1
 
 A FastAPI-based service for extracting and managing cloud service artifacts from AWS, Azure, and GCP.
 
-## 🚀 Quick Start
+## 🚀 Quickstart
 
 
 Get up and running in minutes:
 
-- **[Installation & Setup](/csp-scanner/getting-started.html)** - Install dependencies and configure your environment
-- **[Configuration Guide](/csp-scanner/configuration.html)** - Learn about configuration options and transport methods
-- **[API Reference](/csp-scanner/api-reference.html)** - Explore available API endpoints
+- **[Installation & Setup]({{ '/getting-started.html' | relative_url }})** - Install dependencies and configure your environment
+- **[Configuration Guide]({{ '/configuration.html' | relative_url }})** - Learn about configuration options and transport methods
+- **[API Reference]({{ '/api-reference.html' | relative_url }})** - Explore available API endpoints
 
 ## ☁️ Cloud Providers
 
 The CSP Scanner supports extracting resources from multiple cloud providers:
 
 ### Amazon Web Services (AWS)
-- **Setup**: [AWS Configuration](/csp-scanner/cloud-providers.html#aws-setup)
+- **Setup**: [AWS Guide]({{ '/cloud-providers-aws.html' | relative_url }})
 - **Resources**: 13+ services including EC2, S3, RDS, Lambda, IAM, VPC
 - **Authentication**: Access keys, IAM roles, environment variables
 
 ### Microsoft Azure
-- **Setup**: [Azure Configuration](/csp-scanner/cloud-providers.html#azure-setup)
+- **Setup**: [Azure Guide]({{ '/cloud-providers-azure.html' | relative_url }})
 - **Resources**: 8+ services including Compute, Storage, Network, Web Apps, SQL
 - **Authentication**: Service Principal, Managed Identity, Azure CLI
 
 ### Google Cloud Platform (GCP)
-- **Setup**: [GCP Configuration](/csp-scanner/cloud-providers.html#gcp-setup)
+- **Setup**: [GCP Guide]({{ '/cloud-providers-gcp.html' | relative_url }})
 - **Resources**: 2+ services including Compute Engine, Cloud Storage
 - **Authentication**: Service Account keys, Application Default Credentials
 
 ## 📋 Supported Resources
 
-View the complete list of [supported cloud resources](/csp-scanner/supported-resources.html) across all providers.
+View the complete list of [supported cloud resources]({{ '/supported-resources.html' | relative_url }}) across all providers.
 
 ## 🛠️ Development
 
-- **[Contributing Guide](/csp-scanner/development.html)** - How to contribute to the project
-- **[Architecture Overview](/csp-scanner/development.html#architecture)** - Understanding the codebase
-- **[Testing](/csp-scanner/development.html#testing)** - Running tests and coverage
+- **[Contributing Guide]({{ '/development.html' | relative_url }})** - How to contribute to the project
+- **[Architecture Overview]({{ '/development.html#project-architecture' | relative_url }})** - Understanding the codebase
+- **[Testing]({{ '/development.html#testing' | relative_url }})** - Running tests and coverage
 
 ## 📖 Documentation Sections
 
 ### User Guides
-- [Getting Started](/csp-scanner/getting-started.html) - Installation and basic setup
-- [Configuration](/csp-scanner/configuration.html) - Detailed configuration options
-- [Cloud Providers](/csp-scanner/cloud-providers.html) - Provider-specific setup guides
-- [Supported Resources](/csp-scanner/supported-resources.html) - Complete resource coverage
-- [API Reference](/csp-scanner/api-reference.html) - REST API documentation
+- [Quickstart]({{ '/getting-started.html' | relative_url }}) - Installation and basic setup
+- [Configuration]({{ '/configuration.html' | relative_url }}) - Detailed configuration options
+- [Cloud Providers]({{ '/cloud-providers.html' | relative_url }}) - Provider-specific setup guides
+- [Supported Resources]({{ '/supported-resources.html' | relative_url }}) - Complete resource coverage
+- [API Reference]({{ '/api-reference.html' | relative_url }}) - REST API documentation
 
 ### Developer Resources
-- [Development](/csp-scanner/development.html) - Contributing and development setup
-- [Metadata Structure](/csp-scanner/metadata-structure.html) - Cloud-agnostic data format
-- [Implementation Details](/csp-scanner/implementation-details.html) - Architecture and design
+- [Development]({{ '/development.html' | relative_url }}) - Contributing and development setup
+- [Metadata Structure]({{ '/metadata-structure.html' | relative_url }}) - Cloud-agnostic data format
+- [Implementation Details]({{ '/implementation-details.html' | relative_url }}) - Architecture and design
 
 ## 🔧 Key Features
 
@@ -140,7 +140,7 @@ graph TB
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [Contributing Guide](/csp-scanner/development.html) for details on:
+We welcome contributions! See our [Contributing Guide]({{ '/development.html' | relative_url }}) for details on:
 
 - Setting up a development environment
 - Running tests and code quality checks
