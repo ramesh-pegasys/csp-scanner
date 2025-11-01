@@ -85,12 +85,16 @@ class ExtractionOrchestrator:
                         if not locations:
                             locations = regions or extractor.session.list_regions()
                         for location in locations:
-                            extraction_tasks.append(extractor.extract(location, filters))
+                            extraction_tasks.append(
+                                extractor.extract(location, filters)
+                            )
                     else:
                         extraction_tasks.append(extractor.extract(filters=filters))
                 else:
                     # Non-Azure: keep legacy logic
-                    extraction_tasks.append(self._extract_service(extractor, regions, filters))
+                    extraction_tasks.append(
+                        self._extract_service(extractor, regions, filters)
+                    )
 
             results = await asyncio.gather(*extraction_tasks, return_exceptions=True)
 

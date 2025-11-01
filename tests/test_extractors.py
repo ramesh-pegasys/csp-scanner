@@ -128,6 +128,26 @@ def test_s3_extractor_initialization():
     assert extractor.metadata.service_name == "s3"
 
 
+@pytest.mark.asyncio
+async def test_s3_extractor_extract():
+    """Test S3 extraction"""
+    mock_session = Mock()
+    mock_config = {}
+
+    extractor = S3Extractor(mock_session, mock_config)
+
+    # Mock the _extract_buckets method
+    mock_buckets = [{"resource_id": "my-bucket", "resource_type": "bucket"}]
+    with patch.object(
+        extractor, "_extract_buckets", return_value=mock_buckets
+    ) as mock_extract:
+        artifacts = await extractor.extract(region="us-east-1")
+
+        assert len(artifacts) == 1
+        assert artifacts[0]["resource_id"] == "my-bucket"
+        mock_extract.assert_called_once_with("us-east-1", None)
+
+
 def test_ec2_extractor_metadata():
     """Test EC2 extractor metadata"""
     mock_session = Mock()

@@ -31,6 +31,7 @@ async def test_lifespan_startup():
         mock_settings = Settings(
             aws_access_key_id="test-key",
             aws_secret_access_key="test-secret",
+            aws_account_id="test-account",
             aws_default_region="us-east-1",
             scanner_endpoint_url="http://localhost:8000",
             transport_timeout_seconds=30,
@@ -44,6 +45,7 @@ async def test_lifespan_startup():
         for attr in [
             "aws_access_key_id",
             "aws_secret_access_key",
+            "aws_account_id",
             "aws_default_region",
             "scanner_endpoint_url",
             "transport_timeout_seconds",
@@ -67,6 +69,7 @@ async def test_lifespan_startup():
         mock_transport_factory.return_value = mock_transport
 
         mock_orchestrator = Mock()
+        mock_orchestrator.stop = AsyncMock()
         mock_orchestrator_class.return_value = mock_orchestrator
 
         mock_scheduler.start = Mock()
@@ -118,15 +121,20 @@ async def test_lifespan_shutdown_disconnect():
 
     with patch("app.main.get_settings") as mock_get_settings, patch(
         "app.main.boto3.Session"
-    ), patch("app.main.ExtractorRegistry") as mock_registry_class, patch(
+    ) as mock_session_class, patch(
+        "app.main.ExtractorRegistry"
+    ) as mock_registry_class, patch(
         "app.main.TransportFactory.create"
     ) as mock_transport_factory, patch(
         "app.main.ExtractionOrchestrator"
     ) as mock_orchestrator_class, patch(
         "app.main.scheduler"
-    ) as mock_scheduler:
-        mock_settings = Settings()
+    ):
+        mock_settings = Settings(aws_account_id="test")
         mock_get_settings.return_value = mock_settings
+
+        mock_session = Mock()
+        mock_session_class.return_value = mock_session
 
         mock_registry = Mock()
         mock_registry_class.return_value = mock_registry
@@ -135,8 +143,10 @@ async def test_lifespan_shutdown_disconnect():
         mock_transport_factory.return_value = transport
 
         mock_orchestrator = Mock()
+        mock_orchestrator.stop = AsyncMock()
         mock_orchestrator_class.return_value = mock_orchestrator
 
+        mock_scheduler = Mock()
         mock_scheduler.start = Mock()
         mock_scheduler.shutdown = Mock()
 
@@ -164,3 +174,85 @@ async def test_root_endpoint():
     assert data["service"] == "Cloud Artifact Extractor"
     assert data["version"] == "1.0.0"
     assert data["status"] == "running"
+
+
+@pytest.mark.asyncio
+async def test_lifespan_startup_failure():
+    """Test application lifespan startup failure"""
+    mock_app = Mock()
+    mock_app.state = Mock()
+
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "app.main.boto3.Session"
+    ) as mock_session_class, patch("app.main.ExtractorRegistry"), patch(
+        "app.main.TransportFactory.create"
+    ), patch(
+        "app.main.ExtractionOrchestrator"
+    ), patch(
+        "app.main.scheduler"
+    ):
+        # Setup mocks
+        from app.core.config import Settings
+
+        mock_settings = Settings(
+            aws_access_key_id="test-key",
+            aws_secret_access_key="test-secret",
+            aws_account_id="test-account",
+            aws_default_region="us-east-1",
+        )
+        mock_get_settings.return_value = mock_settings
+
+        # Make boto3.Session raise an exception
+        mock_session_class.side_effect = Exception("Session creation failed")
+
+        # Test startup failure - should raise RuntimeError since no providers succeed
+        with pytest.raises(
+            RuntimeError, match="At least one cloud provider must be enabled"
+        ):
+            async with lifespan(mock_app):
+                pass
+
+
+@pytest.mark.asyncio
+async def test_lifespan_no_providers_enabled():
+    """Test application lifespan when no providers are enabled"""
+    mock_app = Mock()
+    mock_app.state = Mock()
+
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "app.main.ExtractorRegistry"
+    ) as mock_registry_class, patch(
+        "app.main.TransportFactory.create"
+    ) as mock_transport_factory, patch(
+        "app.main.ExtractionOrchestrator"
+    ) as mock_orchestrator_class, patch(
+        "app.main.scheduler"
+    ) as mock_scheduler:
+        # Setup mocks
+        from app.core.config import Settings
+
+        # Settings with no providers enabled
+        mock_settings = Settings(enabled_providers=[])
+        mock_get_settings.return_value = mock_settings
+
+        mock_registry = Mock()
+        mock_registry_class.return_value = mock_registry
+
+        mock_transport = Mock()
+        mock_transport.close = AsyncMock()
+        mock_transport_factory.return_value = mock_transport
+
+        mock_orchestrator = Mock()
+        mock_orchestrator.stop = AsyncMock()
+        mock_orchestrator_class.return_value = mock_orchestrator
+
+        mock_scheduler = Mock()
+        mock_scheduler.start = Mock()
+        mock_scheduler.shutdown = Mock()
+
+        # Test startup with no providers - should raise RuntimeError
+        with pytest.raises(
+            RuntimeError, match="At least one cloud provider must be enabled"
+        ):
+            async with lifespan(mock_app):
+                pass

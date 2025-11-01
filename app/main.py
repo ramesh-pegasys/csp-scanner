@@ -12,7 +12,7 @@ from app.core.config import get_settings
 from app.services.registry import ExtractorRegistry
 from app.services.orchestrator import ExtractionOrchestrator
 from app.transport.base import TransportFactory
-from app.cloud.base import CloudProvider, CloudSession
+from app.cloud.base import CloudProvider
 from app.cloud.aws_session import AWSSession
 from app.cloud.azure_session import AzureSession
 from app.cloud.gcp_session import GCPSession
@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Cloud Artifact Extractor")
 
     # Initialize cloud sessions based on enabled providers
-    sessions: Dict[CloudProvider, CloudSession] = {}
+    sessions: Dict[CloudProvider, Any] = {}
 
     # Initialize AWS if enabled (multi-account)
     if settings.is_aws_enabled:
@@ -67,7 +67,13 @@ async def lifespan(app: FastAPI):
                     aws_secret_access_key=settings.aws_secret_access_key,
                     region_name=regions[0] if regions else None,
                 )
-                aws_sessions.append({"session": AWSSession(boto_session), "account_id": account_id, "regions": regions})
+                aws_sessions.append(
+                    {
+                        "session": AWSSession(boto_session),
+                        "account_id": account_id,
+                        "regions": regions,
+                    }
+                )
             if aws_sessions:
                 sessions[CloudProvider.AWS] = aws_sessions
                 logger.info(f"Initialized {len(aws_sessions)} AWS sessions.")
@@ -91,7 +97,13 @@ async def lifespan(app: FastAPI):
                     client_id=settings.azure_client_id,
                     client_secret=settings.azure_client_secret,
                 )
-                azure_sessions.append({"session": azure_session, "subscription_id": subscription_id, "locations": locations})
+                azure_sessions.append(
+                    {
+                        "session": azure_session,
+                        "subscription_id": subscription_id,
+                        "locations": locations,
+                    }
+                )
             if azure_sessions:
                 sessions[CloudProvider.AZURE] = azure_sessions
                 logger.info(f"Initialized {len(azure_sessions)} Azure sessions.")
@@ -116,7 +128,13 @@ async def lifespan(app: FastAPI):
                     project_id=project_id,
                     credentials_path=settings.gcp_credentials_path,
                 )
-                gcp_sessions.append({"session": gcp_session, "project_id": project_id, "regions": regions})
+                gcp_sessions.append(
+                    {
+                        "session": gcp_session,
+                        "project_id": project_id,
+                        "regions": regions,
+                    }
+                )
             if gcp_sessions:
                 sessions[CloudProvider.GCP] = gcp_sessions
                 logger.info(f"Initialized {len(gcp_sessions)} GCP sessions.")

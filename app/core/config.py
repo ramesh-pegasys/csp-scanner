@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     aws_access_key_id: Optional[str] = None
     aws_secret_access_key: Optional[str] = None
     aws_accounts: Optional[List[Dict[str, Any]]] = None
+    # Legacy single-account fields
+    aws_account_id: Optional[str] = None
+    aws_default_region: str = "us-east-1"
 
     @property
     def aws_accounts_list(self) -> List[Dict[str, Any]]:
@@ -31,8 +34,8 @@ class Settings(BaseSettings):
         # Fallback for legacy config
         account_id = getattr(self, "aws_account_id", None)
         region = getattr(self, "aws_default_region", None)
-        if account_id and region:
-            return [{"account_id": account_id, "regions": [region]}]
+        if (account_id and region) or (region and region != "us-east-1"):
+            return [{"account_id": account_id or "default", "regions": [region]}]
         return []
 
     # Azure Configuration (multi-subscription)
@@ -41,6 +44,8 @@ class Settings(BaseSettings):
     azure_client_id: Optional[str] = None
     azure_client_secret: Optional[str] = None
     azure_accounts: Optional[List[Dict[str, Any]]] = None
+    # Legacy single-subscription field
+    azure_default_location: str = "eastus"
 
     @property
     def azure_accounts_list(self) -> List[Dict[str, Any]]:
@@ -53,13 +58,22 @@ class Settings(BaseSettings):
         # Fallback for legacy config
         subscription_id = getattr(self, "azure_subscription_id", None)
         location = getattr(self, "azure_default_location", None)
-        if subscription_id and location:
-            return [{"subscription_id": subscription_id, "locations": [location]}]
+        if (subscription_id and location) or (location and location != "eastus"):
+            return [
+                {
+                    "subscription_id": subscription_id or "default",
+                    "locations": [location],
+                }
+            ]
         return []
 
     # GCP Configuration (multi-project)
     gcp_projects: Optional[List[Dict[str, Any]]] = None
     gcp_credentials_path: Optional[str] = None
+    # Legacy single-project fields
+    gcp_project_id: Optional[str] = None
+    gcp_default_region: str = "us-central1"
+
     @property
     def gcp_projects_list(self) -> List[Dict[str, Any]]:
         """
@@ -71,8 +85,8 @@ class Settings(BaseSettings):
         # Fallback for legacy config
         project_id = getattr(self, "gcp_project_id", None)
         region = getattr(self, "gcp_default_region", None)
-        if project_id and region:
-            return [{"project_id": project_id, "regions": [region]}]
+        if (project_id and region) or (region and region != "us-central1"):
+            return [{"project_id": project_id or "default", "regions": [region]}]
         return []
 
     # Transport Configuration
