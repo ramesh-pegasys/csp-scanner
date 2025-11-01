@@ -19,128 +19,81 @@ nav_order: 1
 [![Flake8](https://img.shields.io/badge/flake8-checked-blue.svg)](https://flake8.pycqa.org/)
 [![Black](https://img.shields.io/badge/black-formatted-black.svg)](https://github.com/psf/black)
 
-A FastAPI-based service for extracting and managing cloud service artifacts from AWS, Azure, and GCP.
+A FastAPI-based service for extracting and managing cloud service artifacts across AWS, Azure, and Google Cloud Platform. Built for security scanning, inventory management, and multi-cloud governance.
 
-## 🚀 Quickstart
+## 🚀 Quick Links
 
-
-Get up and running in minutes:
-
-- **[Installation & Setup]({{ '/getting-started.html' | relative_url }})** - Install dependencies and configure your environment
-- **[Configuration Guide]({{ '/configuration.html' | relative_url }})** - Learn about configuration options and transport methods
-- **[API Reference]({{ '/api-reference.html' | relative_url }})** - Explore available API endpoints
-
-## ☁️ Cloud Providers
-
-The CSP Scanner supports extracting resources from multiple cloud providers:
-
-### Amazon Web Services (AWS)
-- **Setup**: [AWS Guide]({{ '/cloud-providers-aws.html' | relative_url }})
-- **Resources**: 13+ services including EC2, S3, RDS, Lambda, IAM, VPC
-- **Authentication**: Access keys, IAM roles, environment variables
-
-### Microsoft Azure
-- **Setup**: [Azure Guide]({{ '/cloud-providers-azure.html' | relative_url }})
-- **Resources**: 8+ services including Compute, Storage, Network, Web Apps, SQL
-- **Authentication**: Service Principal, Managed Identity, Azure CLI
-
-### Google Cloud Platform (GCP)
-- **Setup**: [GCP Guide]({{ '/cloud-providers-gcp.html' | relative_url }})
-- **Resources**: 2+ services including Compute Engine, Cloud Storage
-- **Authentication**: Service Account keys, Application Default Credentials
-
-## 📋 Supported Resources
-
-View the complete list of [supported cloud resources]({{ '/supported-resources.html' | relative_url }}) across all providers.
-
-## 🛠️ Development
-
-- **[Contributing Guide]({{ '/development.html' | relative_url }})** - How to contribute to the project
-- **[Architecture Overview]({{ '/development.html#project-architecture' | relative_url }})** - Understanding the codebase
-- **[Testing]({{ '/development.html#testing' | relative_url }})** - Running tests and coverage
-
-## 📖 Documentation Sections
-
-### User Guides
-- [Quickstart]({{ '/getting-started.html' | relative_url }}) - Installation and basic setup
-- [Configuration]({{ '/configuration.html' | relative_url }}) - Detailed configuration options
-- [Cloud Providers]({{ '/cloud-providers.html' | relative_url }}) - Provider-specific setup guides
-- [Supported Resources]({{ '/supported-resources.html' | relative_url }}) - Complete resource coverage
-- [API Reference]({{ '/api-reference.html' | relative_url }}) - REST API documentation
-
-### Developer Resources
-- [Development]({{ '/development.html' | relative_url }}) - Contributing and development setup
-- [Metadata Structure]({{ '/metadata-structure.html' | relative_url }}) - Cloud-agnostic data format
-- [Implementation Details]({{ '/implementation-details.html' | relative_url }}) - Architecture and design
+<div class="card-grid">
+  <div class="card">
+    <h3>📘 Getting Started</h3>
+    <p>Install and configure the scanner in minutes</p>
+    <a href="{{ '/getting-started.html' | relative_url }}">Get Started →</a>
+  </div>
+  
+  <div class="card">
+    <h3>☁️ Cloud Providers</h3>
+    <p>Setup guides for AWS, Azure, and GCP</p>
+    <a href="{{ '/cloud-providers.html' | relative_url }}">View Providers →</a>
+  </div>
+  
+  <div class="card">
+    <h3>⚙️ Configuration</h3>
+    <p>Configure transport, batching, and scheduling</p>
+    <a href="{{ '/configuration.html' | relative_url }}">Configure →</a>
+  </div>
+  
+  <div class="card">
+    <h3>📚 API Reference</h3>
+    <p>Explore REST API endpoints and examples</p>
+    <a href="{{ '/api-reference.html' | relative_url }}">View API →</a>
+  </div>
+</div>
 
 ## 🔧 Key Features
 
-- **Multi-Cloud Support**: Scan AWS, Azure, and GCP simultaneously
-- **Flexible Transport**: HTTP, filesystem, or null transport options
-- **Async Processing**: High-performance concurrent extraction
-- **Configurable Batching**: Control extraction batch sizes and delays
-- **Scheduled Scanning**: Automated periodic resource scanning
-- **Cloud-Agnostic Output**: Consistent artifact format across providers
+- **Multi-Cloud Support** - Scan AWS, Azure, and GCP with a unified interface
+- **Flexible Transport** - Send artifacts via HTTP, filesystem, or null transport
+- **Async Processing** - High-performance concurrent extraction
+- **Scheduled Scanning** - Automated periodic resource scanning with cron expressions
+- **Cloud-Agnostic Output** - Consistent metadata format across all providers
+- **Extensible Architecture** - Easy to add new providers and resource types
 
-## 🏗️ Architecture
+## ☁️ Supported Cloud Providers
 
-The scanner follows a modular architecture designed for extensibility:
+| Provider | Services | Authentication Methods |
+|----------|----------|------------------------|
+| **AWS** | 13+ services (EC2, S3, RDS, Lambda, IAM, VPC, etc.) | Access Keys, IAM Roles, Environment Variables |
+| **Azure** | 8+ services (Compute, Storage, Network, Web Apps, SQL, etc.) | Service Principal, Managed Identity, Azure CLI |
+| **GCP** | 2+ services (Compute Engine, Cloud Storage) | Service Account Keys, Application Default Credentials |
 
-```mermaid
-graph TB
-    subgraph FastAPI["FastAPI Application"]
-        API[REST API Endpoints]
-    end
-    
-    subgraph CloudSession["CloudSession Abstraction Layer"]
-        AWS[AWSSession<br/>boto3]
-        Azure[AzureSession<br/>Azure SDK]
-        GCP[GCPSession<br/>Google Cloud SDK]
-    end
-    
-    subgraph Registry["ExtractorRegistry (Multi-Cloud)"]
-        AWSE[AWS Extractors<br/>EC2, S3, RDS, etc.]
-        AzureE[Azure Extractors<br/>Compute, Storage, etc.]
-        GCPE[GCP Extractors<br/>Compute, Storage, etc.]
-    end
-    
-    subgraph Orchestrator["ExtractionOrchestrator"]
-        Orch[Cloud-Agnostic Orchestration]
-    end
-    
-    subgraph Transport["Transport Layer"]
-        HTTP[HTTP Transport]
-        FS[Filesystem Transport]
-        Null[Null Transport]
-    end
-    
-    API --> CloudSession
-    AWS --> AWSE
-    Azure --> AzureE
-    GCP --> GCPE
-    AWSE --> Orch
-    AzureE --> Orch
-    GCPE --> Orch
-    Orch --> Transport
-    
-    style FastAPI fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
-    style CloudSession fill:#e0f2fe,stroke:#1a4fa3,stroke-width:2px
-    style Registry fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
-    style Orchestrator fill:#e0f2fe,stroke:#1a4fa3,stroke-width:2px
-    style Transport fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
-```
+[View all supported resources →]({{ '/supported-resources.html' | relative_url }})
 
-## 📊 Use Cases
+## � Documentation
 
-- **Security Scanning**: Extract cloud resources for policy compliance checking
-- **Inventory Management**: Maintain up-to-date catalog of cloud assets
-- **Cost Optimization**: Analyze resource usage and identify optimization opportunities
-- **Compliance Auditing**: Ensure resources meet organizational standards
-- **Multi-Cloud Governance**: Unified view across AWS, Azure, and GCP
+### For Users
+- **[Getting Started]({{ '/getting-started.html' | relative_url }})** - Quick installation and setup guide
+- **[Configuration]({{ '/configuration.html' | relative_url }})** - Environment variables, YAML files, and settings
+- **[Cloud Providers]({{ '/cloud-providers.html' | relative_url }})** - Provider-specific setup and authentication
+- **[API Reference]({{ '/api-reference.html' | relative_url }})** - Complete REST API documentation
+- **[Operations]({{ '/operations.html' | relative_url }})** - Running extractions and managing schedules
+- **[Troubleshooting]({{ '/troubleshooting.html' | relative_url }})** - Common issues and solutions
+
+### For Developers
+- **[Development Guide]({{ '/development.html' | relative_url }})** - Contributing and development setup
+- **[Implementation Details]({{ '/implementation-details.html' | relative_url }})** - Architecture and design patterns
+- **[Metadata Structure]({{ '/metadata-structure.html' | relative_url }})** - Cloud-agnostic data format specification
+
+## 📊 Common Use Cases
+
+- **Security Scanning** - Extract cloud resources for policy compliance and security analysis
+- **Inventory Management** - Maintain an up-to-date catalog of all cloud assets
+- **Cost Optimization** - Analyze resource usage patterns and identify cost savings
+- **Compliance Auditing** - Verify resources meet organizational and regulatory standards
+- **Multi-Cloud Governance** - Unified visibility and control across multiple cloud providers
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [Contributing Guide]({{ '/development.html' | relative_url }}) for details on:
+We welcome contributions! See our [Development Guide]({{ '/development.html' | relative_url }}) for:
 
 - Setting up a development environment
 - Running tests and code quality checks
@@ -149,14 +102,13 @@ We welcome contributions! See our [Contributing Guide]({{ '/development.html' | 
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/ramesh-pegasys/csp-scanner/blob/main/LICENSE) file for details.
 
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/ramesh-pegasys/csp-scanner/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/ramesh-pegasys/csp-scanner/discussions)
-- **Documentation**: This site contains comprehensive guides and API references
 
 ---
 
-**Last Updated**: October 31, 2025
+**Last Updated**: November 1, 2025

@@ -7,7 +7,7 @@ has_children: true
 
 # Supported Resources
 
-This document provides a comprehensive overview of all cloud resources supported by the CSP Scanner across AWS, Azure, and GCP. For detailed information about each provider's resources, see the provider-specific pages:
+This document provides a comprehensive overview of all cloud resources supported by the Cloud Artifact Extractor across AWS, Azure, and Google Cloud Platform. For detailed information about each provider's resources, see the provider-specific pages:
 
 - [AWS Supported Resources]({{ '/supported-resources-aws.html' | relative_url }})
 - [Azure Supported Resources]({{ '/supported-resources-azure.html' | relative_url }})
@@ -15,11 +15,82 @@ This document provides a comprehensive overview of all cloud resources supported
 
 ## Overview
 
-The scanner currently supports **3 cloud providers** with **127+ resource types**:
+The Cloud Artifact Extractor provides comprehensive multi-cloud resource extraction capabilities across Amazon Web Services (AWS), Microsoft Azure, and Google Cloud Platform (GCP). It extracts detailed configurations, policies, and metadata from a wide range of cloud resources including compute instances, storage services, databases, networking components, identity and access management, container orchestration, serverless functions, and security services.
 
-- **AWS**: 13 services, 41 resource types ([see full list](supported-resources-aws.html))
-- **Azure**: 8 services, 15 resource types ([see full list](supported-resources-azure.html))
-- **GCP**: 28 services, 71+ resource types ([see full list](supported-resources-gcp.html))
+Each resource is extracted with a standardized metadata structure that enables cloud-agnostic policy analysis, security scanning, compliance auditing, and inventory management. The extractor supports both single-cloud and multi-cloud deployments, making it ideal for organizations with hybrid cloud strategies or those conducting cross-cloud governance and security assessments.
+
+## Quick Reference by Cloud Provider
+
+### AWS (Amazon Web Services)
+
+| Category | Service Count | Key Services |
+|----------|---------------|--------------|
+| **Compute** | 4 | EC2, Lambda, ECS, EKS |
+| **Storage** | 1 | S3 (buckets, objects, policies) |
+| **Database** | 1 | RDS (instances, clusters, snapshots) |
+| **Networking** | 1 | VPC (subnets, security groups, route tables, NAT gateways) |
+| **Load Balancing** | 1 | ELB (ALB, NLB, target groups) |
+| **Identity & Access** | 1 | IAM (users, roles, policies, groups) |
+| **Content Delivery** | 1 | CloudFront (distributions, origin access identities) |
+| **API Management** | 1 | API Gateway (REST APIs, resources, methods, stages) |
+| **Security** | 1 | KMS (keys, aliases, grants) |
+| **Containers** | 1 | App Runner (services, connections) |
+| **Total** | **13 services** | **60+ resource types** |
+
+[View detailed AWS resources →]({{ '/supported-resources-aws.html' | relative_url }})
+
+### Azure (Microsoft Azure)
+
+| Category | Service Count | Key Services |
+|----------|---------------|--------------|
+| **Compute** | 1 | Virtual Machines, VM Scale Sets |
+| **Storage** | 1 | Storage Accounts (Blob, File, Queue, Table) |
+| **Networking** | 1 | VNet, NSG, Load Balancers, Application Gateways |
+| **Web & App Services** | 1 | App Service Plans, Web Apps, Function Apps |
+| **Database** | 1 | SQL Server, SQL Database |
+| **Container Services** | 1 | Azure Kubernetes Service (AKS) |
+| **Security** | 1 | Key Vault |
+| **Identity & Access** | 1 | RBAC Role Definitions, Role Assignments |
+| **Total** | **8 services** | **20+ resource types** |
+
+[View detailed Azure resources →]({{ '/supported-resources-azure.html' | relative_url }})
+
+### GCP (Google Cloud Platform)
+
+| Category | Service Count | Key Services |
+|----------|---------------|--------------|
+| **Compute & Serverless** | 5 | Compute Engine, GKE, Cloud Run, Cloud Functions, Cloud Build |
+| **Storage & Database** | 6 | Cloud Storage, Firestore, Spanner, Memorystore, Bigtable, Filestore |
+| **Networking** | 6 | VPC, Firewall, Load Balancer, DNS, Interconnect |
+| **Big Data & Analytics** | 5 | BigQuery, Dataproc, Dataflow, Pub/Sub |
+| **Security & Identity** | 4 | IAM, Cloud Armor, Identity-Aware Proxy |
+| **Management** | 4 | Logging, Monitoring, Resource Manager, Billing |
+| **Integration** | 2 | Cloud Tasks, Cloud Scheduler |
+| **Total** | **29 services** | **100+ resource types** |
+
+[View detailed GCP resources →]({{ '/supported-resources-gcp.html' | relative_url }})
+
+---
+
+## Cross-Cloud Resource Comparison
+
+| Resource Category | AWS | Azure | GCP |
+|-------------------|-----|-------|-----|
+| **Virtual Machines** | EC2 Instances | Virtual Machines | Compute Instances |
+| **Container Orchestration** | EKS | AKS | GKE |
+| **Object Storage** | S3 Buckets | Storage Accounts (Blob) | Cloud Storage Buckets |
+| **Relational Database** | RDS | SQL Database | Cloud SQL |
+| **Serverless Functions** | Lambda | Function Apps | Cloud Functions |
+| **Identity Management** | IAM | Azure AD / RBAC | Cloud IAM |
+| **Key Management** | KMS | Key Vault | Cloud KMS |
+| **Virtual Network** | VPC | Virtual Network | VPC Network |
+| **Load Balancing** | ELB (ALB/NLB) | Load Balancer / App Gateway | Load Balancer |
+| **Container Registry** | ECR | Container Registry | Artifact Registry / GCR |
+| **NoSQL Database** | DynamoDB | Cosmos DB | Firestore / Bigtable |
+| **Message Queue** | SQS | Service Bus | Pub/Sub |
+| **CDN** | CloudFront | CDN | Cloud CDN |
+
+---
 
 ## Resource Type Naming Convention
 
@@ -28,14 +99,19 @@ All resources follow a consistent naming pattern:
 {cloud_provider}:{service}:{resource_type}
 ```
 
-Examples:
-- `aws:ec2:instance`
-- `azure:compute:virtual-machine`
-- `gcp:compute:instance`
+**Examples:**
+- `aws:ec2:instance` - AWS EC2 Instance
+- `azure:compute:virtual-machine` - Azure Virtual Machine
+- `gcp:compute:instance` - GCP Compute Engine Instance
+- `aws:s3:bucket` - AWS S3 Bucket
+- `azure:storage:account` - Azure Storage Account
+- `gcp:storage:bucket` - GCP Cloud Storage Bucket
+
+---
 
 ## Metadata Structure
 
-All extracted resources include standardized metadata:
+All extracted resources include standardized metadata for cloud-agnostic processing:
 
 ```json
 {
@@ -46,7 +122,7 @@ All extracted resources include standardized metadata:
     "service": "service-name",
     "region": "region-or-location",
     "account_id|subscription_id|project_id": "cloud-account-identifier",
-    "labels": {
+    "tags": {
       "key": "value"
     }
   },
@@ -54,25 +130,21 @@ All extracted resources include standardized metadata:
     // Resource-specific configuration
   },
   "raw": {
-    // Full cloud provider API response
+    // Full cloud provider API response (optional)
   }
 }
 ```
 
-## Resource Coverage Summary
+---
 
-| Category | AWS | Azure | GCP | Total |
-|----------|-----|-------|-----|-------|
-| **Compute** | 2 (EC2, ECS) | 2 (VM, VMSS) | 2 (Compute, Instance Groups) | 6 |
-| **Storage** | 1 (S3) | 1 (Storage) | 1 (Storage) | 3 |
-| **Database** | 2 (RDS, Aurora) | 2 (SQL Server, DB) | 0 | 4 |
-| **Networking** | 4 (VPC, ELB, CloudFront, API GW) | 3 (NSG, VNet, LB) | 4 (VPC, Firewall, LB, Subnets) | 11 |
-| **Serverless** | 2 (Lambda, App Runner) | 2 (Web Apps, Functions) | 0 | 4 |
-| **Identity** | 3 (IAM Users/Roles/Policies) | 2 (Role Defs/Assignments) | 3 (Service Accounts, Policies, Roles) | 8 |
-| **Containers** | 2 (ECS, EKS) | 1 (AKS) | 1 (GKE) | 4 |
-| **Security** | 1 (KMS) | 1 (Key Vault) | 0 | 2 |
-| **Total Services** | 13 | 8 | 5 | 26 |
-| **Total Resources** | 20+ | 20+ | 10+ | 50+ |
+## Total Resource Coverage
+
+| Cloud Provider | Services | Resource Types | Coverage |
+|----------------|----------|----------------|----------|
+| **AWS** | 13 | 60+ | ████████░░ 80% |
+| **Azure** | 8 | 20+ | ██████░░░░ 60% |
+| **GCP** | 29 | 100+ | █████████░ 90% |
+| **Total** | **50** | **180+** | - |
 
 ## Configuration Options
 

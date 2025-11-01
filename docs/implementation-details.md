@@ -8,9 +8,57 @@ nav_order: 7
 
 This document provides technical details about the Cloud Artifact Extractor's architecture, design patterns, and implementation specifics.
 
-## Architecture Overview
+## System Architecture
 
 The Cloud Artifact Extractor follows a modular, cloud-agnostic architecture designed for scalability, maintainability, and extensibility.
+
+### High-Level Architecture
+
+```mermaid
+graph TB
+    subgraph FastAPI["FastAPI Application"]
+        API[REST API Endpoints]
+    end
+    
+    subgraph CloudSession["CloudSession Abstraction Layer"]
+        AWS[AWSSession<br/>boto3]
+        Azure[AzureSession<br/>Azure SDK]
+        GCP[GCPSession<br/>Google Cloud SDK]
+    end
+    
+    subgraph Registry["ExtractorRegistry (Multi-Cloud)"]
+        AWSE[AWS Extractors<br/>EC2, S3, RDS, etc.]
+        AzureE[Azure Extractors<br/>Compute, Storage, etc.]
+        GCPE[GCP Extractors<br/>Compute, Storage, etc.]
+    end
+    
+    subgraph Orchestrator["ExtractionOrchestrator"]
+        Orch[Cloud-Agnostic Orchestration]
+    end
+    
+    subgraph Transport["Transport Layer"]
+        HTTP[HTTP Transport]
+        FS[Filesystem Transport]
+        Null[Null Transport]
+    end
+    
+    API --> CloudSession
+    AWS --> AWSE
+    Azure --> AzureE
+    GCP --> GCPE
+    AWSE --> Orch
+    AzureE --> Orch
+    GCPE --> Orch
+    Orch --> Transport
+    
+    style FastAPI fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style CloudSession fill:#e0f2fe,stroke:#1a4fa3,stroke-width:2px
+    style Registry fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+    style Orchestrator fill:#e0f2fe,stroke:#1a4fa3,stroke-width:2px
+    style Transport fill:#dbeafe,stroke:#1a4fa3,stroke-width:2px
+```
+
+### Component Interaction
 
 ```mermaid
 graph TB
