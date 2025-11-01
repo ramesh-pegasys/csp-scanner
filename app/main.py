@@ -182,6 +182,7 @@ async def lifespan(app: FastAPI):
         await transport.disconnect()
 
 
+
 # Create FastAPI app
 app = FastAPI(  # type: ignore[assignment]
     title="Cloud Artifact Extractor",
@@ -189,6 +190,10 @@ app = FastAPI(  # type: ignore[assignment]
     version="2.0.0",
     lifespan=lifespan,
 )
+
+# Set custom OpenAPI schema with JWT Bearer security
+from app.api.routes.extraction import custom_openapi
+app.openapi = lambda: custom_openapi(app)
 
 # Include routes
 app.include_router(extraction.router)

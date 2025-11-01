@@ -31,6 +31,88 @@ For detailed setup instructions see the consolidated provider guide in the docs:
 - **Azure Setup**: [Microsoft Azure](./docs/cloud-providers.md#microsoft-azure)
 - **GCP Setup**: [Google Cloud Platform (GCP)](./docs/cloud-providers.md#google-cloud-platform-gcp)
 
+
+
+## JWT & Certificate Generation Utility
+
+Use `generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates for local HTTPS testing.
+
+Usage examples:
+
+```bash
+# Generate only JWT token
+python generate_certs_and_jwt.py --jwt
+
+# Generate only self-signed certs
+python generate_certs_and_jwt.py --certs
+
+# Generate both JWT and certs
+python generate_certs_and_jwt.py --jwt --certs
+
+# Specify certs directory and base name
+python generate_certs_and_jwt.py --certs --certs-dir ./certs --certs-name server
+```
+
+For HTTPS local testing, run Uvicorn with the generated certs:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs/server.key --ssl-certfile certs/server.crt
+```
+
+The `certs/` directory is included in the repo but all contents are ignored via `.gitignore` to prevent accidental check-in of sensitive files.
+
+To generate self-signed certificates for local HTTPS testing, use:
+
+```bash
+python generate_certs_and_jwt.py --certs
+```
+
+This will create `server.key` and `server.crt` in the `certs/` folder. You can use these with Uvicorn:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs/server.key --ssl-certfile certs/server.crt
+```
+
+You can also generate a static JWT token for API authentication:
+
+```bash
+python generate_certs_and_jwt.py --jwt
+```
+
+Or both at once:
+
+```bash
+python generate_certs_and_jwt.py --jwt --certs
+```
+
+## API Authentication (JWT)
+
+This app uses static JWT tokens for API authentication. To generate a token, use the provided utility script:
+
+```bash
+python generate_static_jwt.py
+```
+
+Set environment variables to customize:
+- `JWT_SECRET_KEY` (default: 'your-secret-key')
+- `JWT_ALGORITHM` (default: 'HS256')
+- `JWT_EXPIRE_DAYS` (default: 365)
+
+Use the generated token in your API requests:
+
+```
+Authorization: Bearer <your-token>
+```
+
+**Note:**
+- No user management is performed in this app.
+- All clients use the same static token for access.
+
+---
+
+**TODO:**
+- Implement support for external JWT providers (e.g., Auth0, AWS Cognito, Google IAM) for more advanced authentication options in the future.
+
 ## Cloud Provider Credentials Setup
 
 The application requires credentials to access and extract data from your cloud providers. Below is a quick reference for each provider - for comprehensive setup instructions, see the [Cloud Providers Guide](./docs/cloud-providers.md).

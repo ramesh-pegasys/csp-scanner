@@ -9,7 +9,7 @@ tenacity
 apscheduler
 pyyaml
 python-multipart
-python-json-logger
+python-jose
 
 # AWS
 boto3

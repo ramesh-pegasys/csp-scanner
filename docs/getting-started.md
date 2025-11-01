@@ -25,6 +25,62 @@ python --version
 
 If you need to install Python, visit [python.org](https://python.org) for installation instructions.
 
+
+
+## JWT & Certificate Generation Utility
+
+Use `generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates for local HTTPS testing.
+
+Usage examples:
+
+```bash
+# Generate only JWT token
+python generate_certs_and_jwt.py --jwt
+
+# Generate only self-signed certs
+python generate_certs_and_jwt.py --certs
+
+# Generate both JWT and certs
+python generate_certs_and_jwt.py --jwt --certs
+
+# Specify certs directory and base name
+python generate_certs_and_jwt.py --certs --certs-dir ./certs --certs-name server
+```
+
+For HTTPS local testing, run Uvicorn with the generated certs:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs/server.key --ssl-certfile certs/server.crt
+```
+
+All API endpoints except `/health` require a static JWT token for authentication.
+
+To generate a token, use the provided utility script:
+
+```bash
+python generate_static_jwt.py
+```
+
+Set environment variables to customize:
+- `JWT_SECRET_KEY` (default: 'your-secret-key')
+- `JWT_ALGORITHM` (default: 'HS256')
+- `JWT_EXPIRE_DAYS` (default: 365)
+
+Include the token in your API requests:
+
+```
+Authorization: Bearer <your-token>
+```
+
+**Note:**
+- No user management is performed in this app.
+- All clients use the same static token for access.
+
+---
+
+**TODO:**
+- Support for external JWT providers (e.g., Auth0, AWS Cognito, Google IAM) may be added in the future.
+
 ## Installation
 
 ### 1. Clone the Repository

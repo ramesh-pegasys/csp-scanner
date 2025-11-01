@@ -30,3 +30,9 @@ batch_delay_seconds: 0.5
 transport_type: "filesystem"  # Options: http, filesystem, null
 filesystem_base_dir: "./file_collector"
 filesystem_create_dir: true
+
+# JWT Authentication Configuration
+jwt:
+  secret_key: "your-secret-key"  # Change for production
+  algorithm: "HS256"
+  expire_days: 365

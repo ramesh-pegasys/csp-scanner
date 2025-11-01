@@ -14,9 +14,40 @@ This document provides comprehensive documentation for the Cloud Artifact Extrac
 http://localhost:8000
 ```
 
-## Authentication
 
-The API currently does not require authentication. For production deployments, consider adding authentication middleware.
+## JWT & Certificate Generation Utility
+
+For local development and testing, use `generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates.
+
+See the project README and Getting Started guide for usage instructions.
+
+All API endpoints except `/health` require a static JWT token for authentication.
+
+To generate a token, use the provided utility script:
+
+```bash
+python generate_static_jwt.py
+```
+
+Set environment variables to customize:
+- `JWT_SECRET_KEY` (default: 'your-secret-key')
+- `JWT_ALGORITHM` (default: 'HS256')
+- `JWT_EXPIRE_DAYS` (default: 365)
+
+Include the token in your API requests:
+
+```
+Authorization: Bearer <your-token>
+```
+
+**Note:**
+- No user management is performed in this app.
+- All clients use the same static token for access.
+
+---
+
+**TODO:**
+- Support for external JWT providers (e.g., Auth0, AWS Cognito, Google IAM) may be added in the future.
 
 ## Response Format
 
