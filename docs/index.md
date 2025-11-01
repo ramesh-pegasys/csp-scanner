@@ -13,7 +13,7 @@ nav_order: 1
 # Cloud Artifact Extractor
 
 [![CI](https://github.com/ramesh-pegasys/csp-scanner/actions/workflows/ci.yml/badge.svg)](https://github.com/ramesh-pegasys/csp-scanner/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)](https://pytest-cov.readthedocs.io/)
+[![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen)](https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
 [![Flake8](https://img.shields.io/badge/flake8-checked-blue.svg)](https://flake8.pycqa.org/)
@@ -111,4 +111,4 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 
 ---
 
-**Last Updated**: November 1, 2025
+**Last Updated**: November 01, 2025

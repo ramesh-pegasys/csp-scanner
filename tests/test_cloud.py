@@ -148,5 +148,7 @@ def test_gcp_session_provider():
     """Test that GCP session returns correct provider"""
     from app.cloud.gcp_session import GCPSession
 
-    session = GCPSession("test-project")
+    # Mock credentials to avoid requiring actual GCP credentials
+    mock_credentials = Mock()
+    session = GCPSession("test-project", credentials=mock_credentials)
     assert session.provider == CloudProvider.GCP

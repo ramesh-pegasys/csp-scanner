@@ -56,24 +56,28 @@ class GCPSession:
                     f"Failed to load GCP credentials from {credentials_path}: {e}"
                 )
                 raise
-        try:
-            from google.auth import default
+        else:
+            # Use default credential chain (environment vars, service account, etc.)
+            try:
+                from google.auth import default
 
-            # Disable file cache
-            self.credentials, _ = default(
-                scopes=["https://www.googleapis.com/auth/cloud-platform"]
-            )
+                # Disable file cache
+                self.credentials, _ = default(
+                    scopes=["https://www.googleapis.com/auth/cloud-platform"]
+                )
 
-            # Example of building a client with caching disabled
-            # self.compute_client = build('compute', 'v1', credentials=self.credentials, cache_discovery=False)
+                # Example of building a client with caching disabled
+                # self.compute_client = build('compute', 'v1', credentials=self.credentials, cache_discovery=False)
 
-            logger.info("Initialized GCP session with application default credentials")
-        except ImportError:
-            logger.error("google-api-python-client or google-auth not installed.")
-            raise
-        except Exception as e:
-            logger.error(f"Failed to get default GCP credentials: {e}")
-            raise
+                logger.info(
+                    "Initialized GCP session with application default credentials"
+                )
+            except ImportError:
+                logger.error("google-api-python-client or google-auth not installed.")
+                raise
+            except Exception as e:
+                logger.error(f"Failed to get default GCP credentials: {e}")
+                raise
 
     @property
     def provider(self) -> CloudProvider:
