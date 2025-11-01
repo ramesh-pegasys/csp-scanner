@@ -23,11 +23,11 @@ def get_python_executable():
         Path(__file__).parent / ".venv" / "bin" / "python",
         Path(__file__).parent / "venv" / "bin" / "python",
     ]
-    
+
     for venv_python in venv_paths:
         if venv_python.exists():
             return str(venv_python)
-    
+
     # Fall back to current Python
     return sys.executable
 
@@ -37,13 +37,10 @@ def run_command(cmd, description):
     python_exe = get_python_executable()
     if cmd[0] == "python":
         cmd[0] = python_exe
-    
+
     try:
         result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            cwd=Path(__file__).parent
+            cmd, capture_output=True, text=True, cwd=Path(__file__).parent
         )
         success = result.returncode == 0
         output = result.stdout + result.stderr
@@ -68,7 +65,9 @@ def run_flake8():
 def run_black():
     """Run black formatting check."""
     print("Running black (check mode)...")
-    success, output = run_command(["black", "--check", "--diff", "app", "tests"], "black")
+    success, output = run_command(
+        ["black", "--check", "--diff", "app", "tests"], "black"
+    )
     if not success:
         print("❌ Black formatting issues found:")
         print(output)
@@ -98,7 +97,7 @@ def run_pytest_coverage():
             [python_exe, "-m", "pytest", "--cov=app", "--cov-report=term-missing"],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent
+            cwd=Path(__file__).parent,
         )
         return result.returncode == 0, result.stdout + result.stderr
     except subprocess.CalledProcessError as e:
@@ -109,14 +108,14 @@ def run_pytest_coverage():
 def extract_coverage_percentage(output):
     """Extract the total coverage percentage from pytest output."""
     # Look for the TOTAL line
-    lines = output.split('\n')
+    lines = output.split("\n")
     for line in reversed(lines):
-        if line.startswith('TOTAL'):
+        if line.startswith("TOTAL"):
             # TOTAL                                     2583    240    91%
             parts = line.split()
             if len(parts) >= 4:
                 try:
-                    percentage = int(parts[-1].rstrip('%'))
+                    percentage = int(parts[-1].rstrip("%"))
                     return percentage
                 except ValueError:
                     pass
@@ -126,18 +125,18 @@ def extract_coverage_percentage(output):
 
 def update_badge_in_file(file_path, percentage):
     """Update the coverage badge in the given file."""
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # Pattern to match the coverage badge
-    pattern = r'\[!\[Coverage\]\(https://img\.shields\.io/badge/coverage-[^%]*%25-brightgreen\)\]'
+    pattern = r"\[!\[Coverage\]\(https://img\.shields\.io/badge/coverage-[^%]*%25-brightgreen\)\]"
 
     # New badge
-    new_badge = f'[![Coverage](https://img.shields.io/badge/coverage-{percentage}%25-brightgreen)](https://pytest-cov.readthedocs.io/)'
+    new_badge = f"[![Coverage](https://img.shields.io/badge/coverage-{percentage}%25-brightgreen)](https://pytest-cov.readthedocs.io/)"
 
     if re.search(pattern, content):
         updated_content = re.sub(pattern, new_badge, content)
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             f.write(updated_content)
         print(f"Updated coverage badge in {file_path} to {percentage}%")
     else:
@@ -146,16 +145,24 @@ def update_badge_in_file(file_path, percentage):
 
 def update_last_modified_date(file_path):
     """Update the last modified date in the given file."""
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     # Get the last commit date for the docs directory
     try:
         result = subprocess.run(
-            ["git", "log", "-1", "--format=%cd", "--date=format:%B %d, %Y", "--", "docs/"],
+            [
+                "git",
+                "log",
+                "-1",
+                "--format=%cd",
+                "--date=format:%B %d, %Y",
+                "--",
+                "docs/",
+            ],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent
+            cwd=Path(__file__).parent,
         )
         if result.returncode == 0:
             current_date = result.stdout.strip()
@@ -165,24 +172,24 @@ def update_last_modified_date(file_path):
     except Exception:
         # Fallback to current date if git is not available
         current_date = datetime.now().strftime("%B %d, %Y")
-    
+
     # Pattern to match the last updated line
-    pattern = r'\*\*Last Updated\*\*: .*'
+    pattern = r"\*\*Last Updated\*\*: .*"
 
     # New last updated line
-    new_line = f'**Last Updated**: {current_date}'
+    new_line = f"**Last Updated**: {current_date}"
 
     if re.search(pattern, content):
         updated_content = re.sub(pattern, new_line, content)
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             f.write(updated_content)
         print(f"Updated last modified date in {file_path} to {current_date}")
     else:
         # If no existing date, add it at the end
-        if not content.endswith('\n'):
-            content += '\n'
-        content += f'\n---\n\n{new_line}'
-        with open(file_path, 'w') as f:
+        if not content.endswith("\n"):
+            content += "\n"
+        content += f"\n---\n\n{new_line}"
+        with open(file_path, "w") as f:
             f.write(content)
         print(f"Added last modified date to {file_path}: {current_date}")
 
@@ -190,30 +197,30 @@ def update_last_modified_date(file_path):
 def main():
     """Run all pre-commit checks."""
     print("🚀 Running pre-commit checks...\n")
-    
+
     checks = []
-    
+
     # Run quality checks
     checks.append(("Flake8", run_flake8()))
     checks.append(("Black", run_black()))
     checks.append(("MyPy", run_mypy()))
-    
+
     # Run tests with coverage
     pytest_success, pytest_output = run_pytest_coverage()
     checks.append(("Pytest", pytest_success))
-    
+
     if pytest_success:
         percentage = extract_coverage_percentage(pytest_output)
         if percentage is not None:
             print(f"Coverage: {percentage}%")
-            
+
             # Update badges
             readme_path = Path(__file__).parent / "README.md"
             docs_index_path = Path(__file__).parent / "docs" / "index.md"
-            
+
             update_badge_in_file(readme_path, percentage)
             update_badge_in_file(docs_index_path, percentage)
-            
+
             # Update last modified date in docs
             update_last_modified_date(docs_index_path)
         else:
@@ -221,7 +228,7 @@ def main():
     else:
         print("❌ Pytest failed:")
         print(pytest_output)
-    
+
     # Summary
     print("\n📊 Summary:")
     all_passed = True
@@ -230,7 +237,7 @@ def main():
         print(f"{status} {name}")
         if not passed:
             all_passed = False
-    
+
     if all_passed:
         print("\n🎉 All checks passed!")
         sys.exit(0)

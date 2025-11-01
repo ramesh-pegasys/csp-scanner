@@ -90,14 +90,16 @@ class AzureNetworkExtractor(BaseExtractor):
 
     def _extract_nsgs(self, network_client: Any, location: str) -> List[Dict[str, Any]]:
         """Extract Network Security Groups"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         # List all NSGs with retry
         async def get_nsgs():
             return list(network_client.network_security_groups.list_all())
 
         try:
-            nsgs = asyncio.run(execute_azure_api_call(get_nsgs, "get_network_security_groups"))
+            nsgs = asyncio.run(
+                execute_azure_api_call(get_nsgs, "get_network_security_groups")
+            )
         except Exception as e:
             logger.error(f"Failed to list NSGs after retries: {e}")
             return artifacts
@@ -119,14 +121,16 @@ class AzureNetworkExtractor(BaseExtractor):
         self, network_client: Any, location: str
     ) -> List[Dict[str, Any]]:
         """Extract Virtual Networks"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         # List all VNets with retry
         async def get_vnets():
             return list(network_client.virtual_networks.list_all())
 
         try:
-            vnets = asyncio.run(execute_azure_api_call(get_vnets, "get_virtual_networks"))
+            vnets = asyncio.run(
+                execute_azure_api_call(get_vnets, "get_virtual_networks")
+            )
         except Exception as e:
             logger.error(f"Failed to list VNets after retries: {e}")
             return artifacts
@@ -148,7 +152,7 @@ class AzureNetworkExtractor(BaseExtractor):
         self, network_client: Any, location: str
     ) -> List[Dict[str, Any]]:
         """Extract Load Balancers"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         # List all Load Balancers with retry
         async def get_lbs():

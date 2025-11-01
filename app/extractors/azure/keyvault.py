@@ -50,7 +50,7 @@ class AzureKeyVaultExtractor(BaseExtractor):
         self, location: Optional[str], filters: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Extract Key Vaults"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         try:
             kv_client = self.session.get_client("keyvault")
@@ -60,7 +60,9 @@ class AzureKeyVaultExtractor(BaseExtractor):
                 return list(kv_client.vaults.list())
 
             try:
-                vaults = asyncio.run(execute_azure_api_call(get_vaults, "get_key_vaults"))
+                vaults = asyncio.run(
+                    execute_azure_api_call(get_vaults, "get_key_vaults")
+                )
             except Exception as e:
                 logger.error(f"Failed to list Key Vaults after retries: {e}")
                 return artifacts

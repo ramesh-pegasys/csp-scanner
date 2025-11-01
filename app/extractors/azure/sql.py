@@ -84,14 +84,16 @@ class AzureSQLExtractor(BaseExtractor):
         self, sql_client: Any, location: str
     ) -> List[Dict[str, Any]]:
         """Extract SQL Servers"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         # Get servers list with retry
         async def get_servers():
             return list(sql_client.servers.list())
 
         try:
-            servers = asyncio.run(execute_azure_api_call(get_servers, "get_sql_servers"))
+            servers = asyncio.run(
+                execute_azure_api_call(get_servers, "get_sql_servers")
+            )
         except Exception as e:
             logger.error(f"Failed to list SQL servers in {location} after retries: {e}")
             return artifacts
@@ -115,14 +117,16 @@ class AzureSQLExtractor(BaseExtractor):
 
     def _extract_sql_databases(self, sql_client: Any) -> List[Dict[str, Any]]:
         """Extract SQL Databases from all servers"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         # Get servers list with retry
         async def get_servers():
             return list(sql_client.servers.list())
 
         try:
-            servers = asyncio.run(execute_azure_api_call(get_servers, "get_sql_servers"))
+            servers = asyncio.run(
+                execute_azure_api_call(get_servers, "get_sql_servers")
+            )
         except Exception as e:
             logger.error(f"Failed to list SQL servers after retries: {e}")
             return artifacts
@@ -134,13 +138,17 @@ class AzureSQLExtractor(BaseExtractor):
             try:
                 # Get databases for this server with retry
                 async def get_databases():
-                    return list(sql_client.databases.list_by_server(
-                        resource_group_name=resource_group, server_name=server_name
-                    ))
+                    return list(
+                        sql_client.databases.list_by_server(
+                            resource_group_name=resource_group, server_name=server_name
+                        )
+                    )
 
-                databases = asyncio.run(execute_azure_api_call(
-                    get_databases, f"get_databases_for_server_{server_name}"
-                ))
+                databases = asyncio.run(
+                    execute_azure_api_call(
+                        get_databases, f"get_databases_for_server_{server_name}"
+                    )
+                )
 
                 for database in databases:
                     # Skip system databases
@@ -167,7 +175,9 @@ class AzureSQLExtractor(BaseExtractor):
 
         return artifacts
 
-    def _get_firewall_rules_with_retry(self, sql_client: Any, resource_group: str, server_name: str) -> List[Any]:
+    def _get_firewall_rules_with_retry(
+        self, sql_client: Any, resource_group: str, server_name: str
+    ) -> List[Any]:
         """Get firewall rules for a server with retry logic for throttling."""
 
         async def get_firewall_rules():
@@ -178,11 +188,17 @@ class AzureSQLExtractor(BaseExtractor):
             )
 
         try:
-            return asyncio.run(execute_azure_api_call(
-                get_firewall_rules, f"get_firewall_rules_{server_name}", max_attempts=3
-            ))
+            return asyncio.run(
+                execute_azure_api_call(
+                    get_firewall_rules,
+                    f"get_firewall_rules_{server_name}",
+                    max_attempts=3,
+                )
+            )
         except Exception as e:
-            logger.warning(f"Failed to get firewall rules for server {server_name} after retries: {e}")
+            logger.warning(
+                f"Failed to get firewall rules for server {server_name} after retries: {e}"
+            )
             return []
 
     def transform(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:

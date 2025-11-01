@@ -77,14 +77,16 @@ class AzureContainerServiceExtractor(BaseExtractor):
         self, cs_client: Any, location: str
     ) -> List[Dict[str, Any]]:
         """Extract AKS clusters"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         # List all managed clusters with retry
         async def get_clusters():
             return list(cs_client.managed_clusters.list())
 
         try:
-            clusters = asyncio.run(execute_azure_api_call(get_clusters, "get_aks_clusters"))
+            clusters = asyncio.run(
+                execute_azure_api_call(get_clusters, "get_aks_clusters")
+            )
         except Exception as e:
             logger.error(f"Failed to list AKS clusters after retries: {e}")
             return artifacts

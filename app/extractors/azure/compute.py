@@ -85,7 +85,7 @@ class AzureComputeExtractor(BaseExtractor):
         self, compute_client: Any, location: str
     ) -> List[Dict[str, Any]]:
         """Extract Virtual Machines"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         # List all VMs in subscription with retry
         async def get_vms():
@@ -112,9 +112,13 @@ class AzureComputeExtractor(BaseExtractor):
                         resource_group_name=resource_group, vm_name=vm.name
                     )
 
-                instance_view = asyncio.run(execute_azure_api_call(
-                    get_instance_view, f"get_instance_view_{vm.name}", max_attempts=3
-                ))
+                instance_view = asyncio.run(
+                    execute_azure_api_call(
+                        get_instance_view,
+                        f"get_instance_view_{vm.name}",
+                        max_attempts=3,
+                    )
+                )
             except Exception as e:
                 logger.warning(f"Failed to get instance view for VM {vm.name}: {e}")
 
@@ -134,14 +138,16 @@ class AzureComputeExtractor(BaseExtractor):
 
     def _extract_vmss(self, compute_client: Any, location: str) -> List[Dict[str, Any]]:
         """Extract VM Scale Sets"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         # List all VMSS with retry
         async def get_vmss():
             return list(compute_client.virtual_machine_scale_sets.list_all())
 
         try:
-            vmss_list = asyncio.run(execute_azure_api_call(get_vmss, "get_vm_scale_sets"))
+            vmss_list = asyncio.run(
+                execute_azure_api_call(get_vmss, "get_vm_scale_sets")
+            )
         except Exception as e:
             logger.error(f"Failed to list VMSS after retries: {e}")
             return artifacts

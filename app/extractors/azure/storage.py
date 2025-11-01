@@ -50,7 +50,7 @@ class AzureStorageExtractor(BaseExtractor):
         self, location: Optional[str], filters: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Extract storage accounts"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         try:
             storage_client = self.session.get_client("storage")
@@ -79,6 +79,7 @@ class AzureStorageExtractor(BaseExtractor):
                 blob_properties = None
                 if self.config.get("check_blob_encryption", True):
                     try:
+
                         async def get_blob_properties():
                             return storage_client.blob_services.get_service_properties(
                                 resource_group_name=resource_group,
@@ -87,7 +88,9 @@ class AzureStorageExtractor(BaseExtractor):
 
                         blob_properties = asyncio.run(
                             execute_azure_api_call(
-                                get_blob_properties, f"get_blob_properties_{account.name}", max_attempts=3
+                                get_blob_properties,
+                                f"get_blob_properties_{account.name}",
+                                max_attempts=3,
                             )
                         )
                     except Exception as e:

@@ -27,7 +27,9 @@ logging.basicConfig(
 )
 
 # Suppress Azure SDK HTTP logging that includes Response headers
-logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(
+    logging.WARNING
+)
 logging.getLogger("azure.core").setLevel(logging.WARNING)
 logging.getLogger("azure").setLevel(logging.WARNING)
 

@@ -83,7 +83,7 @@ class FilesystemTransport(BaseTransport):
             service = artifact.get("service", "unknown")
 
         resource_type = artifact.get("resource_type", "unknown")
-        
+
         # Extract resource_id from metadata if available, otherwise from top level
         resource_id = "unknown"
         if "metadata" in artifact and isinstance(artifact["metadata"], dict):
@@ -94,25 +94,39 @@ class FilesystemTransport(BaseTransport):
         # Clean resource_id to be filesystem-safe and extract a meaningful name
         if resource_id != "unknown":
             # For Azure resources, extract the resource name from the resource ID
-            # Azure resource IDs have format: /subscriptions/.../resourceGroups/.../providers/.../resourceType/resourceName
+            # Azure resource IDs have format:
+            # /subscriptions/.../resourceGroups/.../providers/.../resourceType/resourceName
             if "/" in str(resource_id):
                 parts = str(resource_id).split("/")
                 if len(parts) > 0:
                     # Get the last part which is usually the resource name
                     resource_name = parts[-1]
                     if resource_name:
-                        resource_id_clean = resource_name.replace("/", "_").replace("\\", "_")[:50]
+                        resource_id_clean = resource_name.replace("/", "_").replace(
+                            "\\", "_"
+                        )[:50]
                     else:
-                        resource_id_clean = str(resource_id).replace("/", "_").replace("\\", "_")[:50]
+                        resource_id_clean = (
+                            str(resource_id).replace("/", "_").replace("\\", "_")[:50]
+                        )
                 else:
-                    resource_id_clean = str(resource_id).replace("/", "_").replace("\\", "_")[:50]
+                    resource_id_clean = (
+                        str(resource_id).replace("/", "_").replace("\\", "_")[:50]
+                    )
             else:
-                resource_id_clean = str(resource_id).replace("/", "_").replace("\\", "_")[:50]
+                resource_id_clean = (
+                    str(resource_id).replace("/", "_").replace("\\", "_")[:50]
+                )
         else:
             resource_id_clean = "unknown"
 
         # Clean resource_type to be filesystem-safe (replace colons with underscores)
-        resource_type_clean = str(resource_type).replace(":", "_").replace("/", "_").replace("\\", "_")[:50]
+        resource_type_clean = (
+            str(resource_type)
+            .replace(":", "_")
+            .replace("/", "_")
+            .replace("\\", "_")[:50]
+        )
 
         # Generate timestamp
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
@@ -169,7 +183,7 @@ class FilesystemTransport(BaseTransport):
             TransportResult indicating success/failure
         """
         start_time = datetime.now(timezone.utc)
-        
+
         # Extract artifact_id from metadata if available, otherwise from top level
         artifact_id = "unknown"
         if "metadata" in artifact and isinstance(artifact["metadata"], dict):
