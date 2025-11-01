@@ -79,7 +79,7 @@ class AzureAuthorizationExtractor(BaseExtractor):
                 role_assignments = auth_client.role_assignments.list_for_scope(
                     scope=f"/subscriptions/{azure_session.subscription_id}"
                 )
-                artifacts.extend(role_assignments)
+                artifacts.extend(self._extract_role_assignments(role_assignments))
             except Exception as e:
                 logger.error(f"Failed to extract role assignments: {e}")
 
@@ -88,15 +88,9 @@ class AzureAuthorizationExtractor(BaseExtractor):
 
         return artifacts
 
-    def _extract_role_assignments(self, auth_client: Any) -> List[Dict[str, Any]]:
+    def _extract_role_assignments(self, role_assignments) -> List[Dict[str, Any]]:
         """Extract role assignments"""
         artifacts = []
-
-        # Get role assignments at subscription scope
-        azure_session = cast(AzureSession, self.session)
-        role_assignments = auth_client.role_assignments.list_for_scope(
-            scope=f"/subscriptions/{azure_session.subscription_id}"
-        )
 
         for assignment in role_assignments:
             artifact = self.transform(

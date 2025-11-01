@@ -1,0 +1,23 @@
+# config/development-azure.yaml
+app_name: "Cloud Artifact Extractor"
+environment: "development"
+debug: true
+
+enabled_providers:
+  - "azure"
+
+# Azure Configuration
+azure_default_location: "eastus"
+
+scanner_endpoint_url: "http://localhost:8001/api/scan"
+transport_timeout_seconds: 30
+transport_max_retries: 3
+
+max_concurrent_extractors: 5
+batch_size: 50
+batch_delay_seconds: 0.5
+
+# Transport Configuration
+transport_type: "filesystem"  # Options: http, filesystem, null
+filesystem_base_dir: "./file_collector"
+filesystem_create_dir: true

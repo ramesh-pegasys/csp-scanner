@@ -25,6 +25,14 @@ importlib.import_module("app.transport.filesystem")
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+
+# Suppress Azure SDK HTTP logging that includes Response headers
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(
+    logging.WARNING
+)
+logging.getLogger("azure.core").setLevel(logging.WARNING)
+logging.getLogger("azure").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 # Global instances

@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from app.extractors.base import BaseExtractor, ExtractorMetadata
+from app.extractors.azure.utils import execute_azure_api_call
 import logging
 
 logger = logging.getLogger(__name__)
@@ -90,9 +91,19 @@ class AzureWebExtractor(BaseExtractor):
         self, web_client: Any, location: str
     ) -> List[Dict[str, Any]]:
         """Extract App Service Plans"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
-        plans = web_client.app_service_plans.list()
+        # List all app service plans with retry
+        async def get_plans():
+            return list(web_client.app_service_plans.list())
+
+        try:
+            plans = asyncio.run(
+                execute_azure_api_call(get_plans, "get_app_service_plans")
+            )
+        except Exception as e:
+            logger.error(f"Failed to list App Service Plans after retries: {e}")
+            return artifacts
 
         for plan in plans:
             if plan.location != location:
@@ -113,9 +124,17 @@ class AzureWebExtractor(BaseExtractor):
 
     def _extract_web_apps(self, web_client: Any, location: str) -> List[Dict[str, Any]]:
         """Extract Web Apps"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
-        web_apps = web_client.web_apps.list()
+        # List all web apps with retry
+        async def get_web_apps():
+            return list(web_client.web_apps.list())
+
+        try:
+            web_apps = asyncio.run(execute_azure_api_call(get_web_apps, "get_web_apps"))
+        except Exception as e:
+            logger.error(f"Failed to list Web Apps after retries: {e}")
+            return artifacts
 
         for web_app in web_apps:
             if web_app.location != location:
@@ -134,9 +153,20 @@ class AzureWebExtractor(BaseExtractor):
         self, web_client: Any, location: str
     ) -> List[Dict[str, Any]]:
         """Extract Function Apps"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
-        function_apps = web_client.web_apps.list()
+        # List all web apps (includes function apps) with retry
+        async def get_apps():
+            return list(web_client.web_apps.list())
+
+        try:
+            function_apps = asyncio.run(
+                execute_azure_api_call(get_apps, "get_function_apps")
+            )
+        except Exception as e:
+            logger.error(f"Failed to list Function Apps after retries: {e}")
+            return artifacts
+
         # Function Apps are also returned by web_apps.list() but have kind="functionapp"
 
         for app in function_apps:

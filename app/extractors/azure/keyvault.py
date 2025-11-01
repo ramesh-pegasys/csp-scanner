@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from app.extractors.base import BaseExtractor, ExtractorMetadata
+from app.extractors.azure.utils import execute_azure_api_call
 import logging
 
 logger = logging.getLogger(__name__)
@@ -49,12 +50,22 @@ class AzureKeyVaultExtractor(BaseExtractor):
         self, location: Optional[str], filters: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Extract Key Vaults"""
-        artifacts = []
+        artifacts: List[Dict[str, Any]] = []
 
         try:
             kv_client = self.session.get_client("keyvault")
 
-            vaults = kv_client.vaults.list()
+            # List all vaults with retry
+            async def get_vaults():
+                return list(kv_client.vaults.list())
+
+            try:
+                vaults = asyncio.run(
+                    execute_azure_api_call(get_vaults, "get_key_vaults")
+                )
+            except Exception as e:
+                logger.error(f"Failed to list Key Vaults after retries: {e}")
+                return artifacts
 
             for vault in vaults:
                 # Filter by location if specified
