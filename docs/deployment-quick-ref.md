@@ -1,3 +1,10 @@
+---
+layout: default
+title: Deployment Quick Reference
+parent: Deployment
+nav_order: 2
+---
+
 # Deployment Quick Reference
 
 Quick command reference for deploying Cloud Artifact Extractor to different platforms.
