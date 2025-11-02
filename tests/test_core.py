@@ -170,6 +170,22 @@ def test_settings_provider_enabled_properties():
     assert settings_none.is_gcp_enabled is False
 
 
+import os
+import pytest
+
+@pytest.fixture(autouse=True)
+def clear_config_env(monkeypatch):
+    monkeypatch.delenv("CONFIG_FILE", raising=False)
+    monkeypatch.delenv("AWS_ACCOUNT_ID", raising=False)
+    monkeypatch.delenv("AWS_DEFAULT_REGION", raising=False)
+    monkeypatch.delenv("AWS_REGION", raising=False)
+    monkeypatch.delenv("ENABLED_PROVIDERS", raising=False)
+    monkeypatch.delenv("AZURE_SUBSCRIPTION_ID", raising=False)
+    monkeypatch.delenv("AZURE_DEFAULT_LOCATION", raising=False)
+    monkeypatch.delenv("GCP_PROJECT_ID", raising=False)
+    monkeypatch.delenv("GCP_DEFAULT_REGION", raising=False)
+    monkeypatch.delenv("GCP_CREDENTIALS_PATH", raising=False)
+
 def test_settings_aws_accounts_list():
     """Test AWS accounts list property"""
     # Test with aws_accounts set

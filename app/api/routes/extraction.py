@@ -4,12 +4,11 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-
 from app.models.job import Job
 from app.cloud.base import CloudProvider
-
-
+import os
 from fastapi import FastAPI
+
 
 def custom_openapi(app: FastAPI):
     if app.openapi_schema:
@@ -17,11 +16,7 @@ def custom_openapi(app: FastAPI):
     openapi_schema = app.openapi()
     # Add JWT Bearer security scheme
     openapi_schema["components"]["securitySchemes"] = {
-        "BearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT"
-        }
+        "BearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
     }
     # Secure all paths except /health
     for path, methods in openapi_schema["paths"].items():
@@ -31,22 +26,24 @@ def custom_openapi(app: FastAPI):
             methods[method]["security"] = [{"BearerAuth": []}]
     # Always show HTTPS server in OpenAPI servers list
     openapi_schema["servers"] = [
-        {"url": "https://localhost:8443", "description": "Local HTTPS (self-signed certs)"}
+        {
+            "url": "https://localhost:8443",
+            "description": "Local HTTPS (self-signed certs)",
+        }
     ]
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
+
 router = APIRouter()
 
-
-
 # JWT config (static token usage)
-import os
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key")
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 # TODO: Support external JWT providers (Auth0, Cognito, Google IAM) in future
+
 
 def verify_jwt_token(token: str = Depends(oauth2_scheme)):
     try:
@@ -72,7 +69,11 @@ class ExtractionResponse(BaseModel):
 
 
 @router.post("/trigger", response_model=ExtractionResponse)
-async def trigger_extraction(request: ExtractionRequest, app_request: Request, token_data: dict = Depends(verify_jwt_token)):
+async def trigger_extraction(
+    request: ExtractionRequest,
+    app_request: Request,
+    token_data: dict = Depends(verify_jwt_token),
+):
     """Trigger ad-hoc extraction for specified cloud provider(s) and services"""
     orchestrator = app_request.app.state.orchestrator
     registry = app_request.app.state.registry
@@ -131,7 +132,9 @@ async def trigger_extraction(request: ExtractionRequest, app_request: Request, t
 
 
 @router.get("/jobs/{job_id}", response_model=Job)
-async def get_job_status(job_id: str, app_request: Request, token_data: dict = Depends(verify_jwt_token)):
+async def get_job_status(
+    job_id: str, app_request: Request, token_data: dict = Depends(verify_jwt_token)
+):
     """Get job status"""
     orchestrator = app_request.app.state.orchestrator
 
@@ -143,14 +146,20 @@ async def get_job_status(job_id: str, app_request: Request, token_data: dict = D
 
 
 @router.get("/jobs", response_model=List[Job])
-async def list_jobs(app_request: Request, limit: int = 100, token_data: dict = Depends(verify_jwt_token)):
+async def list_jobs(
+    app_request: Request, limit: int = 100, token_data: dict = Depends(verify_jwt_token)
+):
     """List recent jobs"""
     orchestrator = app_request.app.state.orchestrator
     return orchestrator.list_jobs(limit)
 
 
 @router.get("/services")
-async def list_services(app_request: Request, provider: Optional[str] = None, token_data: dict = Depends(verify_jwt_token)):
+async def list_services(
+    app_request: Request,
+    provider: Optional[str] = None,
+    token_data: dict = Depends(verify_jwt_token),
+):
     """List available services, optionally filtered by provider"""
     registry = app_request.app.state.registry
 
@@ -197,6 +206,8 @@ async def list_providers(app_request: Request):
     providers = list(set(e.cloud_provider for e in extractors))
 
     return {"providers": providers, "total": len(providers)}
+
+
 @router.get("/health")
 async def health():
     """Health endpoint (no JWT required)"""

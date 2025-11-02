@@ -17,6 +17,8 @@ from app.cloud.aws_session import AWSSession
 from app.cloud.azure_session import AzureSession
 from app.cloud.gcp_session import GCPSession
 
+from app.api.routes.extraction import custom_openapi
+
 # Ensure transports register themselves with the factory
 importlib.import_module("app.transport.http_transport")
 importlib.import_module("app.transport.filesystem")
@@ -183,17 +185,20 @@ async def lifespan(app: FastAPI):
 
 
 
-# Create FastAPI app
-app = FastAPI(  # type: ignore[assignment]
+# Custom FastAPI subclass to override openapi method
+from fastapi import FastAPI
+from app.api.routes.extraction import custom_openapi
+
+class CustomOpenAPIFastAPI(FastAPI):
+    def openapi(self):
+        return custom_openapi(self)
+
+app = CustomOpenAPIFastAPI(
     title="Cloud Artifact Extractor",
     description="Extract AWS and Azure cloud artifacts and send to policy scanner",
     version="2.0.0",
     lifespan=lifespan,
 )
-
-# Set custom OpenAPI schema with JWT Bearer security
-from app.api.routes.extraction import custom_openapi
-app.openapi = lambda: custom_openapi(app)
 
 # Include routes
 app.include_router(extraction.router)

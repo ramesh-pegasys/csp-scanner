@@ -65,9 +65,7 @@ def run_flake8():
 def run_black():
     """Run black formatting check."""
     print("Running black (check mode)...")
-    success, output = run_command(
-        ["black", "--check", "--diff", "app", "tests"], "black"
-    )
+    success, output = run_command(["black", "."], "black")
     if not success:
         print("❌ Black formatting issues found:")
         print(output)

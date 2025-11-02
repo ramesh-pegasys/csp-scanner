@@ -20,6 +20,7 @@ Environment variables for JWT:
 Example for HTTPS local testing:
     uvicorn app.main:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs/server.key --ssl-certfile certs/server.crt
 """
+
 import os
 import argparse
 from datetime import datetime, timedelta
@@ -29,19 +30,19 @@ import subprocess
 
 # JWT generation
 
+
 def generate_jwt():
     secret = os.getenv("JWT_SECRET_KEY", "your-secret-key")
     algorithm = os.getenv("JWT_ALGORITHM", "HS256")
     expire_days = int(os.getenv("JWT_EXPIRE_DAYS", "365"))
-    payload = {
-        "api": "access",
-        "exp": datetime.utcnow() + timedelta(days=expire_days)
-    }
+    payload = {"api": "access", "exp": datetime.utcnow() + timedelta(days=expire_days)}
     token = jwt.encode(payload, secret, algorithm=algorithm)
     print("Your static JWT token:")
     print(token)
 
+
 # Cert generation
+
 
 def generate_certs(certs_dir, certs_name):
     certs_dir = Path(certs_dir)
@@ -50,21 +51,39 @@ def generate_certs(certs_dir, certs_name):
     crt_path = certs_dir / f"{certs_name}.crt"
     print(f"Generating self-signed certs in {certs_dir}...")
     cmd = [
-        "openssl", "req", "-x509", "-nodes", "-days", "365",
-        "-newkey", "rsa:2048",
-        "-keyout", str(key_path),
-        "-out", str(crt_path),
-        "-subj", "/CN=localhost"
+        "openssl",
+        "req",
+        "-x509",
+        "-nodes",
+        "-days",
+        "365",
+        "-newkey",
+        "rsa:2048",
+        "-keyout",
+        str(key_path),
+        "-out",
+        str(crt_path),
+        "-subj",
+        "/CN=localhost",
     ]
     subprocess.run(cmd, check=True)
     print(f"Certs generated: {key_path}, {crt_path}")
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate JWT and self-signed certs for local testing.")
+    parser = argparse.ArgumentParser(
+        description="Generate JWT and self-signed certs for local testing."
+    )
     parser.add_argument("--jwt", action="store_true", help="Generate static JWT token")
-    parser.add_argument("--certs", action="store_true", help="Generate self-signed certs")
-    parser.add_argument("--certs-dir", default="./certs", help="Directory to store certs")
-    parser.add_argument("--certs-name", default="server", help="Base name for cert files")
+    parser.add_argument(
+        "--certs", action="store_true", help="Generate self-signed certs"
+    )
+    parser.add_argument(
+        "--certs-dir", default="./certs", help="Directory to store certs"
+    )
+    parser.add_argument(
+        "--certs-name", default="server", help="Base name for cert files"
+    )
     args = parser.parse_args()
 
     if args.jwt:
