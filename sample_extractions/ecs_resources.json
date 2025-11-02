@@ -1,0 +1,173 @@
+  {
+  "cloud_provider": "aws",
+  "resource_type": "aws:ecs:cluster",
+  "metadata": {
+    "resource_id": "my-cluster",
+    "service": "ecs",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "labels": {
+      "Environment": "production",
+      "Project": "web-application"
+    }
+  },
+  "configuration": {
+    "cluster_name": "my-cluster",
+    "cluster_arn": "arn:aws:ecs:us-east-1:123456789012:cluster/my-cluster",
+    "status": "ACTIVE",
+    "registered_container_instances_count": 3,
+    "running_tasks_count": 5,
+    "pending_tasks_count": 0,
+    "active_services_count": 2,
+    "statistics": [
+      {
+        "name": "runningEC2TasksCount",
+        "value": "5"
+      },
+      {
+        "name": "activeServicesCount",
+        "value": "2"
+      }
+    ],
+    "settings": [
+      {
+        "name": "containerInsights",
+        "value": "enabled"
+      }
+    ],
+    "configurations": {
+      "executeCommandConfiguration": {
+        "kmsKeyId": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+        "logging": "OVERRIDE",
+        "logConfiguration": {
+          "cloudWatchLogGroupName": "/aws/ecs/my-cluster",
+          "s3BucketName": "my-ecs-logs-bucket"
+        }
+      }
+    }
+  },
+  "raw": {
+    "clusterName": "my-cluster",
+    "clusterArn": "arn:aws:ecs:us-east-1:123456789012:cluster/my-cluster",
+    "status": "ACTIVE",
+    "registeredContainerInstancesCount": 3,
+    "runningTasksCount": 5,
+    "pendingTasksCount": 0,
+    "activeServicesCount": 2,
+    "statistics": [
+      {
+        "name": "runningEC2TasksCount",
+        "value": "5"
+      },
+      {
+        "name": "activeServicesCount",
+        "value": "2"
+      }
+    ],
+    "settings": [
+      {
+        "name": "containerInsights",
+        "value": "enabled"
+      }
+    ],
+    "configuration": {
+      "executeCommandConfiguration": {
+        "kmsKeyId": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+        "logging": "OVERRIDE",
+        "logConfiguration": {
+          "cloudWatchLogGroupName": "/aws/ecs/my-cluster",
+          "s3BucketName": "my-ecs-logs-bucket"
+        }
+      }
+    },
+    "tags": [
+      {
+        "key": "Environment",
+        "value": "production"
+      },
+      {
+        "key": "Project",
+        "value": "web-application"
+      }
+    ]
+  }
+},
+  {
+    "resource_id": "my-cluster/web-service",
+    "resource_type": "ecs:service",
+    "service": "ecs",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "configuration": {
+      "service_name": "web-service",
+      "service_arn": "arn:aws:ecs:us-east-1:123456789012:service/my-cluster/web-service",
+      "cluster_arn": "arn:aws:ecs:us-east-1:123456789012:cluster/my-cluster",
+      "task_definition": "web-app:1",
+      "desired_count": 3,
+      "running_count": 3,
+      "pending_count": 0,
+      "launch_type": "EC2",
+      "platform_version": null,
+      "network_configuration": {
+        "awsvpcConfiguration": {
+          "subnets": ["subnet-12345678", "subnet-87654321"],
+          "securityGroups": ["sg-12345678"],
+          "assignPublicIp": "DISABLED"
+        }
+      },
+      "load_balancers": [
+        {
+          "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/web-targets/1234567890abcdef",
+          "loadBalancerName": null,
+          "containerName": "web",
+          "containerPort": 80
+        }
+      ],
+      "tags": [
+        {
+          "key": "Environment",
+          "value": "production"
+        },
+        {
+          "key": "Service",
+          "value": "web"
+        }
+      ]
+    },
+    "raw": {
+      "serviceName": "web-service",
+      "serviceArn": "arn:aws:ecs:us-east-1:123456789012:service/my-cluster/web-service",
+      "clusterArn": "arn:aws:ecs:us-east-1:123456789012:cluster/my-cluster",
+      "taskDefinition": "web-app:1",
+      "desiredCount": 3,
+      "runningCount": 3,
+      "pendingCount": 0,
+      "launchType": "EC2",
+      "platformVersion": null,
+      "networkConfiguration": {
+        "awsvpcConfiguration": {
+          "subnets": ["subnet-12345678", "subnet-87654321"],
+          "securityGroups": ["sg-12345678"],
+          "assignPublicIp": "DISABLED"
+        }
+      },
+      "loadBalancers": [
+        {
+          "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/web-targets/1234567890abcdef",
+          "loadBalancerName": null,
+          "containerName": "web",
+          "containerPort": 80
+        }
+      ],
+      "tags": [
+        {
+          "key": "Environment",
+          "value": "production"
+        },
+        {
+          "key": "Service",
+          "value": "web"
+        }
+      ]
+    }
+  }

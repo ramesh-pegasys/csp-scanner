@@ -1,0 +1,158 @@
+{
+  "cloud_provider": "aws",
+  "resource_type": "aws:cloudfront:distribution",
+  "metadata": {
+    "resource_id": "E1A2B3C4D5E6F7",
+    "service": "cloudfront",
+    "account_id": "123456789012",
+    "labels": {}
+  },
+  "configuration": {
+    "id": "E1A2B3C4D5E6F7",
+    "arn": "arn:aws:cloudfront::123456789012:distribution/E1A2B3C4D5E6F7",
+    "status": "Deployed",
+    "domain_name": "d1234567890abcdef.cloudfront.net",
+    "origins": {
+      "Quantity": 1,
+      "Items": [
+        {
+          "Id": "my-s3-origin",
+          "DomainName": "my-bucket.s3.amazonaws.com",
+          "OriginPath": "",
+          "CustomHeaders": {
+            "Quantity": 0
+          },
+          "S3OriginConfig": {
+            "OriginAccessIdentity": ""
+          }
+        }
+      ]
+    },
+    "default_cache_behavior": {
+      "TargetOriginId": "my-s3-origin",
+      "ViewerProtocolPolicy": "redirect-to-https",
+      "TrustedSigners": {
+        "Enabled": false,
+        "Quantity": 0
+      },
+      "ForwardedValues": {
+        "QueryString": false,
+        "Cookies": {
+          "Forward": "none"
+        }
+      },
+      "MinTTL": 0,
+      "Compress": true
+    },
+    "cache_behaviors": {
+      "Quantity": 0
+    },
+    "custom_error_responses": {
+      "Quantity": 1,
+      "Items": [
+        {
+          "ErrorCode": 404,
+          "ResponsePagePath": "/404.html",
+          "ResponseCode": "404",
+          "ErrorCachingMinTTL": 300
+        }
+      ]
+    },
+    "comment": "Production CloudFront distribution",
+    "enabled": true,
+    "price_class": "PriceClass_100",
+    "http_version": "http2",
+    "is_ipv6_enabled": true,
+    "web_acl_id": "arn:aws:wafv2:us-east-1:123456789012:regional/webacl/my-web-acl/12345678-1234-1234-1234-123456789012",
+    "restrictions": {
+      "GeoRestriction": {
+        "RestrictionType": "none"
+      }
+    },
+    "viewer_certificate": {
+      "CloudFrontDefaultCertificate": false,
+      "ACMCertificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+      "SSLSupportMethod": "sni-only",
+      "MinimumProtocolVersion": "TLSv1.2_2021"
+    }
+  },
+  "raw": {
+    "Id": "E1A2B3C4D5E6F7",
+    "ARN": "arn:aws:cloudfront::123456789012:distribution/E1A2B3C4D5E6F7",
+    "Status": "Deployed",
+    "DomainName": "d1234567890abcdef.cloudfront.net",
+    "Origins": {
+      "Quantity": 1,
+      "Items": [
+        {
+          "Id": "my-s3-origin",
+          "DomainName": "my-bucket.s3.amazonaws.com",
+          "OriginPath": "",
+          "CustomHeaders": {
+            "Quantity": 0
+          },
+          "S3OriginConfig": {
+            "OriginAccessIdentity": ""
+          }
+        }
+      ]
+    },
+    "DefaultCacheBehavior": {
+      "TargetOriginId": "my-s3-origin",
+      "ViewerProtocolPolicy": "redirect-to-https",
+      "TrustedSigners": {
+        "Enabled": false,
+        "Quantity": 0
+      },
+      "ForwardedValues": {
+        "QueryString": false,
+        "Cookies": {
+          "Forward": "none"
+        }
+      },
+      "MinTTL": 0,
+      "Compress": true
+    },
+    "CacheBehaviors": {
+      "Quantity": 0
+    },
+    "CustomErrorResponses": {
+      "Quantity": 1,
+      "Items": [
+        {
+          "ErrorCode": 404,
+          "ResponsePagePath": "/404.html",
+          "ResponseCode": "404",
+          "ErrorCachingMinTTL": 300
+        }
+      ]
+    },
+    "Comment": "Production CloudFront distribution",
+    "Enabled": true,
+    "PriceClass": "PriceClass_100",
+    "HttpVersion": "http2",
+    "IsIPV6Enabled": true,
+    "WebACLId": "arn:aws:wafv2:us-east-1:123456789012:regional/webacl/my-web-acl/12345678-1234-1234-1234-123456789012",
+    "Restrictions": {
+      "GeoRestriction": {
+        "RestrictionType": "none"
+      }
+    },
+    "ViewerCertificate": {
+      "CloudFrontDefaultCertificate": false,
+      "ACMCertificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+      "SSLSupportMethod": "sni-only",
+      "MinimumProtocolVersion": "TLSv1.2_2021"
+    },
+    "tags": [
+      {
+        "Key": "Environment",
+        "Value": "production"
+      },
+      {
+        "Key": "Application",
+        "Value": "cdn"
+      }
+    ]
+  }
+}

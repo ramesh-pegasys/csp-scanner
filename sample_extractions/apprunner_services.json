@@ -1,0 +1,109 @@
+{
+  "cloud_provider": "aws",
+  "resource_type": "aws:apprunner:service",
+  "metadata": {
+    "resource_id": "my-app-runner-service",
+    "service": "apprunner",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "labels": {}
+  },
+  "configuration": {
+    "service_name": "my-app-runner-service",
+    "service_arn": "arn:aws:apprunner:us-east-1:123456789012:service/my-app-runner-service/1234567890abcdef",
+    "service_url": "https://1234567890.us-east-1.awsapprunner.com",
+    "status": "RUNNING",
+    "source_configuration": {
+      "CodeRepository": {
+        "RepositoryUrl": "https://github.com/myorg/my-app",
+        "SourceCodeVersion": {
+          "Type": "BRANCH",
+          "Value": "main"
+        },
+        "CodeConfiguration": {
+          "ConfigurationSource": "API",
+          "CodeConfigurationValues": {
+            "Runtime": "PYTHON_3",
+            "BuildCommand": "pip install -r requirements.txt",
+            "StartCommand": "python app.py",
+            "Port": "8000"
+          }
+        }
+      },
+      "AuthenticationConfiguration": {
+        "ConnectionArn": "arn:aws:apprunner:us-east-1:123456789012:connection/my-github-connection/1234567890abcdef"
+      }
+    },
+    "instance_configuration": {
+      "Cpu": "1024",
+      "Memory": "2048"
+    },
+    "health_check_configuration": {
+      "Protocol": "HTTP",
+      "Path": "/health",
+      "Interval": 10,
+      "Timeout": 5,
+      "HealthyThreshold": 3,
+      "UnhealthyThreshold": 3
+    },
+    "network_configuration": {
+      "EgressConfiguration": {
+        "EgressType": "DEFAULT"
+      }
+    }
+  },
+  "raw": {
+    "ServiceName": "my-app-runner-service",
+    "ServiceArn": "arn:aws:apprunner:us-east-1:123456789012:service/my-app-runner-service/1234567890abcdef",
+    "ServiceUrl": "https://1234567890.us-east-1.awsapprunner.com",
+    "Status": "RUNNING",
+    "SourceConfiguration": {
+      "CodeRepository": {
+        "RepositoryUrl": "https://github.com/myorg/my-app",
+        "SourceCodeVersion": {
+          "Type": "BRANCH",
+          "Value": "main"
+        },
+        "CodeConfiguration": {
+          "ConfigurationSource": "API",
+          "CodeConfigurationValues": {
+            "Runtime": "PYTHON_3",
+            "BuildCommand": "pip install -r requirements.txt",
+            "StartCommand": "python app.py",
+            "Port": "8000"
+          }
+        }
+      },
+      "AuthenticationConfiguration": {
+        "ConnectionArn": "arn:aws:apprunner:us-east-1:123456789012:connection/my-github-connection/1234567890abcdef"
+      }
+    },
+    "InstanceConfiguration": {
+      "Cpu": "1024",
+      "Memory": "2048"
+    },
+    "HealthCheckConfiguration": {
+      "Protocol": "HTTP",
+      "Path": "/health",
+      "Interval": 10,
+      "Timeout": 5,
+      "HealthyThreshold": 3,
+      "UnhealthyThreshold": 3
+    },
+    "NetworkConfiguration": {
+      "EgressConfiguration": {
+        "EgressType": "DEFAULT"
+      }
+    },
+    "Tags": [
+      {
+        "Key": "Environment",
+        "Value": "production"
+      },
+      {
+        "Key": "Application",
+        "Value": "web-api"
+      }
+    ]
+  }
+}

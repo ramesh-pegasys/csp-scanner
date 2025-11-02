@@ -1,0 +1,38 @@
+# config/development.yaml
+app_name: "Cloud Artifact Extractor"
+environment: "development"
+debug: true
+
+enabled_providers:
+  - "gcp"
+
+
+# GCP multi-project configuration
+gcp_projects:
+  - project_id: "first-project"
+    regions:
+      - "us-central1"
+      - "us-east1"
+  - project_id: "another-project"
+    regions:
+      - "us-west1"
+      - "europe-west1"
+
+scanner_endpoint_url: "http://localhost:8001/api/scan"
+transport_timeout_seconds: 30
+transport_max_retries: 3
+
+max_concurrent_extractors: 5
+batch_size: 50
+batch_delay_seconds: 0.5
+
+# Transport Configuration
+transport_type: "filesystem"  # Options: http, filesystem, null
+filesystem_base_dir: "./file_collector"
+filesystem_create_dir: true
+
+# JWT Authentication Configuration
+jwt:
+  secret_key: "your-secret-key"  # Change for production
+  algorithm: "HS256"
+  expire_days: 365

@@ -1,0 +1,77 @@
+{
+  "cloud_provider": "aws",
+  "resource_type": "aws:rds:db-instance",
+  "metadata": {
+    "resource_id": "db-mysql-01",
+    "service": "rds",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "labels": {}
+  },
+  "configuration": {
+    "db_instance_identifier": "db-mysql-01",
+    "db_instance_class": "db.t3.medium",
+    "engine": "mysql",
+    "engine_version": "8.0.33",
+    "db_instance_status": "available",
+    "master_username": "admin",
+    "allocated_storage": 20,
+    "storage_type": "gp2",
+    "backup_retention_period": 7,
+    "multi_az": true,
+    "publicly_accessible": false,
+    "vpc_security_groups": [
+      {
+        "VpcSecurityGroupId": "sg-12345678",
+        "Status": "active"
+      }
+    ],
+    "db_subnet_group_name": "my-subnet-group",
+    "storage_encrypted": true,
+    "kms_key_id": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+    "enabled_cloudwatch_logs_exports": [
+      "error",
+      "general",
+      "slow-query"
+    ],
+    "deletion_protection": true
+  },
+  "raw": {
+    "DBInstanceIdentifier": "db-mysql-01",
+    "DBInstanceClass": "db.t3.medium",
+    "Engine": "mysql",
+    "EngineVersion": "8.0.33",
+    "DBInstanceStatus": "available",
+    "MasterUsername": "admin",
+    "AllocatedStorage": 20,
+    "StorageType": "gp2",
+    "BackupRetentionPeriod": 7,
+    "MultiAZ": true,
+    "PubliclyAccessible": false,
+    "VpcSecurityGroups": [
+      {
+        "VpcSecurityGroupId": "sg-12345678",
+        "Status": "active"
+      }
+    ],
+    "DBSubnetGroupName": "my-subnet-group",
+    "StorageEncrypted": true,
+    "KmsKeyId": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+    "EnabledCloudwatchLogsExports": [
+      "error",
+      "general",
+      "slow-query"
+    ],
+    "DeletionProtection": true,
+    "Tags": [
+      {
+        "Key": "Environment",
+        "Value": "production"
+      },
+      {
+        "Key": "Application",
+        "Value": "web-app"
+      }
+    ]
+  }
+}

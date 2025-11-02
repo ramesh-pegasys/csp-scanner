@@ -1,0 +1,77 @@
+# config/extractors.yaml
+
+# AWS Extractors Configuration
+aws:
+  ec2:
+    max_workers: 10
+    include_stopped: true
+    include_terminated: false
+
+  s3:
+    max_workers: 20
+    check_bucket_policies: true
+    check_acls: true
+
+  rds:
+    max_workers: 10
+    include_snapshots: true
+    include_clusters: true
+
+  lambda:
+    max_workers: 15
+    include_versions: false
+    include_aliases: true
+
+  iam:
+    include_aws_managed_policies: false
+    detailed_policy_analysis: true
+
+  vpc:
+    max_workers: 10
+    include_flow_logs: true
+    include_nat_gateways: true
+
+# Azure Extractors Configuration
+azure:
+  compute:
+    max_workers: 10
+    include_stopped: true
+    include_vmss: true  # Include Virtual Machine Scale Sets
+  
+  storage:
+    max_workers: 20
+    check_access_policies: true
+    check_blob_encryption: true
+  
+  network:
+    max_workers: 10
+    include_nsg_rules: true
+    include_load_balancers: true
+
+# GCP Extractors Configuration
+gcp:
+  compute:
+    max_workers: 10
+    include_stopped: true
+    include_instance_groups: true  # Include managed instance groups
+  
+  storage:
+    max_workers: 20
+    include_iam_policies: false  # Fetching IAM policies requires additional permissions
+    check_public_access: true
+  
+  # High Priority Extractors
+  networking:
+    max_workers: 10
+    include_firewall_rules: true
+    include_load_balancers: true
+  
+  kubernetes:
+    max_workers: 10
+    include_node_pools: true
+    include_cluster_config: true
+  
+  iam:
+    include_service_accounts: true
+    include_policies: true
+    detailed_policy_analysis: true

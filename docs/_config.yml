@@ -1,0 +1,89 @@
+# Jekyll Configuration for GitHub Pages
+title: "Cloud Artifact Extractor"
+description: "A FastAPI-based service for extracting and managing cloud service artifacts from AWS, Azure, and GCP"
+url: "https://ramesh-pegasys.github.io"
+baseurl: "/csp-scanner"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: null  # Using custom theme
+
+# Logo and favicon
+logo: "/assets/images/logo.png"
+favicon_ico: "/assets/images/favicon.ico"
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# Navigation
+nav:
+  - title: "Home"
+    url: "/index.html"
+  - title: "Getting Started"
+    url: "/getting-started.html"
+  - title: "Configuration"
+    url: "/configuration.html"
+  - title: "Cloud Providers"
+    url: "/cloud-providers.html"
+    children:
+      - title: "AWS"
+        url: "/cloud-providers-aws.html"
+      - title: "Azure"
+        url: "/cloud-providers-azure.html"
+      - title: "GCP"
+        url: "/cloud-providers-gcp.html"
+  - title: "Supported Resources"
+    url: "/supported-resources.html"
+    children:
+      - title: "AWS"
+        url: "/supported-resources-aws.html"
+      - title: "Azure"
+        url: "/supported-resources-azure.html"
+      - title: "GCP"
+        url: "/supported-resources-gcp.html"
+  - title: "Operations"
+    url: "/operations.html"
+  - title: "API Reference"
+    url: "/api-reference.html"
+  - title: "Implementation Details"
+    url: "/implementation-details.html"
+  - title: "Metadata Structure"
+    url: "/metadata-structure.html"
+  - title: "Troubleshooting"
+    url: "/troubleshooting.html"
+  - title: "Development"
+    url: "/development.html"
+
+# Exclude from processing
+exclude:
+  - Gemfile.lock
+  - vendor/
+  - .bundle/
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - .vscode/
+  - .github/
+
+# SEO settings
+author: "Aegis & Pegasys.ai"
+github_username: ramesh-pegasys
+repo: csp-scanner
+
+# Markdown settings
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    default_lang: python
+    css_class: 'highlight'
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

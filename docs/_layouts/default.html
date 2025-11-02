@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'en-US' }}">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    {% if site.favicon_ico %}
+      <link rel="shortcut icon" href="{{ site.favicon_ico | relative_url }}" type="image/x-icon">
+    {% endif %}
+    <title>{{ page.title }} | {{ site.title }}</title>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      mermaid.initialize({ 
+        startOnLoad: true,
+        theme: 'default',
+        themeVariables: {
+          primaryColor: '#dbeafe',
+          primaryTextColor: '#1a4fa3',
+          primaryBorderColor: '#1a4fa3',
+          lineColor: '#64748b',
+          secondaryColor: '#f1f5f9',
+          tertiaryColor: '#f8fafc'
+        }
+      });
+    </script>
+    <div class="page-wrap">
+      <div class="side-bar">
+        <div class="site-header">
+          <a href="{{ '/' | relative_url }}" class="site-title">
+            {% if site.logo %}
+              <img src="{{ site.logo | relative_url }}" alt="{{ site.title }}" class="site-logo">
+            {% else %}
+              <span class="site-logo-text">{{ site.title }}</span>
+            {% endif %}
+          </a>
+          <div class="site-subtitle">Cloud Artifact Extractor</div>
+        </div>
+        
+        <div class="github-links">
+          <a href="https://github.com/{{ site.github_username }}/{{ site.repo }}" class="github-link" target="_blank" rel="noopener">
+            <svg class="github-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+              <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+            </svg>
+            <span>Star</span>
+          </a>
+          <a href="https://github.com/{{ site.github_username }}/{{ site.repo }}/fork" class="github-link" target="_blank" rel="noopener">
+            <svg class="github-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+              <path fill="currentColor" d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"></path>
+            </svg>
+            <span>Fork</span>
+          </a>
+        </div>
+        
+        <nav class="side-nav">
+          <ul class="nav-list">
+            {% for item in site.data.navigation.main %}
+              {% assign item_url = item.url | prepend: site.baseurl %}
+              <li class="nav-list-item{% if item.children %} has-children{% endif %}{% if page.url == item_url %} active{% endif %}">
+                <div class="nav-item-content">
+                  {% if item.children %}
+                    <button class="nav-toggle" aria-label="Expand submenu" aria-expanded="false" type="button">+</button>
+                  {% endif %}
+                  <a href="{{ item_url }}" class="nav-list-link">{{ item.title }}</a>
+                </div>
+                {% if item.children %}
+                  <ul class="nav-list-child" hidden>
+                    {% for child in item.children %}
+                      {% assign child_url = child.url | prepend: site.baseurl %}
+                      <li class="nav-list-item{% if page.url == child_url %} active{% endif %}">
+                        <a href="{{ child_url }}" class="nav-list-link">{{ child.title }}</a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </nav>
+      </div>
+      
+      <div class="main-content-wrap">
+        <nav class="toc-nav">
+          <div class="toc-title">On this page</div>
+          <ul class="toc-list" id="tableOfContents"></ul>
+        </nav>
+        <div class="main-content">
+          {{ content }}
+        </div>
+        
+        <footer class="site-footer">
+          <p>&copy; {{ 'now' | date: "%Y" }} {{ site.title }}. Licensed under MIT License.</p>
+          <p>Powered by <a href="https://www.pegasys.ai">Aegis & Pegasys.ai</a></p>
+        </footer>
+      </div>
+    </div>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Sidebar submenu toggles (+ / -), with localStorage persistence
+        const sidebar = document.querySelector('.side-nav');
+        if (sidebar) {
+          const STORAGE_KEY = 'csp-docs-nav-state';
+          
+          // Load saved state from localStorage
+          let savedState = {};
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+              savedState = JSON.parse(stored);
+            }
+          } catch (e) {
+            console.warn('Failed to load nav state:', e);
+          }
+
+          // Save state to localStorage
+          const saveState = () => {
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+            } catch (e) {
+              console.warn('Failed to save nav state:', e);
+            }
+          };
+
+          sidebar.querySelectorAll('.nav-list-item.has-children').forEach(function(li, index) {
+            const toggle = li.querySelector('.nav-toggle');
+            const submenu = li.querySelector('.nav-list-child');
+            const link = li.querySelector('.nav-list-link');
+            if (!toggle || !submenu || !link) return;
+
+            // Use link href as unique identifier
+            const itemKey = link.getAttribute('href');
+
+            const setExpanded = (expanded, persist = true) => {
+              toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+              toggle.setAttribute('aria-label', expanded ? 'Collapse submenu' : 'Expand submenu');
+              toggle.textContent = expanded ? '−' : '+'; // U+2212 minus sign
+              if (expanded) {
+                li.classList.add('expanded');
+                submenu.hidden = false;
+              } else {
+                li.classList.remove('expanded');
+                submenu.hidden = true;
+              }
+              
+              // Save to localStorage
+              if (persist) {
+                savedState[itemKey] = expanded;
+                saveState();
+              }
+            };
+
+            // Restore saved state or default to collapsed
+            const savedExpanded = savedState[itemKey];
+            setExpanded(savedExpanded === true, false);
+
+            // Toggle on click
+            toggle.addEventListener('click', function(e) {
+              e.preventDefault();
+              const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+              setExpanded(!isExpanded, true);
+            });
+          });
+
+          // Auto-expand the section containing the active page (overrides saved state)
+          const activeChild = sidebar.querySelector('.nav-list-child .nav-list-item.active');
+          if (activeChild) {
+            const parent = activeChild.closest('.nav-list-item.has-children');
+            if (parent) {
+              const toggle = parent.querySelector('.nav-toggle');
+              const submenu = parent.querySelector('.nav-list-child');
+              const link = parent.querySelector('.nav-list-link');
+              if (toggle && submenu && link) {
+                toggle.setAttribute('aria-expanded', 'true');
+                toggle.setAttribute('aria-label', 'Collapse submenu');
+                toggle.textContent = '−';
+                parent.classList.add('expanded');
+                submenu.hidden = false;
+                // Save expanded state
+                const itemKey = link.getAttribute('href');
+                savedState[itemKey] = true;
+                saveState();
+              }
+            }
+          }
+
+          // If the active page is a parent item with children, expand it (overrides saved state)
+          const activeParent = sidebar.querySelector('.nav-list-item.has-children.active');
+          if (activeParent) {
+            const toggle = activeParent.querySelector('.nav-toggle');
+            const submenu = activeParent.querySelector('.nav-list-child');
+            const link = activeParent.querySelector('.nav-list-link');
+            if (toggle && submenu && link) {
+              toggle.setAttribute('aria-expanded', 'true');
+              toggle.setAttribute('aria-label', 'Collapse submenu');
+              toggle.textContent = '−';
+              activeParent.classList.add('expanded');
+              submenu.hidden = false;
+              // Save expanded state
+              const itemKey = link.getAttribute('href');
+              savedState[itemKey] = true;
+              saveState();
+            }
+          }
+        }
+
+        // Find all code blocks with language-mermaid class
+        document.querySelectorAll('pre code.language-mermaid').forEach(function(codeBlock) {
+          const pre = codeBlock.parentElement;
+          const mermaidDiv = document.createElement('div');
+          mermaidDiv.className = 'mermaid';
+          mermaidDiv.textContent = codeBlock.textContent;
+          pre.replaceWith(mermaidDiv);
+        });
+        
+        // Initialize mermaid after converting code blocks
+        if (typeof mermaid !== 'undefined') {
+          mermaid.run();
+        }
+
+        // Generate Table of Contents
+        const toc = document.getElementById('tableOfContents');
+        if (toc) {
+          const headings = document.querySelectorAll('.main-content h2, .main-content h3');
+          let currentLevel = 0;
+          let lastUl = null;
+          let stack = [];
+
+          headings.forEach((heading, index) => {
+            if (!heading.id) {
+              heading.id = 'heading-' + index;
+            }
+
+            const level = parseInt(heading.tagName[1]);
+            const item = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = '#' + heading.id;
+            link.textContent = heading.textContent;
+            item.appendChild(link);
+
+            if (level === 2) {
+              toc.appendChild(item);
+              currentLevel = 2;
+              lastUl = null;
+            } else if (level === 3) {
+              if (!lastUl) {
+                lastUl = document.createElement('ul');
+                if (toc.lastElementChild) {
+                  toc.lastElementChild.appendChild(lastUl);
+                } else {
+                  toc.appendChild(lastUl);
+                }
+              }
+              lastUl.appendChild(item);
+            }
+          });
+        }
+
+        // Scroll Spy
+        const updateScrollSpy = () => {
+          const headings = document.querySelectorAll('.main-content h2, .main-content h3');
+          let current = null;
+
+          headings.forEach(heading => {
+            const rect = heading.getBoundingClientRect();
+            if (rect.top <= 150) {
+              current = heading;
+            }
+          });
+
+          if (current) {
+            document.querySelectorAll('.toc-list a').forEach(link => {
+              link.classList.remove('active');
+            });
+            const activeLink = document.querySelector('.toc-list a[href="#' + current.id + '"]');
+            if (activeLink) {
+              activeLink.classList.add('active');
+              
+              // Auto-scroll the TOC to keep active link visible
+              const tocNav = document.querySelector('.toc-nav');
+              if (tocNav) {
+                const linkRect = activeLink.getBoundingClientRect();
+                const tocRect = tocNav.getBoundingClientRect();
+                
+                // Check if link is below visible area
+                if (linkRect.bottom > tocRect.bottom) {
+                  activeLink.scrollIntoView({ block: 'end', behavior: 'smooth' });
+                }
+                // Check if link is above visible area
+                else if (linkRect.top < tocRect.top) {
+                  activeLink.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                }
+              }
+            }
+          }
+        };
+
+        window.addEventListener('scroll', updateScrollSpy);
+        window.addEventListener('resize', updateScrollSpy);
+        updateScrollSpy();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,99 @@
+{
+  "cloud_provider": "aws",
+  "resource_type": "aws:s3:bucket",
+  "metadata": {
+    "resource_id": "my-bucket-12345",
+    "service": "s3",
+    "region": "us-east-1",
+    "account_id": "123456789012",
+    "labels": {}
+  },
+  "configuration": {
+    "bucket_name": "my-bucket-12345",
+    "creation_date": "2024-01-10T08:00:00Z",
+    "region": "us-east-1",
+    "versioning_enabled": true,
+    "encryption": {
+      "Rules": [
+        {
+          "ApplyServerSideEncryptionByDefault": {
+            "SSEAlgorithm": "AES256"
+          }
+        }
+      ]
+    },
+    "policy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Deny",
+          "Principal": "*",
+          "Action": "s3:*",
+          "Resource": [
+            "arn:aws:s3:::my-bucket-12345",
+            "arn:aws:s3:::my-bucket-12345/*"
+          ],
+          "Condition": {
+            "Bool": {
+              "aws:SecureTransport": "false"
+            }
+          }
+        }
+      ]
+    },
+    "acl": {
+      "Owner": {
+        "ID": "123456789012"
+      },
+      "Grants": [
+        {
+          "Grantee": {
+            "Type": "CanonicalUser",
+            "ID": "123456789012"
+          },
+          "Permission": "FULL_CONTROL"
+        }
+      ]
+    }
+  },
+  "raw": {
+    "Name": "my-bucket-12345",
+    "CreationDate": "2024-01-10T08:00:00Z",
+    "region": "us-east-1",
+    "versioning": "Enabled",
+    "encryption": {
+      "Rules": [
+        {
+          "ApplyServerSideEncryptionByDefault": {
+            "SSEAlgorithm": "AES256"
+          }
+        }
+      ]
+    },
+    "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"s3:*\",\"Resource\":[\"arn:aws:s3:::my-bucket-12345\",\"arn:aws:s3:::my-bucket-12345/*\"],\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\"}}}]}",
+    "acl": {
+      "Owner": {
+        "ID": "123456789012"
+      },
+      "Grants": [
+        {
+          "Grantee": {
+            "Type": "CanonicalUser",
+            "ID": "123456789012"
+          },
+          "Permission": "FULL_CONTROL"
+        }
+      ]
+    },
+    "tags": [
+      {
+        "Key": "Environment",
+        "Value": "production"
+      },
+      {
+        "Key": "Compliance",
+        "Value": "soc2"
+      }
+    ]
+  }
+}

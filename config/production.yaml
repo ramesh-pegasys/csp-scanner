@@ -1,0 +1,84 @@
+# config/production.yaml
+
+app_name: "Cloud Artifact Extractor"
+environment: "production"
+debug: false
+
+# Multi-cloud providers
+enabled_providers:
+  - aws
+  - azure
+  - gcp
+
+# AWS multi-account configuration
+aws_accounts:
+  - account_id: "123456789012"
+    regions:
+      - "us-west-2"
+      - "us-east-1"
+
+# AWS credentials
+# It is recommended to use environment variables for AWS credentials in production:
+#   export AWS_ACCESS_KEY_ID="your-access-key-id"
+#   export AWS_SECRET_ACCESS_KEY="your-secret-access-key"
+#   export AWS_SESSION_TOKEN="temporary-token"  # Optional
+#
+# Uncomment below to use YAML config (not recommended for production):
+# aws_access_key_id: "your-access-key-id"  # Global or per-account
+# aws_secret_access_key: "your-secret-access-key"
+# aws_session_token: null  # Optional, for temporary credentials
+
+# Azure multi-subscription configuration
+azure_accounts:
+  - subscription_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    locations:
+      - "eastus"
+      - "westeurope"
+  - subscription_id: "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
+    locations:
+      - "centralus"
+      - "uksouth"
+
+# Azure credentials
+# It is recommended to use environment variables for Azure credentials in production:
+#   export AZURE_TENANT_ID="your-tenant-id"
+#   export AZURE_CLIENT_ID="your-client-id"
+#   export AZURE_CLIENT_SECRET="your-client-secret"
+#
+# Uncomment below to use YAML config (not recommended for production):
+# azure_tenant_id: "your-tenant-id"
+# azure_client_id: "your-client-id"
+# azure_client_secret: "your-client-secret"
+
+# GCP multi-project configuration
+gcp_projects:
+  - project_id: "some-project"
+    regions:
+      - "us-west1"
+      - "europe-west1"
+gcp_credentials_path: "/path/to/service-account-key.json"  # Optional
+
+scanner_endpoint_url: "https://policy-scanner.example.com/api/scan"
+transport_timeout_seconds: 60
+transport_max_retries: 5
+
+max_concurrent_extractors: 20
+batch_size: 200
+batch_delay_seconds: 0.1
+
+# Transport Configuration
+transport_type: "http"  # Options: http, filesystem, null
+filesystem_base_dir: "./file_collector"
+filesystem_create_dir: true
+
+# JWT Authentication Configuration
+# It is recommended to use environment variables for JWT settings in production:
+#   export JWT_SECRET_KEY="your-production-secret"
+#   export JWT_ALGORITHM="HS256"
+#   export JWT_EXPIRE_DAYS="365"
+#
+# Uncomment below to use YAML config (not recommended for production):
+# jwt:
+#   secret_key: "your-production-secret"  # Change for production
+#   algorithm: "HS256"
+#   expire_days: 365
