@@ -1,3 +1,10 @@
+---
+layout: default
+title: Deployment Architecture
+parent: Deployment
+nav_order: 1
+---
+
 # Deployment Architecture Guide
 
 Overview of Cloud Artifact Extractor deployment architecture for each platform.
@@ -10,80 +17,59 @@ Overview of Cloud Artifact Extractor deployment architecture for each platform.
 
 ### Component Diagram
 
-```
-┌──────────────────────────────────────────────────────────┐
-│                    AWS Region (us-east-1)               │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │              Application Load Balancer             │ │
-│  │           (Provided by App Runner)                 │ │
-│  └──────────────────┬─────────────────────────────────┘ │
-│                     │                                    │
-│  ┌──────────────────▼─────────────────────────────────┐ │
-│  │         App Runner Service                         │ │
-│  │  ┌────────────────────────────────────────────┐   │ │
-│  │  │  Container Instance (Auto-managed)        │   │ │
-│  │  │                                            │   │ │
-│  │  │  Cloud Artifact Extractor                 │   │ │
-│  │  │  (FastAPI on port 8000)                   │   │ │
-│  │  │                                            │   │ │
-│  │  │  • /api/v1/extraction/*                   │   │ │
-│  │  │  • /api/v1/schedules/*                    │   │ │
-│  │  │  • /api/v1/health/*                       │   │ │
-│  │  └────────────────────────────────────────────┘   │ │
-│  │                                                     │ │
-│  │  Auto-scaling: 1-10 replicas (based on load)      │ │
-│  └─────────────────┬────────────────────────────────┘ │
-│                    │                                   │
-│  ┌─────────────────┼────────────────────────────────┐ │
-│  │ Configuration & Logging                           │ │
-│  │ ├─ Environment Variables                          │ │
-│  │ ├─ CloudWatch Logs                               │ │
-│  │ ├─ CloudWatch Metrics                            │ │
-│  │ └─ X-Ray Tracing (optional)                      │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │         IAM Role & Permissions                     │ │
-│  │  ├─ ECR pull access                               │ │
-│  │ ├─ AWS service permissions (EC2, S3, RDS, etc)   │ │
-│  │  ├─ CloudWatch write access                       │ │
-│  │  └─ X-Ray write access (optional)                │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-└──────────────────────────────────────────────────────────┘
-           ▼
-    ┌────────────────────────────────┐
-    │   Amazon ECR                   │
-    │   (Container Image Registry)   │
-    └────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph "AWS Region (us-east-1)"
+        ALB[Application Load Balancer<br/>Provided by App Runner]
+        ARS[App Runner Service]
+        CI[Container Instance<br/>Auto-managed]
+        CAE[Cloud Artifact Extractor<br/>FastAPI on port 8000<br/>• /api/v1/extraction/*<br/>• /api/v1/schedules/*<br/>• /api/v1/health/*]
+        CL[Configuration & Logging<br/>• Environment Variables<br/>• CloudWatch Logs<br/>• CloudWatch Metrics<br/>• X-Ray Tracing]
+        IAM[IAM Role & Permissions<br/>• ECR pull access<br/>• AWS service permissions<br/>• CloudWatch write access<br/>• X-Ray write access]
+    end
+    
+    ECR[Amazon ECR<br/>Container Image Registry]
+    
+    ALB --> ARS
+    ARS --> CI
+    CI --> CAE
+    CAE --> CL
+    CAE --> IAM
+    CI -.-> ECR
+    
+    style ALB fill:#e1f5fe
+    style ARS fill:#f3e5f5
+    style CI fill:#e8f5e8
+    style CAE fill:#fff3e0
+    style CL fill:#fce4ec
+    style IAM fill:#f1f8e9
+    style ECR fill:#e0f2f1
 ```
 
 ### Data Flow
 
-```
-Client Request
-    │
-    ▼
-Internet → AWS API Gateway / ALB (provided by App Runner)
-    │
-    ▼
-App Runner Service (automatically load balanced)
-    │
-    ▼
-Container Instance(s)
-    │
-    ├─► Extract resources from AWS (using IAM role)
-    │
-    ├─► Extract resources from Azure (using credentials)
-    │
-    ├─► Extract resources from GCP (using credentials)
-    │
-    └─► Send artifacts via HTTP Transport
-         │
-         ▼
-    Policy Scanner / Filesystem / Null Transport
+```mermaid
+flowchart TD
+    CR[Client Request] --> IG["Internet to AWS API Gateway / ALB<br/>provided by App Runner"]
+    IG --> ARS["App Runner Service<br/>automatically load balanced"]
+    ARS --> CI["Container Instance(s)"]
+    
+    CI --> EXTRACT_AWS["Extract resources from AWS<br/>using IAM role"]
+    CI --> EXTRACT_AZURE["Extract resources from Azure<br/>using credentials"]
+    CI --> EXTRACT_GCP["Extract resources from GCP<br/>using credentials"]
+    
+    EXTRACT_AWS --> HT["Send artifacts via HTTP Transport"]
+    EXTRACT_AZURE --> HT
+    EXTRACT_GCP --> HT
+    
+    HT --> DEST["Policy Scanner / Filesystem / Null Transport"]
+    
+    style CR fill:#e3f2fd
+    style IG fill:#f3e5f5
+    style ARS fill:#e8f5e8
+    style CI fill:#fff3e0
+    style HT fill:#fce4ec
+    style DEST fill:#f1f8e9
 ```
 
 ### Key Features
@@ -101,92 +87,72 @@ Container Instance(s)
 
 ### Component Diagram
 
-```
-┌──────────────────────────────────────────────────────────┐
-│              Azure Subscription / Region                 │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │         Container Apps Environment                 │ │
-│  │                                                     │ │
-│  │  ┌─────────────────────────────────────────────┐  │ │
-│  │  │  Ingress Controller                         │  │ │
-│  │  │  (HTTPS, TLS termination)                   │  │ │
-│  │  └─────────────────┬───────────────────────────┘  │ │
-│  │                    │                               │ │
-│  │  ┌─────────────────▼───────────────────────────┐  │ │
-│  │  │  Load Balancer (Internal)                   │  │ │
-│  │  └─────────────────┬───────────────────────────┘  │ │
-│  │                    │                               │ │
-│  │  ┌─────────────────▼───────────────────────────┐  │ │
-│  │  │  Container App (cloud-artifact-extractor)  │  │ │
-│  │  │  ┌─────────────────────────────────────┐   │  │ │
-│  │  │  │  Pod Replica 1                      │   │  │ │
-│  │  │  │  FastAPI on port 8000               │   │  │ │
-│  │  │  └─────────────────────────────────────┘   │  │ │
-│  │  │  ┌─────────────────────────────────────┐   │  │ │
-│  │  │  │  Pod Replica 2                      │   │  │ │
-│  │  │  │  FastAPI on port 8000               │   │  │ │
-│  │  │  └─────────────────────────────────────┘   │  │ │
-│  │  │  ┌─────────────────────────────────────┐   │  │ │
-│  │  │  │  Pod Replica N (HPA managed)        │   │  │ │
-│  │  │  │  FastAPI on port 8000               │   │  │ │
-│  │  │  └─────────────────────────────────────┘   │  │ │
-│  │  │                                             │  │ │
-│  │  │  Auto-scaling: 2-10 replicas               │  │ │
-│  │  │  (based on CPU, memory, custom metrics)    │  │ │
-│  │  └─────────────────────────────────────────┘  │ │
-│  │                                                     │ │
-│  │  ┌────────────────────────────────────────────┐  │ │
-│  │  │  Configuration & Secrets                   │  │ │
-│  │  │  ├─ Environment Variables (ConfigMap)      │  │ │
-│  │  │  ├─ Credentials (Key Vault secrets)        │  │ │
-│  │  │  └─ Resource limits (CPU 0.5-2 cores)     │  │ │
-│  │  └────────────────────────────────────────────┘  │ │
-│  │                                                     │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  Observability & Security                          │ │
-│  │  ├─ Azure Monitor (metrics)                        │ │
-│  │  ├─ Log Analytics (logs)                           │ │
-│  │  ├─ Application Insights (APM)                     │ │
-│  │  ├─ Managed Identity (authentication)              │ │
-│  │  └─ Virtual Network (optional networking)          │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  Azure Container Registry                          │ │
-│  │  (Private image storage)                           │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-└──────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph "Azure Subscription / Region"
+        CAE[Container Apps Environment]
+        IC[Ingress Controller<br/>HTTPS, TLS termination]
+        LB[Load Balancer<br/>Internal]
+        CA[Container App<br/>cloud-artifact-extractor]
+        
+        subgraph "Container App"
+            P1[Pod Replica 1<br/>FastAPI on port 8000]
+            P2[Pod Replica 2<br/>FastAPI on port 8000]
+            PN[Pod Replica N<br/>HPA managed<br/>FastAPI on port 8000]
+        end
+        
+        CS[Configuration & Secrets<br/>• Environment Variables<br/>• Key Vault secrets<br/>• Resource limits]
+        
+        OBS[Observability & Security<br/>• Azure Monitor<br/>• Log Analytics<br/>• Application Insights<br/>• Managed Identity<br/>• Virtual Network]
+        
+        ACR[Azure Container Registry<br/>Private image storage]
+    end
+    
+    IC --> LB
+    LB --> CA
+    CA --> P1
+    CA --> P2
+    CA --> PN
+    CA --> CS
+    CA --> OBS
+    CA -.-> ACR
+    
+    style CAE fill:#e1f5fe
+    style IC fill:#f3e5f5
+    style LB fill:#e8f5e8
+    style CA fill:#fff3e0
+    style P1 fill:#fce4ec
+    style P2 fill:#fce4ec
+    style PN fill:#fce4ec
+    style CS fill:#f1f8e9
+    style OBS fill:#e0f2f1
+    style ACR fill:#fafafa
 ```
 
 ### Data Flow
 
-```
-Client Request
-    │
-    ▼
-Internet → Container Apps Ingress (Azure front-end)
-    │
-    ▼
-Internal Load Balancer
-    │
-    ▼
-Container App Replicas (round-robin distribution)
-    │
-    ├─► Extract resources from AWS (using credentials)
-    │
-    ├─► Extract resources from Azure (using Managed Identity)
-    │
-    ├─► Extract resources from GCP (using credentials)
-    │
-    └─► Send artifacts via HTTP Transport
-         │
-         ▼
-    Policy Scanner / Filesystem / Null Transport
+```mermaid
+flowchart TD
+    CR[Client Request] --> IG[Internet → Container Apps Ingress<br/>Azure front-end]
+    IG --> LB[Internal Load Balancer]
+    LB --> CAR[Container App Replicas<br/>round-robin distribution]
+    
+    CAR --> EXTRACT_AWS[Extract resources from AWS<br/>using credentials]
+    CAR --> EXTRACT_AZURE[Extract resources from Azure<br/>using Managed Identity]
+    CAR --> EXTRACT_GCP[Extract resources from GCP<br/>using credentials]
+    
+    EXTRACT_AWS --> HT[Send artifacts via HTTP Transport]
+    EXTRACT_AZURE --> HT
+    EXTRACT_GCP --> HT
+    
+    HT --> DEST[Policy Scanner / Filesystem / Null Transport]
+    
+    style CR fill:#e3f2fd
+    style IG fill:#f3e5f5
+    style LB fill:#e8f5e8
+    style CAR fill:#fff3e0
+    style HT fill:#fce4ec
+    style DEST fill:#f1f8e9
 ```
 
 ### Key Features
@@ -205,107 +171,72 @@ Container App Replicas (round-robin distribution)
 
 ### Component Diagram
 
-```
-┌──────────────────────────────────────────────────────────┐
-│            Google Cloud Project                          │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │           Cloud Load Balancing                     │ │
-│  │        (Automatic, globally distributed)          │ │
-│  └──────────────────┬─────────────────────────────────┘ │
-│                     │                                    │
-│  ┌──────────────────▼─────────────────────────────────┐ │
-│  │         Cloud Run Service                          │ │
-│  │                                                     │ │
-│  │  ┌────────────────────────────────────────────┐   │ │
-│  │  │  Revision (cloud-artifact-extractor)      │   │ │
-│  │  │  ┌──────────────────────────────────────┐ │   │ │
-│  │  │  │  Container Instance 1                │ │   │ │
-│  │  │  │  FastAPI on port 8000                │ │   │ │
-│  │  │  └──────────────────────────────────────┘ │   │ │
-│  │  │  ┌──────────────────────────────────────┐ │   │ │
-│  │  │  │  Container Instance 2                │ │   │ │
-│  │  │  │  FastAPI on port 8000                │ │   │ │
-│  │  │  └──────────────────────────────────────┘ │   │ │
-│  │  │  ┌──────────────────────────────────────┐ │   │ │
-│  │  │  │  Container Instance N (Auto-scaled)  │ │   │ │
-│  │  │  │  FastAPI on port 8000                │ │   │ │
-│  │  │  └──────────────────────────────────────┘ │   │ │
-│  │  │                                            │   │ │
-│  │  │  Auto-scaling: 0-100 instances            │   │ │
-│  │  │  (based on request rate)                  │   │ │
-│  │  │  Request timeout: 60 minutes              │   │ │
-│  │  │  Memory: 512MB - 8GB per instance         │   │ │
-│  │  └────────────────────────────────────────────┘   │ │
-│  │                                                     │ │
-│  │  Configuration:                                    │ │
-│  │  ├─ Environment Variables                         │ │
-│  │  ├─ Secret Manager Integration                    │ │
-│  │  ├─ Resource Limits                               │ │
-│  │  └─ Concurrency Settings                          │ │
-│  │                                                     │ │
-│  └─────────────────┬────────────────────────────────┘ │
-│                    │                                   │
-│  ┌─────────────────┼────────────────────────────────┐ │
-│  │  Observability                                     │ │
-│  │  ├─ Cloud Logging (Stackdriver)                   │ │
-│  │  ├─ Cloud Monitoring (metrics)                    │ │
-│  │  ├─ Cloud Trace (distributed tracing)            │ │
-│  │  └─ Error Reporting                              │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  Security & Access                                 │ │
-│  │  ├─ Service Account (Workload Identity)            │ │
-│  │  ├─ IAM Roles & Permissions                        │ │
-│  │  ├─ Cloud Armor (DDoS protection)                  │ │
-│  │  └─ VPC Connector (optional networking)            │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  Container Registry                                │ │
-│  │  (gcr.io/<project>/cloud-artifact-extractor)      │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-└──────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph "Google Cloud Project"
+        CLB[Cloud Load Balancing<br/>Automatic, globally distributed]
+        CRS[Cloud Run Service]
+        
+        subgraph "Revision (cloud-artifact-extractor)"
+            C1[Container Instance 1<br/>FastAPI on port 8000]
+            C2[Container Instance 2<br/>FastAPI on port 8000]
+            CN[Container Instance N<br/>Auto-scaled<br/>FastAPI on port 8000]
+        end
+        
+        CONF[Configuration<br/>• Environment Variables<br/>• Secret Manager Integration<br/>• Resource Limits<br/>• Concurrency Settings]
+        
+        OBS[Observability<br/>• Cloud Logging<br/>• Cloud Monitoring<br/>• Cloud Trace<br/>• Error Reporting]
+        
+        SEC[Security & Access<br/>• Service Account<br/>• IAM Roles & Permissions<br/>• Cloud Armor<br/>• VPC Connector]
+        
+        REG[Container Registry<br/>gcr.io/&lt;project&gt;/cloud-artifact-extractor]
+    end
+    
+    CLB --> CRS
+    CRS --> C1
+    CRS --> C2
+    CRS --> CN
+    CRS --> CONF
+    CRS --> OBS
+    CRS --> SEC
+    CRS -.-> REG
+    
+    style CLB fill:#e1f5fe
+    style CRS fill:#f3e5f5
+    style C1 fill:#e8f5e8
+    style C2 fill:#e8f5e8
+    style CN fill:#e8f5e8
+    style CONF fill:#fff3e0
+    style OBS fill:#fce4ec
+    style SEC fill:#f1f8e9
+    style REG fill:#e0f2f1
 ```
 
 ### Data Flow
 
+```mermaid
+flowchart TD
+    CR[Client Request<br/>HTTP/HTTPS] --> CLB[Google Cloud Load Balancer]
+    CLB --> CRS[Cloud Run Service<br/>Route to nearest instance]
+    CRS --> CI[Container Instances<br/>concurrent processing]
+    
+    CI --> EXTRACT_AWS[Extract resources from AWS<br/>using credentials]
+    CI --> EXTRACT_AZURE[Extract resources from Azure<br/>using credentials]
+    CI --> EXTRACT_GCP[Extract resources from GCP<br/>using Workload Identity]
+    
+    EXTRACT_AWS --> HT[Send artifacts via HTTP Transport]
+    EXTRACT_AZURE --> HT
+    EXTRACT_GCP --> HT
+    
+    HT --> DEST[Policy Scanner / Filesystem / Null Transport]
+    
+    style CR fill:#e3f2fd
+    style CLB fill:#f3e5f5
+    style CRS fill:#e8f5e8
+    style CI fill:#fff3e0
+    style HT fill:#fce4ec
+    style DEST fill:#f1f8e9
 ```
-Client Request (HTTP/HTTPS)
-    │
-    ▼
-Google Cloud Load Balancer
-    │
-    ▼
-Cloud Run Service (Route to nearest instance)
-    │
-    ▼
-Container Instances (concurrent processing)
-    │
-    ├─► Extract resources from AWS (using credentials)
-    │
-    ├─► Extract resources from Azure (using credentials)
-    │
-    ├─► Extract resources from GCP (using Workload Identity)
-    │
-    └─► Send artifacts via HTTP Transport
-         │
-         ▼
-    Policy Scanner / Filesystem / Null Transport
-```
-
-### Key Features
-
-- **Serverless:** No infrastructure management needed
-- **Global Load Balancing:** Automatic traffic distribution
-- **Scale to Zero:** Instances automatically terminated when not in use
-- **Per-Request Pricing:** Only pay for actual computation
-- **Integrated Security:** Built-in DDoS protection and IAM
-- **Container Native:** Direct deployment from container image
-- **VPC Integration:** Optional private networking with VPC Connector
 
 ---
 
@@ -313,147 +244,100 @@ Container Instances (concurrent processing)
 
 ### Component Diagram
 
-```
-┌──────────────────────────────────────────────────────────┐
-│        Kubernetes Cluster (EKS/AKS/GKE)                 │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  cloud-artifact-extractor Namespace               │ │
-│  │                                                     │ │
-│  │  ┌─────────────────────────────────────────────┐  │ │
-│  │  │  Ingress Controller / Load Balancer         │  │ │
-│  │  │  (HTTPS, TLS termination)                   │  │ │
-│  │  └─────────────────┬───────────────────────────┘  │ │
-│  │                    │                               │ │
-│  │  ┌─────────────────▼───────────────────────────┐  │ │
-│  │  │  Service (cloud-artifact-extractor)        │  │ │
-│  │  │  Type: LoadBalancer / ClusterIP+Ingress    │  │ │
-│  │  │  Port: 8000 (internal)                      │  │ │
-│  │  └─────────────────┬───────────────────────────┘  │ │
-│  │                    │                               │ │
-│  │  ┌─────────────────▼───────────────────────────┐  │ │
-│  │  │  Deployment                                 │  │ │
-│  │  │  ├─ Pod 1 (cloud-artifact-extractor)       │  │ │
-│  │  │  │  └─ Container (port 8000)               │  │ │
-│  │  │  │                                          │  │ │
-│  │  │  ├─ Pod 2 (cloud-artifact-extractor)       │  │ │
-│  │  │  │  └─ Container (port 8000)               │  │ │
-│  │  │  │                                          │  │ │
-│  │  │  └─ Pod N (HPA managed)                     │  │ │
-│  │  │     └─ Container (port 8000)                │  │ │
-│  │  │                                              │  │ │
-│  │  │  Replicas: 2-10 (managed by HPA)            │  │ │
-│  │  │  Resource Requests/Limits:                  │  │ │
-│  │  │  • CPU: 500m - 1000m                        │  │ │
-│  │  │  • Memory: 512Mi - 1Gi                      │  │ │
-│  │  └─────────────────┬───────────────────────────┘  │ │
-│  │                    │                               │ │
-│  │  ┌─────────────────▼───────────────────────────┐  │ │
-│  │  │  HPA (Horizontal Pod Autoscaler)           │  │ │
-│  │  │  • Min replicas: 2                          │  │ │
-│  │  │  • Max replicas: 10                         │  │ │
-│  │  │  • Target CPU: 70%                          │  │ │
-│  │  │  • Target Memory: 80%                       │  │ │
-│  │  └─────────────────────────────────────────────┘  │ │
-│  │                                                     │ │
-│  │  ┌─────────────────────────────────────────────┐  │ │
-│  │  │  Pod Disruption Budget                      │  │ │
-│  │  │  • Min available: 1 pod                     │  │ │
-│  │  │  (Protects during node maintenance)         │  │ │
-│  │  └─────────────────────────────────────────────┘  │ │
-│  │                                                     │ │
-│  │  ┌─────────────────────────────────────────────┐  │ │
-│  │  │  Configuration & Secrets                    │  │ │
-│  │  │  ├─ ConfigMap (app configuration)           │  │ │
-│  │  │  ├─ Secret (credentials, API keys)          │  │ │
-│  │  │  └─ Service Account (RBAC)                  │  │ │
-│  │  └─────────────────────────────────────────────┘  │ │
-│  │                                                     │ │
-│  │  ┌─────────────────────────────────────────────┐  │ │
-│  │  │  Network Policies                           │  │ │
-│  │  │  • Ingress: Allow from Ingress controller   │  │ │
-│  │  │  • Egress: Allow to external services       │  │ │
-│  │  │  (AWS, Azure, GCP, Scanner endpoint)        │  │ │
-│  │  └─────────────────────────────────────────────┘  │ │
-│  │                                                     │ │
-│  │  ┌─────────────────────────────────────────────┐  │ │
-│  │  │  RBAC (Role-Based Access Control)           │  │ │
-│  │  │  • ServiceAccount: cloud-artifact-scanner   │  │ │
-│  │  │  • Role/ClusterRole: minimal permissions    │  │ │
-│  │  │  • RoleBinding/ClusterRoleBinding configured│  │ │
-│  │  └─────────────────────────────────────────────┘  │ │
-│  │                                                     │ │
-│  │  ┌─────────────────────────────────────────────┐  │ │
-│  │  │  Monitoring & Logging                       │  │ │
-│  │  │  ├─ ServiceMonitor (Prometheus)             │  │ │
-│  │  │  ├─ Logs → Cloud provider logging           │  │ │
-│  │  │  │  (CloudWatch, Azure Monitor, Cloud Log) │  │ │
-│  │  │  └─ Metrics → Cloud provider monitoring    │  │ │
-│  │  │     (CloudWatch, Azure Monitor, Cloud Mon) │  │ │
-│  │  └─────────────────────────────────────────────┘  │ │
-│  │                                                     │ │
-│  │  ┌─────────────────────────────────────────────┐  │ │
-│  │  │  CronJob (Optional Scheduled Extraction)    │  │ │
-│  │  │  • Schedule: 0 2 * * * (daily 2 AM)        │  │ │
-│  │  │  • Job: One-time extraction task            │  │ │
-│  │  └─────────────────────────────────────────────┘  │ │
-│  │                                                     │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  Worker Nodes (Cloud provider managed)             │ │
-│  │  • Auto-scaling group for nodes                    │ │
-│  │  • Health checks and auto-recovery                │ │
-│  │  • Container runtime (Docker/containerd)          │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  Container Registry                                │ │
-│  │  • ECR (AWS)                                       │ │
-│  │  • ACR (Azure)                                     │ │
-│  │  • GCR (GCP)                                       │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-└──────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph "Kubernetes Cluster (EKS/AKS/GKE)"
+        NS["cloud-artifact-extractor Namespace"]
+        
+        subgraph "Namespace"
+            IC["Ingress Controller / Load Balancer<br/>HTTPS, TLS termination"]
+            SVC["Service<br/>cloud-artifact-extractor<br/>Type: LoadBalancer / ClusterIP+Ingress<br/>Port: 8000"]
+            DEP["Deployment"]
+            
+            subgraph "Deployment"
+                P1["Pod 1<br/>cloud-artifact-extractor<br/>Container port 8000"]
+                P2["Pod 2<br/>cloud-artifact-extractor<br/>Container port 8000"]
+                PN["Pod N<br/>HPA managed<br/>Container port 8000"]
+            end
+            
+            HPA["HPA<br/>Horizontal Pod Autoscaler<br/>Min replicas: 2<br/>Max replicas: 10<br/>Target CPU: 70%<br/>Target Memory: 80%"]
+            
+            PDB["Pod Disruption Budget<br/>Min available: 1 pod<br/>Protects during node maintenance"]
+            
+            CONF["Configuration & Secrets<br/>ConfigMap<br/>Secret<br/>Service Account"]
+            
+            NP["Network Policies<br/>Ingress: Allow from Ingress controller<br/>Egress: Allow to external services"]
+            
+            RBAC["RBAC<br/>Role-Based Access Control<br/>ServiceAccount<br/>Role/ClusterRole<br/>RoleBinding/ClusterRoleBinding"]
+            
+            MON["Monitoring & Logging<br/>ServiceMonitor<br/>Logs to Cloud provider logging<br/>Metrics to Cloud provider monitoring"]
+            
+            CJ["CronJob<br/>Optional Scheduled Extraction<br/>Schedule: 0 2 * * *<br/>Job: One-time extraction task"]
+        end
+        
+        WN["Worker Nodes<br/>Cloud provider managed<br/>Auto-scaling group<br/>Health checks<br/>Container runtime"]
+        
+        REG["Container Registry<br/>ECR AWS<br/>ACR Azure<br/>GCR GCP"]
+    end
+    
+    IC --> SVC
+    SVC --> DEP
+    DEP --> P1
+    DEP --> P2
+    DEP --> PN
+    DEP --> HPA
+    DEP --> PDB
+    DEP --> CONF
+    DEP --> NP
+    DEP --> RBAC
+    DEP --> MON
+    DEP --> CJ
+    DEP -.-> WN
+    DEP -.-> REG
+    
+    style NS fill:#e1f5fe
+    style IC fill:#f3e5f5
+    style SVC fill:#e8f5e8
+    style DEP fill:#fff3e0
+    style P1 fill:#fce4ec
+    style P2 fill:#fce4ec
+    style PN fill:#fce4ec
+    style HPA fill:#f1f8e9
+    style PDB fill:#e0f2f1
+    style CONF fill:#fafafa
+    style NP fill:#ffebee
+    style RBAC fill:#e8eaf6
+    style MON fill:#f3e5f5
+    style CJ fill:#ede7f6
+    style WN fill:#e0f7fa
+    style REG fill:#f9fbe7
 ```
 
 ### Data Flow
 
+```mermaid
+flowchart TD
+    CR[Client Request<br/>HTTP/HTTPS] --> IG[Kubernetes Ingress / Load Balancer]
+    IG --> SVC[Service<br/>routing to pods]
+    SVC --> POD[Pod Replicas<br/>distributed processing]
+    
+    POD --> EXTRACT_AWS[Extract resources from AWS<br/>using IAM role/Workload Identity]
+    POD --> EXTRACT_AZURE[Extract resources from Azure<br/>using Service Principal/Workload Identity]
+    POD --> EXTRACT_GCP[Extract resources from GCP<br/>using Service Account/Workload Identity]
+    
+    EXTRACT_AWS --> HT[Send artifacts via HTTP Transport]
+    EXTRACT_AZURE --> HT
+    EXTRACT_GCP --> HT
+    
+    HT --> DEST[Policy Scanner / Filesystem / Null Transport]
+    
+    style CR fill:#e3f2fd
+    style IG fill:#f3e5f5
+    style SVC fill:#e8f5e8
+    style POD fill:#fff3e0
+    style HT fill:#fce4ec
+    style DEST fill:#f1f8e9
 ```
-Client Request (HTTP/HTTPS)
-    │
-    ▼
-Kubernetes Ingress / Load Balancer
-    │
-    ▼
-Service (routing to pods)
-    │
-    ▼
-Pod Replicas (distributed processing)
-    │
-    ├─► Extract resources from AWS (using IAM role/Workload Identity)
-    │
-    ├─► Extract resources from Azure (using Service Principal/Workload Identity)
-    │
-    ├─► Extract resources from GCP (using Service Account/Workload Identity)
-    │
-    └─► Send artifacts via HTTP Transport
-         │
-         ▼
-    Policy Scanner / Filesystem / Null Transport
-```
-
-### Key Features
-
-- **Container Orchestration:** Kubernetes manages deployment and scaling
-- **Multi-Cloud:** Same deployment manifest works on EKS, AKS, GKE
-- **Advanced Networking:** Network policies and service mesh support
-- **Workload Identity:** Secure credential management per cloud
-- **Custom Scaling:** HPA with CPU, memory, and custom metrics
-- **Pod Disruption Budget:** Maintains availability during updates
-- **RBAC:** Fine-grained access control
-- **Monitoring Integration:** Native integration with cloud monitoring
 
 ---
 
@@ -461,53 +345,78 @@ Pod Replicas (distributed processing)
 
 ### 1. Request Routing Flow
 
-All platforms follow similar request routing:
-
-```
-Client
-  ↓
-External Load Balancer (provided by platform)
-  ↓
-Service Mesh / Internal Load Balancer
-  ↓
-Application Instances (Round-robin or intelligent routing)
-  ↓
-Response back to Client
+```mermaid
+flowchart TD
+    C[Client] --> ELB[External Load Balancer<br/>provided by platform]
+    ELB --> SM[Service Mesh / Internal Load Balancer]
+    SM --> AI[Application Instances<br/>Round-robin or intelligent routing]
+    AI --> RC[Response back to Client]
+    
+    style C fill:#e3f2fd
+    style ELB fill:#f3e5f5
+    style SM fill:#e8f5e8
+    style AI fill:#fff3e0
+    style RC fill:#fce4ec
 ```
 
 ### 2. Configuration Management
 
-```
-Environment Variables → Application Configuration
-                  ↓
-              ├─ Cloud provider credentials
-              ├─ Service endpoints
-              ├─ Transport settings
-              ├─ Feature flags
-              └─ Debug settings
+```mermaid
+flowchart TD
+    EV[Environment Variables] --> AC[Application Configuration]
+    AC --> CC[Cloud provider credentials]
+    AC --> SE[Service endpoints]
+    AC --> TS[Transport settings]
+    AC --> FF[Feature flags]
+    AC --> DS[Debug settings]
+    
+    style EV fill:#e1f5fe
+    style AC fill:#f3e5f5
+    style CC fill:#e8f5e8
+    style SE fill:#fff3e0
+    style TS fill:#fce4ec
+    style FF fill:#f1f8e9
+    style DS fill:#e0f2f1
 ```
 
 ### 3. External Integration Points
 
-```
-Cloud Artifact Extractor
-  ├─ AWS Services (via IAM role credentials)
-  ├─ Azure Services (via Service Principal / Managed Identity)
-  ├─ GCP Services (via Service Account / Workload Identity)
-  └─ External Transport Endpoint (Policy Scanner)
+```mermaid
+flowchart TD
+    CAE[Cloud Artifact Extractor]
+    CAE --> AWS_SVC[AWS Services<br/>via IAM role credentials]
+    CAE --> AZURE_SVC[Azure Services<br/>via Service Principal / Managed Identity]
+    CAE --> GCP_SVC[GCP Services<br/>via Service Account / Workload Identity]
+    CAE --> ETE[External Transport Endpoint<br/>Policy Scanner]
+    
+    style CAE fill:#e1f5fe
+    style AWS_SVC fill:#f3e5f5
+    style AZURE_SVC fill:#e8f5e8
+    style GCP_SVC fill:#fff3e0
+    style ETE fill:#fce4ec
 ```
 
 ### 4. Observability Stack
 
-```
-Application Metrics / Logs
-  ↓
-├─ AWS CloudWatch (AWS deployments)
-├─ Azure Monitor (Azure deployments)
-├─ Google Cloud Operations (GCP deployments)
-└─ Kubernetes Metrics Server (K8s deployments)
-  ↓
-Dashboards, Alerts, and Reports
+```mermaid
+flowchart TD
+    AML[Application Metrics / Logs] --> CPM[Cloud Provider Monitoring]
+    CPM --> AWS[CloudWatch<br/>AWS deployments]
+    CPM --> AZURE[Azure Monitor<br/>Azure deployments]
+    CPM --> GCP[Google Cloud Operations<br/>GCP deployments]
+    CPM --> K8S[Kubernetes Metrics Server<br/>K8s deployments]
+    K8S --> DAR[Dashboards, Alerts, and Reports]
+    AWS --> DAR
+    AZURE --> DAR
+    GCP --> DAR
+    
+    style AML fill:#e1f5fe
+    style CPM fill:#f3e5f5
+    style AWS fill:#e8f5e8
+    style AZURE fill:#fff3e0
+    style GCP fill:#fce4ec
+    style K8S fill:#f1f8e9
+    style DAR fill:#e0f2f1
 ```
 
 ---

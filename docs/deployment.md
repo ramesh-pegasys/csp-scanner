@@ -1,3 +1,10 @@
+---
+layout: default
+title: Deployment Guide
+has_children: true
+nav_order: 5
+---
+
 # Deployment Guide
 
 This guide covers deploying the Cloud Artifact Extractor to multiple cloud platforms and Kubernetes clusters.
@@ -79,6 +86,77 @@ All deployments follow the same core components:
 bash deploy/aws/apprunner-deploy.sh
 ```
 
+#### Prerequisites
+- AWS CLI v2 installed and configured
+- Docker installed
+- Appropriate IAM permissions
+- Container image built and ready
+
+#### Environment Configuration
+The deployment requires these environment variables:
+
+```bash
+# AWS Configuration
+AWS_REGION=us-east-1
+AWS_ACCOUNT_ID=123456789012
+
+# Service Configuration
+ENABLED_PROVIDERS=["aws", "azure", "gcp"]
+CONFIG_FILE=/app/config/production.yaml
+SCANNER_ENDPOINT_URL=https://your-scanner-endpoint.com
+DEBUG=false
+
+# For Azure Integration (if enabled)
+AZURE_SUBSCRIPTION_ID=xxxxx
+AZURE_TENANT_ID=xxxxx
+AZURE_CLIENT_ID=xxxxx
+AZURE_CLIENT_SECRET=xxxxx
+
+# For GCP Integration (if enabled)
+GCP_PROJECT_ID=xxxxx
+GOOGLE_APPLICATION_CREDENTIALS=/app/config/gcp-credentials.json
+
+# JWT & Security
+JWT_SECRET_KEY=your-secure-secret-key
+```
+
+#### Deployment Steps
+
+1. **Build Container Image**
+   ```bash
+   docker build -t cloud-artifact-extractor:latest -f Dockerfile .
+   ```
+
+2. **Run Deployment Script**
+   ```bash
+   bash deploy/aws/apprunner-deploy.sh
+   ```
+
+3. **Verify Deployment**
+   ```bash
+   # Get the service URL
+   aws apprunner describe-service \
+     --service-arn "arn:aws:apprunner:${AWS_REGION}:${AWS_ACCOUNT_ID}:service/cloud-artifact-extractor/apprunner-service" \
+     --region ${AWS_REGION} \
+     --query 'Service.ServiceUrl' \
+     --output text
+
+   # Test the endpoint
+   curl https://<service-url>/api/v1/health/ready
+   ```
+
+#### Monitoring & Logging
+- **CloudWatch Logs:** View logs with `aws logs tail /aws/apprunner/cloud-artifact-extractor/apprunner-service/service-logs --follow`
+- **X-Ray Tracing:** Enable for distributed tracing
+- **Metrics:** Monitor CPU utilization, memory usage, and request counts
+
+#### Security Best Practices
+1. Use managed IAM roles
+2. Deploy within VPC for private connectivity
+3. Use AWS Secrets Manager for sensitive data
+4. Enable encryption in transit and at rest
+5. Configure security groups and audit logging
+
 **Learn More:** [AWS App Runner Deployment Guide](../deploy/aws/README.md)
 
 ---
@@ -101,6 +179,82 @@ bash deploy/aws/apprunner-deploy.sh
 bash deploy/azure/container-apps-deploy.sh
 ```
 
+#### Prerequisites
+- Azure CLI installed and authenticated (`az login`)
+- Docker installed
+- Appropriate Azure permissions (Contributor role on subscription)
+
+#### Environment Configuration
+The deployment requires these environment variables:
+
+```bash
+# Azure Configuration
+AZURE_SUBSCRIPTION_ID=xxxxxx
+AZURE_RESOURCE_GROUP=cloud-artifact-extractor-rg
+AZURE_LOCATION=eastus
+AZURE_CONTAINER_REGISTRY_NAME=yourregistryname
+
+# Service Configuration
+ENABLED_PROVIDERS=["aws", "azure", "gcp"]
+CONFIG_FILE=/app/config/production.yaml
+SCANNER_ENDPOINT_URL=https://your-scanner-endpoint.com
+DEBUG=false
+
+# Azure Integration (if scanning Azure)
+AZURE_TENANT_ID=xxxxx
+AZURE_CLIENT_ID=xxxxx
+AZURE_CLIENT_SECRET=xxxxx
+
+# AWS Integration (if scanning AWS)
+AWS_ACCESS_KEY_ID=xxxxx
+AWS_SECRET_ACCESS_KEY=xxxxx
+
+# GCP Integration (if scanning GCP)
+GCP_PROJECT_ID=xxxxx
+GOOGLE_APPLICATION_CREDENTIALS=/app/config/gcp-credentials.json
+
+# Security
+JWT_SECRET_KEY=your-secure-secret-key
+```
+
+#### Deployment Steps
+
+1. **Build Container Image**
+   ```bash
+   docker build -t cloud-artifact-extractor:latest -f Dockerfile .
+   ```
+
+2. **Run Deployment Script**
+   ```bash
+   bash deploy/azure/container-apps-deploy.sh
+   ```
+
+3. **Verify Deployment**
+   ```bash
+   # Get the application URL
+   az containerapp show \
+     --name cloud-artifact-extractor \
+     --resource-group cloud-artifact-extractor-rg \
+     --query 'properties.configuration.ingress.fqdn' \
+     --output tsv
+
+   # Test the endpoint
+   curl https://<fqdn>/api/v1/health/ready
+   ```
+
+#### Monitoring & Logging
+- **Azure Monitor Logs:** View logs with `az containerapp logs show --name cloud-artifact-extractor --resource-group cloud-artifact-extractor-rg --follow`
+- **Application Insights:** Enable for detailed APM and diagnostics
+- **Metrics:** Monitor CPU utilization, memory usage, and request counts
+
+#### Security Best Practices
+1. Enable system-assigned managed identity
+2. Use private Azure Container Registry
+3. Use Azure Key Vault for sensitive data
+4. Deploy within a virtual network
+5. Enable encryption in transit and at rest
+6. Configure audit logging and network security groups
+
 **Learn More:** [Azure Container Apps Deployment Guide](../deploy/azure/README.md)
 
 ---
@@ -122,6 +276,80 @@ bash deploy/azure/container-apps-deploy.sh
 ```bash
 bash deploy/gcp/cloudrun-deploy.sh
 ```
+
+#### Prerequisites
+- Google Cloud SDK installed (`gcloud`)
+- Docker installed
+- Appropriate GCP permissions (Editor or Owner role)
+- GCP project created and billing enabled
+
+#### Environment Configuration
+The deployment requires these environment variables:
+
+```bash
+# GCP Configuration
+GCP_PROJECT_ID=your-project-id
+GCP_REGION=us-central1
+GCP_SERVICE_ACCOUNT=cloud-artifact-extractor@your-project-id.iam.gserviceaccount.com
+
+# Service Configuration
+ENABLED_PROVIDERS=["aws", "azure", "gcp"]
+CONFIG_FILE=/app/config/production.yaml
+SCANNER_ENDPOINT_URL=https://your-scanner-endpoint.com
+DEBUG=false
+
+# Cloud Provider Credentials
+GOOGLE_APPLICATION_CREDENTIALS=/app/config/gcp-credentials.json
+
+# AWS Integration (if scanning AWS)
+AWS_ACCESS_KEY_ID=xxxxx
+AWS_SECRET_ACCESS_KEY=xxxxx
+
+# Azure Integration (if scanning Azure)
+AZURE_SUBSCRIPTION_ID=xxxxx
+AZURE_TENANT_ID=xxxxx
+AZURE_CLIENT_ID=xxxxx
+AZURE_CLIENT_SECRET=xxxxx
+
+# Security
+JWT_SECRET_KEY=your-secure-secret-key
+```
+
+#### Deployment Steps
+
+1. **Build Container Image**
+   ```bash
+   docker build -t cloud-artifact-extractor:latest -f Dockerfile .
+   ```
+
+2. **Run Deployment Script**
+   ```bash
+   bash deploy/gcp/cloudrun-deploy.sh
+   ```
+
+3. **Verify Deployment**
+   ```bash
+   # Get the service URL
+   gcloud run services describe cloud-artifact-extractor \
+     --region ${GCP_REGION} \
+     --format 'value(status.url)'
+
+   # Test the endpoint
+   curl https://<service-url>/api/v1/health/ready
+   ```
+
+#### Monitoring & Logging
+- **Cloud Logging:** View logs with `gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=cloud-artifact-extractor"`
+- **Cloud Monitoring:** Monitor CPU utilization, memory usage, and request counts
+- **Cloud Trace:** Enable for distributed tracing
+
+#### Security Best Practices
+1. Use Service Accounts with minimal permissions
+2. Enable Workload Identity
+3. Use Secret Manager for sensitive data
+4. Enable VPC Service Controls for network isolation
+5. Use Cloud Armor for DDoS protection
+6. Enable Cloud Audit Logs for compliance
 
 **Learn More:** [GCP Cloud Run Deployment Guide](../deploy/gcp/README.md)
 
@@ -151,6 +379,81 @@ bash deploy/kubernetes/azure-aks-deploy.sh
 # GCP GKE
 bash deploy/kubernetes/gcp-gke-deploy.sh
 ```
+
+#### Prerequisites
+- `kubectl` installed and configured
+- Cloud provider CLI tool (aws, az, or gcloud)
+- Appropriate permissions in target cluster
+- Helm 3 (optional, for advanced deployments)
+- Container registry access
+
+#### Environment Configuration
+Configure in `manifests/configmap.yaml`:
+```yaml
+ENABLED_PROVIDERS: '["aws","azure","gcp"]'
+DEBUG: 'false'
+CONFIG_FILE: '/app/config/production.yaml'
+SCANNER_ENDPOINT_URL: 'https://your-scanner-endpoint.com'
+```
+
+Configure secrets in `manifests/secret.yaml`:
+```yaml
+JWT_SECRET_KEY: your-secret-key
+AZURE_CLIENT_SECRET: your-azure-secret
+AWS_SECRET_ACCESS_KEY: your-aws-secret
+GOOGLE_APPLICATION_CREDENTIALS: base64-encoded-gcp-key
+```
+
+#### Deployment Steps
+
+1. **Run Cluster Setup Script**
+   ```bash
+   # For AWS EKS
+   bash deploy/kubernetes/aws-eks-deploy.sh
+
+   # For Azure AKS
+   bash deploy/kubernetes/azure-aks-deploy.sh
+
+   # For GCP GKE
+   bash deploy/kubernetes/gcp-gke-deploy.sh
+   ```
+
+2. **Apply Kubernetes Manifests**
+   ```bash
+   kubectl apply -f deploy/kubernetes/manifests/
+   ```
+
+3. **Verify Deployment**
+   ```bash
+   # Check pod status
+   kubectl get pods -n cloud-artifact-extractor
+
+   # Check service
+   kubectl get svc -n cloud-artifact-extractor
+
+   # Get ingress URL
+   kubectl get ingress -n cloud-artifact-extractor
+
+   # Test the endpoint
+   curl https://<ingress-url>/api/v1/health/ready
+   ```
+
+#### Scaling Configuration
+- **Horizontal Pod Autoscaling (HPA):** Automatically scales based on CPU/memory usage
+- **Vertical Pod Autoscaling (VPA):** Recommends optimal resource allocations
+- **Cluster Autoscaling:** Automatically adjusts node count
+
+#### Monitoring & Logging
+- **Prometheus Metrics:** ServiceMonitor included for Prometheus scraping
+- **Logging:** Integrated with cloud provider logging solutions
+- **Debugging:** Use `kubectl logs` and `kubectl describe` for troubleshooting
+
+#### Security Best Practices
+1. Implement network policies to restrict traffic
+2. Use RBAC with minimal permissions
+3. Enable Pod Security Standards
+4. Use secrets for sensitive data
+5. Implement proper health checks and resource limits
 
 **Learn More:** [Kubernetes Deployment Guide](../deploy/kubernetes/README.md)
 
