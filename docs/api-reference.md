@@ -17,17 +17,12 @@ http://localhost:8000
 
 ## JWT & Certificate Generation Utility
 
-For local development and testing, use `generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates.
+
+For local development and testing, use `utils/generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates.
 
 See the project README and Getting Started guide for usage instructions.
 
 All API endpoints except `/health` require a static JWT token for authentication.
-
-To generate a token, use the provided utility script:
-
-```bash
-python generate_static_jwt.py
-```
 
 Set environment variables to customize:
 - `JWT_SECRET_KEY` (default: 'your-secret-key')

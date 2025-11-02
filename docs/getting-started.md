@@ -29,22 +29,30 @@ If you need to install Python, visit [python.org](https://python.org) for instal
 
 ## JWT & Certificate Generation Utility
 
-Use `generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates for local HTTPS testing.
 
-Usage examples:
+Use `utils/generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates for local HTTPS testing.
+
+Run interactively:
+
+```bash
+python utils/generate_certs_and_jwt.py
+```
+and follow the prompts.
+
+Or use CLI options:
 
 ```bash
 # Generate only JWT token
-python generate_certs_and_jwt.py --jwt
+python utils/generate_certs_and_jwt.py --jwt
 
 # Generate only self-signed certs
-python generate_certs_and_jwt.py --certs
+python utils/generate_certs_and_jwt.py --certs
 
 # Generate both JWT and certs
-python generate_certs_and_jwt.py --jwt --certs
+python utils/generate_certs_and_jwt.py --jwt --certs
 
 # Specify certs directory and base name
-python generate_certs_and_jwt.py --certs --certs-dir ./certs --certs-name server
+python utils/generate_certs_and_jwt.py --certs --certs-dir ./certs --certs-name server
 ```
 
 For HTTPS local testing, run Uvicorn with the generated certs:
@@ -54,12 +62,6 @@ uvicorn app.main:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs/server.key -
 ```
 
 All API endpoints except `/health` require a static JWT token for authentication.
-
-To generate a token, use the provided utility script:
-
-```bash
-python generate_static_jwt.py
-```
 
 Set environment variables to customize:
 - `JWT_SECRET_KEY` (default: 'your-secret-key')

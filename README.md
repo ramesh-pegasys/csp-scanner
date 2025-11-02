@@ -4,7 +4,7 @@ Copyright © 2025 Aegis and Pegasys.ai (www.pegasys.ai) - Licensed under MIT Lic
 
 A FastAPI-based service for extracting and managing cloud service artifacts from AWS, Azure, and GCP.
 
-[![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen)](https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)
+[![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)](https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)(https://pytest-cov.readthedocs.io/)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
 [![Flake8](https://img.shields.io/badge/flake8-checked-blue.svg)](https://flake8.pycqa.org/)
@@ -35,22 +35,29 @@ For detailed setup instructions see the consolidated provider guide in the docs:
 
 ## JWT & Certificate Generation Utility
 
-Use `generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates for local HTTPS testing.
+Use `utils/generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates for local HTTPS testing.
 
-Usage examples:
+Run interactively:
+
+```bash
+python utils/generate_certs_and_jwt.py
+```
+and follow the prompts.
+
+Or use CLI options:
 
 ```bash
 # Generate only JWT token
-python generate_certs_and_jwt.py --jwt
+python utils/generate_certs_and_jwt.py --jwt
 
 # Generate only self-signed certs
-python generate_certs_and_jwt.py --certs
+python utils/generate_certs_and_jwt.py --certs
 
 # Generate both JWT and certs
-python generate_certs_and_jwt.py --jwt --certs
+python utils/generate_certs_and_jwt.py --jwt --certs
 
 # Specify certs directory and base name
-python generate_certs_and_jwt.py --certs --certs-dir ./certs --certs-name server
+python utils/generate_certs_and_jwt.py --certs --certs-dir ./certs --certs-name server
 ```
 
 For HTTPS local testing, run Uvicorn with the generated certs:
@@ -61,22 +68,12 @@ uvicorn app.main:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs/server.key -
 
 The `certs/` directory is included in the repo but all contents are ignored via `.gitignore` to prevent accidental check-in of sensitive files.
 
-To generate self-signed certificates for local HTTPS testing, use:
+## Pre-commit Checks
+
+Run the pre-commit check script before pushing changes:
 
 ```bash
-python generate_certs_and_jwt.py --certs
-```
-
-This will create `server.key` and `server.crt` in the `certs/` folder. You can use these with Uvicorn:
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs/server.key --ssl-certfile certs/server.crt
-```
-
-You can also generate a static JWT token for API authentication:
-
-```bash
-python generate_certs_and_jwt.py --jwt
+python utils/precommit_checks.py
 ```
 
 Or both at once:

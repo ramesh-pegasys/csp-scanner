@@ -184,14 +184,13 @@ async def lifespan(app: FastAPI):
         await transport.disconnect()
 
 
-
 # Custom FastAPI subclass to override openapi method
-from fastapi import FastAPI
-from app.api.routes.extraction import custom_openapi
+
 
 class CustomOpenAPIFastAPI(FastAPI):
     def openapi(self):
         return custom_openapi(self)
+
 
 app = CustomOpenAPIFastAPI(
     title="Cloud Artifact Extractor",

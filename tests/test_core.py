@@ -1,5 +1,7 @@
 """Tests for core modules"""
 
+import os
+import pytest
 from unittest.mock import Mock, mock_open, patch
 
 from app.core.config import Settings
@@ -170,9 +172,6 @@ def test_settings_provider_enabled_properties():
     assert settings_none.is_gcp_enabled is False
 
 
-import os
-import pytest
-
 @pytest.fixture(autouse=True)
 def clear_config_env(monkeypatch):
     monkeypatch.delenv("CONFIG_FILE", raising=False)
@@ -185,6 +184,7 @@ def clear_config_env(monkeypatch):
     monkeypatch.delenv("GCP_PROJECT_ID", raising=False)
     monkeypatch.delenv("GCP_DEFAULT_REGION", raising=False)
     monkeypatch.delenv("GCP_CREDENTIALS_PATH", raising=False)
+
 
 def test_settings_aws_accounts_list():
     """Test AWS accounts list property"""
@@ -214,7 +214,6 @@ def test_settings_aws_accounts_list():
 def test_settings_azure_accounts_list():
     """Test Azure accounts list property"""
     # Clear environment variables that might affect the test
-    import os
 
     original_env = {}
     for key in [

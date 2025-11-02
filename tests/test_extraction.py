@@ -1,6 +1,5 @@
 """Tests for extraction endpoints"""
 
-
 from fastapi.testclient import TestClient
 from types import SimpleNamespace
 import uuid
@@ -21,7 +20,6 @@ def _make_extractor(service: str, provider: str = "aws") -> SimpleNamespace:
     )
 
 
-
 # Dynamically generate a valid JWT for tests
 def generate_test_jwt():
     secret = os.getenv("JWT_SECRET_KEY", "your-secret-key")
@@ -30,9 +28,11 @@ def generate_test_jwt():
     payload = {"api": "access", "exp": expire}
     return jwt.encode(payload, secret, algorithm=algorithm)
 
+
 def auth_headers():
     token = generate_test_jwt()
     return {"Authorization": f"Bearer {token}"}
+
 
 def test_trigger_extraction_success(client: TestClient, mock_orchestrator):
     """Test successful extraction trigger"""
@@ -41,7 +41,9 @@ def test_trigger_extraction_success(client: TestClient, mock_orchestrator):
 
     payload = {"services": ["s3", "ec2"], "regions": ["us-east-1"], "batch_size": 50}
 
-    response = client.post("/api/v1/extraction/trigger", json=payload, headers=auth_headers())
+    response = client.post(
+        "/api/v1/extraction/trigger", json=payload, headers=auth_headers()
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["job_id"] == job_id
@@ -54,7 +56,9 @@ def test_trigger_extraction_failure(client: TestClient, mock_orchestrator):
 
     payload = {"services": ["s3"]}
 
-    response = client.post("/api/v1/extraction/trigger", json=payload, headers=auth_headers())
+    response = client.post(
+        "/api/v1/extraction/trigger", json=payload, headers=auth_headers()
+    )
     assert response.status_code == 500
     assert "AWS Error" in response.json()["detail"]
 
@@ -72,7 +76,9 @@ def test_get_job_status_not_found(client: TestClient, mock_orchestrator):
     """Test getting non-existent job status"""
     mock_orchestrator.get_job_status.return_value = None
 
-    response = client.get("/api/v1/extraction/jobs/non-existent", headers=auth_headers())
+    response = client.get(
+        "/api/v1/extraction/jobs/non-existent", headers=auth_headers()
+    )
     assert response.status_code == 404
     assert "Job not found" in response.json()["detail"]
 
@@ -105,7 +111,9 @@ def test_list_services(client: TestClient, mock_registry):
 
 def test_trigger_extraction_invalid_provider(client: TestClient):
     response = client.post(
-        "/api/v1/extraction/trigger", json={"provider": "digitalocean"}, headers=auth_headers()
+        "/api/v1/extraction/trigger",
+        json={"provider": "digitalocean"},
+        headers=auth_headers(),
     )
     assert response.status_code == 400
     assert "Invalid provider" in response.json()["detail"]
@@ -129,7 +137,9 @@ def test_trigger_extraction_provider_validates_services(
     mock_registry.get_extractors.side_effect = _get_extractors_override
 
     payload = {"provider": "aws", "services": ["ec2"]}
-    response = client.post("/api/v1/extraction/trigger", json=payload, headers=auth_headers())
+    response = client.post(
+        "/api/v1/extraction/trigger", json=payload, headers=auth_headers()
+    )
     assert response.status_code == 400
     body = response.json()
     assert "Invalid services" in body["detail"]
@@ -143,7 +153,9 @@ def test_trigger_extraction_provider_autofills_services(
         _make_extractor("ec2"),
     ]
 
-    response = client.post("/api/v1/extraction/trigger", json={"provider": "aws"}, headers=auth_headers())
+    response = client.post(
+        "/api/v1/extraction/trigger", json={"provider": "aws"}, headers=auth_headers()
+    )
     assert response.status_code == 200
     args = mock_orchestrator.run_extraction.await_args.kwargs
     assert args["services"] == ["s3", "ec2"]
@@ -151,7 +163,9 @@ def test_trigger_extraction_provider_autofills_services(
 
 def test_list_services_invalid_provider(client: TestClient):
     response = client.get(
-        "/api/v1/extraction/services", params={"provider": "digitalocean"}, headers=auth_headers()
+        "/api/v1/extraction/services",
+        params={"provider": "digitalocean"},
+        headers=auth_headers(),
     )
     assert response.status_code == 400
 
@@ -172,7 +186,11 @@ def test_list_services_filtered_by_provider(client: TestClient, mock_registry):
 
     mock_registry.get_extractors.side_effect = _side_effect
 
-    response = client.get("/api/v1/extraction/services", params={"provider": "azure"}, headers=auth_headers())
+    response = client.get(
+        "/api/v1/extraction/services",
+        params={"provider": "azure"},
+        headers=auth_headers(),
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["total_services"] == 1
