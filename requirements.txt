@@ -81,6 +81,10 @@ google-api-python-client
 google-api-core
 google-auth-httplib2
 
+# Type stubs
+types-python-jose
+types-pyyaml
+
 # Optional: install specific google-cloud-* packages if needed (uncomment to pin)
 # google-cloud-pubsub==3.14.0
 # google-cloud-dns==0.36.0
