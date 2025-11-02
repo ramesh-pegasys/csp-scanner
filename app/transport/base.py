@@ -19,8 +19,7 @@ T = TypeVar("T", bound="TransportWithSend")
 class TransportWithSend(Protocol):
     """Protocol for transports that have a send method"""
 
-    async def send(self, artifact: Dict[str, Any]) -> Any:
-        ...
+    async def send(self, artifact: Dict[str, Any]) -> Any: ...
 
 
 class TransportStatus(str, Enum):

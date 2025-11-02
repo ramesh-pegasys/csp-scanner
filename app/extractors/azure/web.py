@@ -258,17 +258,17 @@ class AzureWebExtractor(BaseExtractor):
             if hasattr(resource, "site_config") and resource.site_config:
                 site_config = {}
                 if hasattr(resource.site_config, "linux_fx_version"):
-                    site_config[
-                        "linux_fx_version"
-                    ] = resource.site_config.linux_fx_version
+                    site_config["linux_fx_version"] = (
+                        resource.site_config.linux_fx_version
+                    )
                 if hasattr(resource.site_config, "windows_fx_version"):
-                    site_config[
-                        "windows_fx_version"
-                    ] = resource.site_config.windows_fx_version
+                    site_config["windows_fx_version"] = (
+                        resource.site_config.windows_fx_version
+                    )
                 if hasattr(resource.site_config, "net_framework_version"):
-                    site_config[
-                        "net_framework_version"
-                    ] = resource.site_config.net_framework_version
+                    site_config["net_framework_version"] = (
+                        resource.site_config.net_framework_version
+                    )
                 if hasattr(resource.site_config, "php_version"):
                     site_config["php_version"] = resource.site_config.php_version
                 if hasattr(resource.site_config, "python_version"):
