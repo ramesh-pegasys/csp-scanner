@@ -24,4 +24,17 @@ class Job(BaseModel):
     errors: List[str] = []
 
     class Config:
-        json_encoders = {datetime: lambda v: v.isoformat()}
+            json_encoders = {datetime: lambda v: v.isoformat()}
+            schema_extra = {
+                "example": {
+                    "id": "job-123",
+                    "status": "completed",
+                    "started_at": "2025-11-02T10:00:00Z",
+                    "completed_at": "2025-11-02T10:05:00Z",
+                    "services": ["EC2", "S3"],
+                    "total_artifacts": 10,
+                    "successful_artifacts": 9,
+                    "failed_artifacts": 1,
+                    "errors": ["Timeout on S3"]
+                }
+            }

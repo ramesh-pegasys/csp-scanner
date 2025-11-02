@@ -55,8 +55,8 @@ echo -e "${YELLOW}Configuring Docker authentication...${NC}"
 gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev
 
 # Build and push Docker image
-echo -e "${YELLOW}Building Docker image...${NC}"
-docker build -t ${IMAGE_NAME}:latest -f Dockerfile .
+echo -e "${YELLOW}Building Docker image for linux/amd64...${NC}"
+docker build --platform linux/amd64 --build-arg TARGETPLATFORM=linux/amd64 -t ${IMAGE_NAME}:latest -f Dockerfile .
 
 echo -e "${YELLOW}Pushing image to Artifact Registry...${NC}"
 docker push ${IMAGE_NAME}:latest
@@ -87,6 +87,12 @@ gcloud projects add-iam-policy-binding ${GCP_PROJECT_ID} \
 # Create Cloud Run service
 echo -e "${YELLOW}Creating Cloud Run service...${NC}"
 
+# Note: Set these environment variables before running this script for production:
+# - AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN (optional)
+# - AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
+# - JWT_SECRET_KEY, JWT_ALGORITHM, JWT_EXPIRE_DAYS
+# - SCANNER_ENDPOINT_URL (optional)
+
 gcloud run deploy ${APP_NAME} \
     --image=${IMAGE_NAME}:latest \
     --platform=managed \
@@ -98,7 +104,7 @@ gcloud run deploy ${APP_NAME} \
     --min-instances=1 \
     --max-instances=100 \
     --timeout=3600 \
-    --set-env-vars="ENABLED_PROVIDERS=[\"aws\",\"azure\",\"gcp\"],DEBUG=false,CONFIG_FILE=/app/config/production.yaml" \
+    --set-env-vars="CONFIG_FILE=/app/config/production.yaml,ENVIRONMENT=production,DEBUG=false,MAX_CONCURRENT_EXTRACTORS=20,BATCH_SIZE=200,BATCH_DELAY_SECONDS=0.1,TRANSPORT_TYPE=null,TRANSPORT_TIMEOUT_SECONDS=60,TRANSPORT_MAX_RETRIES=5,AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-},AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-},AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN:-},AZURE_TENANT_ID=${AZURE_TENANT_ID:-},AZURE_CLIENT_ID=${AZURE_CLIENT_ID:-},AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET:-},JWT_SECRET_KEY=${JWT_SECRET_KEY:-},JWT_ALGORITHM=${JWT_ALGORITHM:-HS256},JWT_EXPIRE_DAYS=${JWT_EXPIRE_DAYS:-365},SCANNER_ENDPOINT_URL=${SCANNER_ENDPOINT_URL:-}" \
     --service-account=${SERVICE_ACCOUNT} \
     --project=${GCP_PROJECT_ID}
 

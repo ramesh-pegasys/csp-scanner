@@ -13,7 +13,15 @@ from fastapi import FastAPI
 def custom_openapi(app: FastAPI):
     if app.openapi_schema:
         return app.openapi_schema
-    openapi_schema = app.openapi()
+    # Call the original FastAPI openapi method to avoid recursion
+    from fastapi.openapi.utils import get_openapi
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        openapi_version=app.openapi_version,
+        description=app.description,
+        routes=app.routes,
+    )
     # Add JWT Bearer security scheme
     openapi_schema["components"]["securitySchemes"] = {
         "BearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
@@ -62,13 +70,62 @@ class ExtractionRequest(BaseModel):
     filters: Optional[dict] = None
     batch_size: int = 100
 
+    class Config:
+        schema_extra = {
+            "example": {
+                "provider": "aws",
+                "services": ["ec2", "s3"],
+                "regions": ["us-west-2"],
+                "filters": {"tag": "production"},
+                "batch_size": 100
+            }
+        }
 
 class ExtractionResponse(BaseModel):
     job_id: str
     message: str
 
+    class Config:
+            schema_extra = {
+                "example": {
+                    "job_id": "job-123",
+                    "message": "Extraction started successfully"
+                }
+            }
 
-@router.post("/trigger", response_model=ExtractionResponse)
+
+@router.post(
+    "/trigger",
+    response_model=ExtractionResponse,
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "provider": "aws",
+                        "services": ["ec2", "s3"],
+                        "regions": ["us-west-2"],
+                        "filters": {"tag": "production"},
+                        "batch_size": 100
+                    }
+                }
+            }
+        },
+        "responses": {
+            "200": {
+                "description": "Successful Response",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "job_id": "job-123",
+                            "message": "Extraction started successfully"
+                        }
+                    }
+                }
+            }
+        }
+    },
+)
 async def trigger_extraction(
     request: ExtractionRequest,
     app_request: Request,
@@ -131,7 +188,32 @@ async def trigger_extraction(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/jobs/{job_id}", response_model=Job)
+@router.get(
+    "/jobs/{job_id}",
+    response_model=Job,
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Successful Response",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "id": "job-123",
+                            "status": "completed",
+                            "started_at": "2025-11-02T10:00:00Z",
+                            "completed_at": "2025-11-02T10:05:00Z",
+                            "services": ["EC2", "S3"],
+                            "total_artifacts": 10,
+                            "successful_artifacts": 9,
+                            "failed_artifacts": 1,
+                            "errors": ["Timeout on S3"]
+                        }
+                    }
+                }
+            }
+        }
+    },
+)
 async def get_job_status(
     job_id: str, app_request: Request, token_data: dict = Depends(verify_jwt_token)
 ):
@@ -145,7 +227,34 @@ async def get_job_status(
     return job
 
 
-@router.get("/jobs", response_model=List[Job])
+@router.get(
+    "/jobs",
+    response_model=List[Job],
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Successful Response",
+                "content": {
+                    "application/json": {
+                        "example": [
+                            {
+                                "id": "job-123",
+                                "status": "completed",
+                                "started_at": "2025-11-02T10:00:00Z",
+                                "completed_at": "2025-11-02T10:05:00Z",
+                                "services": ["EC2", "S3"],
+                                "total_artifacts": 10,
+                                "successful_artifacts": 9,
+                                "failed_artifacts": 1,
+                                "errors": ["Timeout on S3"]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+)
 async def list_jobs(
     app_request: Request, limit: int = 100, token_data: dict = Depends(verify_jwt_token)
 ):
@@ -154,7 +263,33 @@ async def list_jobs(
     return orchestrator.list_jobs(limit)
 
 
-@router.get("/services")
+@router.get(
+    "/services",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Successful Response",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "services_by_provider": {
+                                "aws": [
+                                    {
+                                        "service": "ec2",
+                                        "description": "Amazon EC2 Instances",
+                                        "resource_types": ["instance"],
+                                        "version": "1.0"
+                                    }
+                                ]
+                            },
+                            "total_services": 1
+                        }
+                    }
+                }
+            }
+        }
+    },
+)
 async def list_services(
     app_request: Request,
     provider: Optional[str] = None,
@@ -197,7 +332,24 @@ async def list_services(
     }
 
 
-@router.get("/providers")
+@router.get(
+    "/providers",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Successful Response",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "providers": ["aws", "azure", "gcp"],
+                            "total": 3
+                        }
+                    }
+                }
+            }
+        }
+    },
+)
 async def list_providers(app_request: Request):
     """List enabled cloud providers"""
     registry = app_request.app.state.registry
@@ -208,7 +360,21 @@ async def list_providers(app_request: Request):
     return {"providers": providers, "total": len(providers)}
 
 
-@router.get("/health")
+@router.get(
+    "/health",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Health Check",
+                "content": {
+                    "application/json": {
+                        "example": {"status": "ok"}
+                    }
+                }
+            }
+        }
+    },
+)
 async def health():
     """Health endpoint (no JWT required)"""
     return {"status": "ok"}
