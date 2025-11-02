@@ -17,7 +17,13 @@ class HTTPTransport:
     """HTTP transport with retry logic and circuit breaker"""
 
     def __init__(self, config: Dict[str, Any]):
-        self.endpoint_url = config["scanner_endpoint_url"]
+        # Expect config as transport node
+        endpoint = config.get("http_endpoint_url")
+        if not endpoint or not isinstance(endpoint, str):
+            raise ValueError(
+                "transport config must include 'http_endpoint_url' as a non-empty string"
+            )
+        self.endpoint_url: str = endpoint
         self.timeout = config.get("timeout_seconds", 30)
         self.max_retries = config.get("max_retries", 3)
         self.headers = config.get("headers", {})

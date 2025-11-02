@@ -137,7 +137,7 @@ FILESYSTEM_BASE_DIR=./file_collector
 
 ### Option 2: YAML Configuration
 
-Create `config/production.yaml`:
+Create `config/development-aws.yaml` (recommended structure):
 
 ```yaml
 enabled_providers:
@@ -149,8 +149,10 @@ aws_secret_access_key: "your-secret-access-key"
 aws_default_region: "us-east-1"
 
 # Transport settings
-transport_type: "filesystem"
-filesystem_base_dir: "./file_collector"
+transport:
+  type: "filesystem"
+  base_dir: "./file_collector"
+  create_dir: true
 ```
 
 ## Cloud Provider Setup

@@ -15,6 +15,7 @@ def custom_openapi(app: FastAPI):
         return app.openapi_schema
     # Call the original FastAPI openapi method to avoid recursion
     from fastapi.openapi.utils import get_openapi
+
     openapi_schema = get_openapi(
         title=app.title,
         version=app.version,
@@ -77,21 +78,22 @@ class ExtractionRequest(BaseModel):
                 "services": ["ec2", "s3"],
                 "regions": ["us-west-2"],
                 "filters": {"tag": "production"},
-                "batch_size": 100
+                "batch_size": 100,
             }
         }
+
 
 class ExtractionResponse(BaseModel):
     job_id: str
     message: str
 
     class Config:
-            schema_extra = {
-                "example": {
-                    "job_id": "job-123",
-                    "message": "Extraction started successfully"
-                }
+        schema_extra = {
+            "example": {
+                "job_id": "job-123",
+                "message": "Extraction started successfully",
             }
+        }
 
 
 @router.post(
@@ -106,7 +108,7 @@ class ExtractionResponse(BaseModel):
                         "services": ["ec2", "s3"],
                         "regions": ["us-west-2"],
                         "filters": {"tag": "production"},
-                        "batch_size": 100
+                        "batch_size": 100,
                     }
                 }
             }
@@ -118,12 +120,12 @@ class ExtractionResponse(BaseModel):
                     "application/json": {
                         "example": {
                             "job_id": "job-123",
-                            "message": "Extraction started successfully"
+                            "message": "Extraction started successfully",
                         }
                     }
-                }
+                },
             }
-        }
+        },
     },
 )
 async def trigger_extraction(
@@ -206,10 +208,10 @@ async def trigger_extraction(
                             "total_artifacts": 10,
                             "successful_artifacts": 9,
                             "failed_artifacts": 1,
-                            "errors": ["Timeout on S3"]
+                            "errors": ["Timeout on S3"],
                         }
                     }
-                }
+                },
             }
         }
     },
@@ -246,11 +248,11 @@ async def get_job_status(
                                 "total_artifacts": 10,
                                 "successful_artifacts": 9,
                                 "failed_artifacts": 1,
-                                "errors": ["Timeout on S3"]
+                                "errors": ["Timeout on S3"],
                             }
                         ]
                     }
-                }
+                },
             }
         }
     },
@@ -278,14 +280,14 @@ async def list_jobs(
                                         "service": "ec2",
                                         "description": "Amazon EC2 Instances",
                                         "resource_types": ["instance"],
-                                        "version": "1.0"
+                                        "version": "1.0",
                                     }
                                 ]
                             },
-                            "total_services": 1
+                            "total_services": 1,
                         }
                     }
-                }
+                },
             }
         }
     },
@@ -340,12 +342,9 @@ async def list_services(
                 "description": "Successful Response",
                 "content": {
                     "application/json": {
-                        "example": {
-                            "providers": ["aws", "azure", "gcp"],
-                            "total": 3
-                        }
+                        "example": {"providers": ["aws", "azure", "gcp"], "total": 3}
                     }
-                }
+                },
             }
         }
     },
@@ -366,11 +365,7 @@ async def list_providers(app_request: Request):
         "responses": {
             "200": {
                 "description": "Health Check",
-                "content": {
-                    "application/json": {
-                        "example": {"status": "ok"}
-                    }
-                }
+                "content": {"application/json": {"example": {"status": "ok"}}},
             }
         }
     },

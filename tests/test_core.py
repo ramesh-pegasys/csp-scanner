@@ -18,7 +18,7 @@ def test_settings_defaults(monkeypatch):
     assert settings.environment == "development"
     assert settings.debug is False
     assert settings.aws_default_region == "us-east-1"
-    assert settings.scanner_endpoint_url == "http://localhost:8000"
+    assert settings.transport_config["http_endpoint_url"] == "http://localhost:8000"
     assert settings.transport_timeout_seconds == 30
     assert settings.transport_max_retries == 3
     assert settings.max_concurrent_extractors == 10
@@ -29,14 +29,14 @@ def test_settings_defaults(monkeypatch):
 def test_settings_transport_config():
     """Test transport config property"""
     settings = Settings(
-        scanner_endpoint_url="https://scanner.example.com",
+        http_endpoint_url="https://scanner.example.com",
         scanner_api_key="test-key",
         transport_timeout_seconds=60,
         transport_max_retries=5,
     )
 
     config = settings.transport_config
-    assert config["scanner_endpoint_url"] == "https://scanner.example.com"
+    assert config["http_endpoint_url"] == "https://scanner.example.com"
     assert config["api_key"] == "test-key"
     assert config["timeout_seconds"] == 60
     assert config["max_retries"] == 5
@@ -57,7 +57,7 @@ def test_settings_transport_config_filesystem():
 
 def test_settings_transport_config_null():
     settings = Settings(transport_type="null")
-    assert settings.transport_config == {}
+    assert settings.transport_config == {"type": "null"}
 
 
 def test_settings_orchestrator_config():

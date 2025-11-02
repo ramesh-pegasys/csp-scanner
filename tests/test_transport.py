@@ -171,7 +171,7 @@ async def test_base_transport_abstract_methods():
 def transport_config():
     """Transport configuration fixture"""
     return {
-        "scanner_endpoint_url": "https://scanner.example.com/api/artifacts",
+        "http_endpoint_url": "https://scanner.example.com/api/artifacts",
         "timeout_seconds": 30,
         "max_retries": 3,
         "headers": {"User-Agent": "CSP-Scanner/1.0"},

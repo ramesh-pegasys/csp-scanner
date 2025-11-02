@@ -90,7 +90,8 @@ class Settings(BaseSettings):
         return []
 
     # Transport Configuration
-    scanner_endpoint_url: str = "http://localhost:8000"
+    transport: Optional[dict] = None
+    http_endpoint_url: str = "http://localhost:8000"
     scanner_api_key: Optional[str] = None
     transport_timeout_seconds: int = 30
     transport_max_retries: int = 3
@@ -136,23 +137,30 @@ class Settings(BaseSettings):
 
     @property
     def transport_config(self) -> Dict[str, Any]:
-        """Get transport configuration based on transport type"""
-        if self.transport_type == "filesystem":
+        """Get transport configuration based on transport node"""
+        if hasattr(self, "transport") and isinstance(self.transport, dict):
+            config = self.transport.copy()
+            config["type"] = self.transport.get("type")
+            return config
+        # Legacy fallback
+        if hasattr(self, "transport_type") and self.transport_type == "filesystem":
             return {
+                "type": "filesystem",
                 "base_dir": self.filesystem_base_dir,
                 "create_dir": self.filesystem_create_dir,
             }
-        elif self.transport_type == "null":
-            return {}
-        else:  # Default to http
+        elif hasattr(self, "transport_type") and self.transport_type == "null":
+            return {"type": "null"}
+        else:
             return {
-                "scanner_endpoint_url": self.scanner_endpoint_url,
-                "api_key": self.scanner_api_key,
-                "timeout_seconds": self.transport_timeout_seconds,
-                "max_retries": self.transport_max_retries,
+                "type": "http",
+                "http_endpoint_url": getattr(self, "http_endpoint_url", None),
+                "api_key": getattr(self, "scanner_api_key", None),
+                "timeout_seconds": getattr(self, "transport_timeout_seconds", 30),
+                "max_retries": getattr(self, "transport_max_retries", 3),
                 "headers": {
                     "Content-Type": "application/json",
-                    "User-Agent": f"{self.app_name}/1.0",
+                    "User-Agent": f"{getattr(self, 'app_name', 'App')}/1.0",
                 },
             }
 

@@ -9,11 +9,7 @@ router = APIRouter()
         "responses": {
             "200": {
                 "description": "Health Check",
-                "content": {
-                    "application/json": {
-                        "example": {"status": "healthy"}
-                    }
-                }
+                "content": {"application/json": {"example": {"status": "healthy"}}},
             }
         }
     },

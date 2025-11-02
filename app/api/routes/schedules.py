@@ -16,16 +16,16 @@ class ScheduleRequest(BaseModel):
     batch_size: int = 100
 
     class Config:
-            schema_extra = {
-                "example": {
-                    "name": "daily-extract",
-                    "cron_expression": "0 0 * * *",
-                    "services": ["ec2", "s3"],
-                    "regions": ["us-west-2"],
-                    "filters": {"tag": "production"},
-                    "batch_size": 100
-                }
+        schema_extra = {
+            "example": {
+                "name": "daily-extract",
+                "cron_expression": "0 0 * * *",
+                "services": ["ec2", "s3"],
+                "regions": ["us-west-2"],
+                "filters": {"tag": "production"},
+                "batch_size": 100,
             }
+        }
 
 
 @router.post(
@@ -40,7 +40,7 @@ class ScheduleRequest(BaseModel):
                         "services": ["ec2", "s3"],
                         "regions": ["us-west-2"],
                         "filters": {"tag": "production"},
-                        "batch_size": 100
+                        "batch_size": 100,
                     }
                 }
             }
@@ -52,12 +52,12 @@ class ScheduleRequest(BaseModel):
                     "application/json": {
                         "example": {
                             "message": "Schedule 'daily-extract' created successfully",
-                            "cron": "0 0 * * *"
+                            "cron": "0 0 * * *",
                         }
                     }
-                }
+                },
             }
-        }
+        },
     },
 )
 async def create_schedule(schedule: ScheduleRequest, app_request: Request):
@@ -103,12 +103,12 @@ async def create_schedule(schedule: ScheduleRequest, app_request: Request):
                                 {
                                     "id": "daily-extract",
                                     "name": "Daily Extract",
-                                    "next_run": "2025-11-03T00:00:00Z"
+                                    "next_run": "2025-11-03T00:00:00Z",
                                 }
                             ]
                         }
                     }
-                }
+                },
             }
         }
     },
@@ -140,9 +140,11 @@ async def list_schedules(app_request: Request):
                 "description": "Schedule Deleted",
                 "content": {
                     "application/json": {
-                        "example": {"message": "Schedule 'daily-extract' deleted successfully"}
+                        "example": {
+                            "message": "Schedule 'daily-extract' deleted successfully"
+                        }
                     }
-                }
+                },
             }
         }
     },
@@ -166,9 +168,11 @@ async def delete_schedule(schedule_name: str, app_request: Request):
                 "description": "Schedule Paused",
                 "content": {
                     "application/json": {
-                        "example": {"message": "Schedule 'daily-extract' paused successfully"}
+                        "example": {
+                            "message": "Schedule 'daily-extract' paused successfully"
+                        }
                     }
-                }
+                },
             }
         }
     },
@@ -192,9 +196,11 @@ async def pause_schedule(schedule_name: str, app_request: Request):
                 "description": "Schedule Resumed",
                 "content": {
                     "application/json": {
-                        "example": {"message": "Schedule 'daily-extract' resumed successfully"}
+                        "example": {
+                            "message": "Schedule 'daily-extract' resumed successfully"
+                        }
                     }
-                }
+                },
             }
         }
     },

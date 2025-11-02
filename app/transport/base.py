@@ -395,8 +395,11 @@ class NullTransport(BaseTransport):
     """
 
     async def connect(self) -> bool:
-        """Always succeeds"""
-        logger.info("NullTransport: Connected (no-op)")
+        """Always succeeds (expects config as transport node)"""
+        logger.info(
+            "NullTransport: Connected (no-op, config type: %s)",
+            self.config.get("type", "null"),
+        )
         self._is_connected = True
         return True
 

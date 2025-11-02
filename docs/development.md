@@ -61,8 +61,12 @@ DEBUG=true
 LOG_LEVEL=DEBUG
 
 # Filesystem transport for easy testing
-TRANSPORT_TYPE=filesystem
-FILESYSTEM_BASE_DIR=./file_collector
+
+# Filesystem transport for easy testing (YAML config example)
+transport:
+    type: "filesystem"
+    base_dir: "./file_collector"
+    create_dir: true
 ```
 
 ### Verify Setup

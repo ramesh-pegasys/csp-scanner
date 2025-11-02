@@ -27,12 +27,10 @@ class FilesystemTransport(BaseTransport):
 
     def __init__(self, config: Dict[str, Any]):
         """
-        Initialize filesystem transport.
+        Initialize filesystem transport using transport config node.
 
         Args:
-            config: Transport configuration containing:
-                - base_dir: Base directory for storing files (default: ./file_collector)
-                - create_dir: Whether to create directory if it doesn't exist (default: True)
+            config: Transport configuration node (expects 'type', 'base_dir', 'create_dir')
         """
         super().__init__(config)
 
