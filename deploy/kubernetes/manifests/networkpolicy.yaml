@@ -1,0 +1,75 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cloud-artifact-extractor-deny-all
+  namespace: cloud-artifact-extractor
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cloud-artifact-extractor-allow-ingress
+  namespace: cloud-artifact-extractor
+spec:
+  podSelector:
+    matchLabels:
+      app: cloud-artifact-extractor
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+  - from:
+    - podSelector:
+        matchLabels:
+          app: cloud-artifact-extractor
+    ports:
+    - protocol: TCP
+      port: 8000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cloud-artifact-extractor-allow-egress
+  namespace: cloud-artifact-extractor
+spec:
+  podSelector:
+    matchLabels:
+      app: cloud-artifact-extractor
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  
+  # Allow external HTTPS traffic to cloud providers
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+  
+  # Allow internal cluster traffic
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8000

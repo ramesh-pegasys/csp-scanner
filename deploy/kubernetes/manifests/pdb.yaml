@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloud-artifact-extractor
+  namespace: cloud-artifact-extractor
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloud-artifact-extractor

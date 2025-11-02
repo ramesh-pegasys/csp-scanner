@@ -146,3 +146,6 @@ docs/_site/
 **/.jekyll-cache/
 **/.jekyll-metadata
 **/coverage.json
+
+# local_settings
+tmp_home/

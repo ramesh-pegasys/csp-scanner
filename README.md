@@ -31,6 +31,71 @@ For detailed setup instructions see the consolidated provider guide in the docs:
 - **Azure Setup**: [Microsoft Azure](./docs/cloud-providers.md#microsoft-azure)
 - **GCP Setup**: [Google Cloud Platform (GCP)](./docs/cloud-providers.md#google-cloud-platform-gcp)
 
+## Deployment
+
+The Cloud Artifact Extractor can be deployed to multiple cloud platforms and Kubernetes clusters. Choose your deployment method based on your infrastructure and operational preferences.
+
+### Quick Deployment Summary
+
+| Cloud Provider | Method | Setup Time | Command | Guide |
+|---|---|---|---|---|
+| **AWS** | App Runner | 5 min | `bash deploy/aws/apprunner-deploy.sh` | [AWS Guide](./deploy/aws/README.md) |
+| **Azure** | Container Apps | 10 min | `bash deploy/azure/container-apps-deploy.sh` | [Azure Guide](./deploy/azure/README.md) |
+| **GCP** | Cloud Run | 5 min | `bash deploy/gcp/cloudrun-deploy.sh` | [GCP Guide](./deploy/gcp/README.md) |
+| **Kubernetes** | EKS/AKS/GKE | 30 min | See guide for cloud-specific setup | [K8s Guide](./deploy/kubernetes/README.md) |
+
+### Deployment Methods
+
+#### AWS Deployment
+- **Recommended: AWS App Runner** - Fully managed container service with automatic scaling
+  - Zero infrastructure management
+  - Automatic scaling and load balancing
+  - Integrated CloudWatch monitoring
+  - Pay-per-request pricing
+
+#### Azure Deployment
+- **Recommended: Azure Container Apps** - Serverless container service with automatic scaling
+  - Fully managed, no infrastructure needed
+  - Automatic scaling based on metrics
+  - DAPR support for distributed applications
+  - Integrated Azure Monitor
+
+#### GCP Deployment
+- **Recommended: Google Cloud Run** - Serverless container service with automatic scaling
+  - Pay-per-request pricing
+  - Automatic scaling from 0 to N instances
+  - Fully managed serverless
+  - Simple one-command deployment
+
+#### Kubernetes Deployment
+- **Multi-Cloud Support:** Deploy to AWS EKS, Azure AKS, or GCP GKE
+  - Advanced networking and security
+  - Multi-region deployment capabilities
+  - Workload Identity integration
+  - Enterprise-grade orchestration
+
+### Deployment Prerequisites
+
+**General:**
+- Docker installed
+- Container image built: `docker build -t cloud-artifact-extractor:latest -f Dockerfile .`
+
+**Cloud Provider Requirements:**
+- **AWS**: AWS CLI v2 configured with appropriate IAM permissions
+- **Azure**: Azure CLI installed and authenticated (`az login`)
+- **GCP**: Google Cloud SDK (`gcloud`) with appropriate project permissions
+- **Kubernetes**: `kubectl` configured for your cluster
+
+### Getting Started
+
+1. **Choose your deployment platform** from the table above
+2. **Review the deployment guide** for your chosen platform
+3. **Prepare your environment** with cloud provider CLI tools
+4. **Run the deployment script** from the appropriate `deploy/` subdirectory
+5. **Verify the deployment** by testing the service endpoint
+
+For detailed instructions, environment configuration, monitoring setup, and troubleshooting, see the deployment guides in the `deploy/` directory.
+
 
 
 ## JWT & Certificate Generation Utility

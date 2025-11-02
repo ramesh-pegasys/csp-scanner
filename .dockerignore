@@ -66,3 +66,26 @@ sample_extractions/
 
 # Documentation
 README.md
+docs/
+CONTRIBUTING.md
+LICENSE
+
+# Coverage and testing
+htmlcov/
+coverage.json
+pytest.ini
+mypy.ini
+.coverage
+
+# Deployment
+deploy/
+
+# # Certificates (if not needed in image)
+# certs/
+
+# Other
+codeql-custom-queries-python/
+file_collector/
+relative_dir/
+tmp_home/
+requirements.txt

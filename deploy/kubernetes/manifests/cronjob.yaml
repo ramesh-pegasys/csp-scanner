@@ -1,0 +1,137 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cloud-artifact-extractor-scheduled
+  namespace: cloud-artifact-extractor
+  labels:
+    app: cloud-artifact-extractor
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 3
+  suspend: false
+  jobTemplate:
+    metadata:
+      labels:
+        app: cloud-artifact-extractor-job
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 1800  # 30 minutes max
+      template:
+        metadata:
+          labels:
+            app: cloud-artifact-extractor-job
+        spec:
+          serviceAccountName: cloud-artifact-extractor
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          
+          containers:
+          - name: extractor
+            image: cloud-artifact-extractor:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - python
+            - -c
+            - |
+              import asyncio
+              from app.services.orchestrator import ExtractionOrchestrator
+              
+              async def run_extraction():
+                  orchestrator = ExtractionOrchestrator()
+                  result = await orchestrator.execute_extraction(
+                      provider='all',
+                      extract_type='full'
+                  )
+                  print(f"Extraction completed: {result}")
+              
+              asyncio.run(run_extraction())
+            
+            envFrom:
+            - configMapRef:
+                name: cloud-artifact-extractor-config
+            - secretRef:
+                name: cloud-artifact-extractor-secrets
+            
+            env:
+            - name: EXTRACTION_MODE
+              value: "scheduled"
+            
+            resources:
+              requests:
+                cpu: 1000m
+                memory: 2Gi
+              limits:
+                cpu: 2000m
+                memory: 4Gi
+            
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              capabilities:
+                drop:
+                - ALL
+
+---
+# One-time extraction job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cloud-artifact-extractor-manual
+  namespace: cloud-artifact-extractor
+  labels:
+    app: cloud-artifact-extractor
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 3
+  activeDeadlineSeconds: 3600  # 1 hour max
+  template:
+    metadata:
+      labels:
+        app: cloud-artifact-extractor-job
+    spec:
+      serviceAccountName: cloud-artifact-extractor
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      containers:
+      - name: extractor
+        image: cloud-artifact-extractor:latest
+        imagePullPolicy: IfNotPresent
+        
+        envFrom:
+        - configMapRef:
+            name: cloud-artifact-extractor-config
+        - secretRef:
+            name: cloud-artifact-extractor-secrets
+        
+        env:
+        - name: EXTRACTION_MODE
+          value: "manual"
+        - name: EXTRACT_PROVIDER
+          value: "all"
+        - name: EXTRACT_TYPE
+          value: "full"
+        
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 2Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+        
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
