@@ -199,15 +199,10 @@ app = CustomOpenAPIFastAPI(
     lifespan=lifespan,
 )
 
-# Include routes
-app.include_router(extraction.router)
-app.include_router(schedules.router)
-app.include_router(health.router)
-
-# Include routers
+# Include routers with versioned API prefix
 app.include_router(extraction.router, prefix="/api/v1/extraction", tags=["extraction"])  # type: ignore[attr-defined]
 app.include_router(schedules.router, prefix="/api/v1/schedules", tags=["schedules"])  # type: ignore[attr-defined]
-app.include_router(health.router, prefix="/api/v1/health", tags=["health"])  # type: ignore[attr-defined]
+app.include_router(health.router, tags=["health"])  # Register at root level, no prefix
 
 
 @app.get("/", include_in_schema=False)

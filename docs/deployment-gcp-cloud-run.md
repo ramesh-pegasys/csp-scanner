@@ -52,7 +52,7 @@ GCP_SERVICE_ACCOUNT=cloud-artifact-extractor@your-project-id.iam.gserviceaccount
 # Service Configuration
 ENABLED_PROVIDERS=["aws", "azure", "gcp"]
 CONFIG_FILE=/app/config/production.yaml
-SCANNER_ENDPOINT_URL=https://your-scanner-endpoint.com
+HTTP_ENDPOINT_URL=https://your-scanner-endpoint.com
 DEBUG=false
 
 # Cloud Provider Credentials

@@ -189,38 +189,64 @@ export GCP_DEFAULT_REGION="us-central1"
 
 The transport layer determines how extracted artifacts are delivered.
 
-### HTTP Transport
+### HTTP Transport (New Structure)
+
+### Aegis Policy Scanner Transport (New Structure)
+
+Invokes the Aegis Policy Scanning API endpoint with YAML payloads and bearer token authentication.
+
+```yaml
+# config/development-aegis.yaml
+transport:
+  type: "aegis_policy_scanner"
+  aegis_host: "aegis.example.com"
+  policy_name: "default-cloud-policy"
+  # Token should be set in environment: AEGIS_TOKEN
+  max_concurrent_requests: 5
+  max_retries: 3
+  labels:
+    env: "dev"
+    team: "security"
+```
+
+**Environment Variable:**
+```bash
+export AEGIS_TOKEN="your-aegis-api-token"
+```
 
 Sends artifacts to a remote HTTP endpoint (e.g., policy scanner).
 
 ```yaml
-# config/production.yaml
-transport_type: "http"
-scanner_endpoint_url: "https://policy-scanner.example.com/api/scan"
-transport_timeout_seconds: 30
-transport_max_retries: 3
-transport_retry_delay_seconds: 1
+# config/development-aws.yaml
+transport:
+  type: "http"
+  http_endpoint_url: "https://policy-scanner.example.com/api/scan"
+  api_key: "your-api-key-here"
+  timeout_seconds: 30
+  max_retries: 3
+  headers:
+    Content-Type: "application/json"
+    User-Agent: "CloudArtifactExtractor/1.0"
 ```
 
 **Environment Variables:**
 ```bash
 export TRANSPORT_TYPE="http"
-export SCANNER_ENDPOINT_URL="https://policy-scanner.example.com/api/scan"
+export HTTP_ENDPOINT_URL="https://policy-scanner.example.com/api/scan"
 export TRANSPORT_TIMEOUT_SECONDS="30"
 export TRANSPORT_MAX_RETRIES="3"
-export TRANSPORT_RETRY_DELAY_SECONDS="1"
 ```
 
-### Filesystem Transport
+### Filesystem Transport (New Structure)
 
 Writes artifacts to local JSON files.
 
 ```yaml
-# config/production.yaml
-transport_type: "filesystem"
-filesystem_base_dir: "./file_collector"
-filesystem_create_dir: true
-filesystem_file_pattern: "{service}_{resource_type}_{resource_id}_{timestamp}_{uuid}.json"
+# config/development-aws.yaml
+transport:
+  type: "filesystem"
+  base_dir: "./file_collector"
+  create_dir: true
 ```
 
 **Environment Variables:**
@@ -228,23 +254,16 @@ filesystem_file_pattern: "{service}_{resource_type}_{resource_id}_{timestamp}_{u
 export TRANSPORT_TYPE="filesystem"
 export FILESYSTEM_BASE_DIR="./file_collector"
 export FILESYSTEM_CREATE_DIR="true"
-export FILESYSTEM_FILE_PATTERN="{service}_{resource_type}_{resource_id}_{timestamp}_{uuid}.json"
 ```
 
-**File Pattern Variables:**
-- `{service}`: Service name (e.g., "ec2", "s3")
-- `{resource_type}`: Full resource type (e.g., "aws:ec2:instance")
-- `{resource_id}`: Resource identifier
-- `{timestamp}`: ISO timestamp
-- `{uuid}`: Unique identifier
-
-### Null Transport
+### Null Transport (New Structure)
 
 Discards artifacts (useful for testing).
 
 ```yaml
-# config/production.yaml
-transport_type: "null"
+# config/development-aws.yaml
+transport:
+  type: "null"
 ```
 
 **Environment Variable:**
@@ -534,7 +553,7 @@ gcp_credentials_path: "${GCP_CREDENTIALS_PATH}"
 
 # Transport
 transport_type: "http"
-scanner_endpoint_url: "https://policy-scanner.example.com/api/scan"
+http_endpoint_url: "https://policy-scanner.example.com/api/scan"
 transport_timeout_seconds: 60
 transport_max_retries: 5
 
@@ -587,7 +606,7 @@ You can override any configuration value using environment variables:
 ```bash
 # Override transport settings
 export TRANSPORT_TYPE="http"
-export SCANNER_ENDPOINT_URL="https://new-scanner.example.com"
+export HTTP_ENDPOINT_URL="https://new-scanner.example.com"
 
 # Override extractor settings
 export EXTRACTORS__AWS__EC2__MAX_WORKERS="15"

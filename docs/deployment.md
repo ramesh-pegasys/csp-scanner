@@ -103,7 +103,7 @@ AWS_ACCOUNT_ID=123456789012
 # Service Configuration
 ENABLED_PROVIDERS=["aws", "azure", "gcp"]
 CONFIG_FILE=/app/config/production.yaml
-SCANNER_ENDPOINT_URL=https://your-scanner-endpoint.com
+HTTP_ENDPOINT_URL=https://your-scanner-endpoint.com
 DEBUG=false
 
 # For Azure Integration (if enabled)
@@ -197,7 +197,7 @@ AZURE_CONTAINER_REGISTRY_NAME=yourregistryname
 # Service Configuration
 ENABLED_PROVIDERS=["aws", "azure", "gcp"]
 CONFIG_FILE=/app/config/production.yaml
-SCANNER_ENDPOINT_URL=https://your-scanner-endpoint.com
+HTTP_ENDPOINT_URL=https://your-scanner-endpoint.com
 DEBUG=false
 
 # Azure Integration (if scanning Azure)
@@ -295,7 +295,7 @@ GCP_SERVICE_ACCOUNT=cloud-artifact-extractor@your-project-id.iam.gserviceaccount
 # Service Configuration
 ENABLED_PROVIDERS=["aws", "azure", "gcp"]
 CONFIG_FILE=/app/config/production.yaml
-SCANNER_ENDPOINT_URL=https://your-scanner-endpoint.com
+HTTP_ENDPOINT_URL=https://your-scanner-endpoint.com
 DEBUG=false
 
 # Cloud Provider Credentials
@@ -393,7 +393,7 @@ Configure in `manifests/configmap.yaml`:
 ENABLED_PROVIDERS: '["aws","azure","gcp"]'
 DEBUG: 'false'
 CONFIG_FILE: '/app/config/production.yaml'
-SCANNER_ENDPOINT_URL: 'https://your-scanner-endpoint.com'
+HTTP_ENDPOINT_URL: 'https://your-scanner-endpoint.com'
 ```
 
 Configure secrets in `manifests/secret.yaml`:

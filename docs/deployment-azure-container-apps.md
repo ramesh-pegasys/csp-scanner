@@ -53,7 +53,7 @@ AZURE_CONTAINER_REGISTRY_NAME=yourregistryname
 # Service Configuration
 ENABLED_PROVIDERS=["aws", "azure", "gcp"]
 CONFIG_FILE=/app/config/production.yaml
-SCANNER_ENDPOINT_URL=https://your-scanner-endpoint.com
+HTTP_ENDPOINT_URL=https://your-scanner-endpoint.com
 DEBUG=false
 
 # Azure Integration (if scanning Azure)

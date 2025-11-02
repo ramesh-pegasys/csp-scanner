@@ -52,7 +52,7 @@ AWS_ACCOUNT_ID=123456789012
 # Service Configuration
 ENABLED_PROVIDERS=["aws", "azure", "gcp"]
 CONFIG_FILE=/app/config/production.yaml
-SCANNER_ENDPOINT_URL=https://your-scanner-endpoint.com
+HTTP_ENDPOINT_URL=https://your-scanner-endpoint.com
 DEBUG=false
 
 # For Azure Integration (if enabled)

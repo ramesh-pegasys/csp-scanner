@@ -1,0 +1,75 @@
+# config/development-aegis.yaml
+app_name: "Cloud Artifact Extractor"
+environment: "development"
+debug: true
+
+enabled_providers:
+  - "aws"
+  - "gcp"
+  - "azure"
+
+# Transport configuration
+transport:
+  type: "aegis_policy_scanner"
+  aegis_host: "aegis.example.com"
+  policy_name: "default-cloud-policy"
+  # Token should be set in environment: AEGIS_TOKEN
+  max_concurrent_requests: 5
+  max_retries: 3
+  labels:
+    env: "dev"
+    team: "security"
+
+# --- Sample transport configs ---
+#
+# transport:
+#   type: "http"
+#   http_endpoint_url: "https://scanner.example.com/api/artifacts"
+#   api_key: "your-api-key-here"
+#   timeout_seconds: 30
+#   max_retries: 3
+#   headers:
+#     Content-Type: "application/json"
+#     User-Agent: "CloudArtifactExtractor/1.0"
+#
+# transport:
+#   type: "filesystem"
+#   base_dir: "./file_collector"
+#   create_dir: true
+#
+# transport:
+#   type: "null"
+#   # No additional config needed
+
+# AWS multi-account configuration
+aws_accounts:
+  - account_id: "123456789012"
+    regions:
+      - name: "us-west-2"
+        policy_name: "aws-us-west-2-policy"
+      - name: "us-east-1"
+        policy_name: "aws-us-east-1-policy"
+  - account_id: "123456789013"
+    regions:
+      - name: "eu-west-1"
+        policy_name: "aws-eu-west-1-policy"
+
+# GCP multi-project configuration
+gcp_projects:
+  - project_id: "first-project"
+    regions:
+      - name: "us-central1"
+      - name: "us-east1"
+
+# Azure configuration
+azure_subscriptions:
+  - subscription_id: "sub-123"
+    locations:
+      - name: "eastus"
+      - name: "westeurope"
+        policy_name: "azure-westeurope-policy"
+
+# Other extractor settings
+batch_size: 50
+batch_delay_seconds: 0.5
+

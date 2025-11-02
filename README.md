@@ -279,38 +279,46 @@ The application uses configuration files in the `config/` directory to control i
 
 ### Transport Configuration
 
-The application supports multiple transport methods for sending extracted artifacts:
 
-#### 1. HTTP Transport (Default)
+The application supports multiple transport methods for sending extracted artifacts using a unified `transport:` node in the config YAML:
+
+#### 1. HTTP Transport (New Structure)
 Sends artifacts to a remote HTTP endpoint (e.g., policy scanner):
 
 ```yaml
-# config/development.yaml
-transport_type: "http"
-scanner_endpoint_url: "http://localhost:8001/api/scan"
-transport_timeout_seconds: 30
-transport_max_retries: 3
+# config/development-aws.yaml
+transport:
+  type: "http"
+  http_endpoint_url: "http://localhost:8001/api/scan"
+  api_key: "your-api-key-here"
+  timeout_seconds: 30
+  max_retries: 3
+  headers:
+    Content-Type: "application/json"
+    User-Agent: "CloudArtifactExtractor/1.0"
 ```
 
-#### 2. Filesystem Transport
+#### 2. Filesystem Transport (New Structure)
 Writes artifacts to local JSON files:
 
 ```yaml
-# config/development.yaml
-transport_type: "filesystem"
-filesystem_base_dir: "./file_collector"
-filesystem_create_dir: true
+# config/development-aws.yaml
+transport:
+  type: "filesystem"
+  base_dir: "./file_collector"
+  create_dir: true
 ```
 
 Each artifact is saved as a separate JSON file with a unique filename in the format:
 `{service}_{resource_type}_{resource_id}_{timestamp}_{uuid}.json`
 
-#### 3. Null Transport
+#### 3. Null Transport (New Structure)
 Discards artifacts (useful for testing):
 
 ```yaml
-# config/development.yaml
-transport_type: "null"
+# config/development-aws.yaml
+transport:
+  type: "null"
 ```
 
 ### Loading Configuration
@@ -361,9 +369,9 @@ debug: false
 aws_default_region: "us-east-1"
 
 transport_type: "http"
-scanner_endpoint_url: "https://policy-scanner.example.com/api/scan"
-transport_timeout_seconds: 60
-transport_max_retries: 5
+http_endpoint_url: "https://policy-scanner.example.com/api/scan"
+transport_timeout_seconds: 30
+transport_max_retries: 3
 
 max_concurrent_extractors: 20
 batch_size: 200

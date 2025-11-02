@@ -17,7 +17,7 @@ azure_accounts:
     locations:
       - "centralus"
 
-scanner_endpoint_url: "http://localhost:8001/api/scan"
+http_endpoint_url: "http://localhost:8001/api/scan"
 transport_timeout_seconds: 30
 transport_max_retries: 3
 
@@ -26,12 +26,13 @@ batch_size: 50
 batch_delay_seconds: 0.5
 
 # Transport Configuration
-transport_type: "filesystem"  # Options: http, filesystem, null
-filesystem_base_dir: "./file_collector"
-filesystem_create_dir: true
+transport:
+  type: "filesystem"
+  base_dir: "./file_collector"
+  create_dir: true
 
-# JWT Authentication Configuration
-jwt:
-  secret_key: "your-secret-key"  # Change for production
-  algorithm: "HS256"
-  expire_days: 365
+# # JWT Authentication Configuration
+# jwt:
+#   secret_key: "your-secret-key"  # Change for production
+#   algorithm: "HS256"
+#   expire_days: 365

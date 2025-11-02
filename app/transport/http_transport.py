@@ -24,15 +24,10 @@ class HTTPTransport(BaseTransport):
 
     def __init__(self, config: Dict[str, Any]):
         """
-        Initialize HTTP transport.
+        Initialize HTTP transport using transport config node.
 
         Args:
-            config: Transport configuration containing:
-                - scanner_endpoint_url: URL of the scanner endpoint
-                - api_key: Optional API key for authentication
-                - timeout_seconds: Request timeout
-                - max_retries: Maximum number of retries
-                - headers: Additional HTTP headers
+            config: Transport configuration node (expects 'type', 'http_endpoint_url', etc)
         """
         super().__init__(config)
         self.client = HTTPClient(config)

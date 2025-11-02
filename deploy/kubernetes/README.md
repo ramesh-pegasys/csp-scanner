@@ -86,7 +86,7 @@ Configure in `manifests/configmap.yaml`:
 ENABLED_PROVIDERS: '["aws","azure","gcp"]'
 DEBUG: 'false'
 CONFIG_FILE: '/app/config/production.yaml'
-SCANNER_ENDPOINT_URL: 'https://your-scanner-endpoint.com'
+HTTP_ENDPOINT_URL: 'https://your-scanner-endpoint.com'
 ```
 
 ### Secrets
