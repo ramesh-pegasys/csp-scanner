@@ -131,15 +131,16 @@ def mock_config_dependencies(monkeypatch):
 
 @pytest.fixture
 def client():
-    from app.main import app
-
     return TestClient(app)
 
 
-@pytest.mark.parametrize("endpoint,expected_status", [
-    ("/api/v1/config/", 200),
-    ("/api/v1/config/versions", 200),
-])
+@pytest.mark.parametrize(
+    "endpoint,expected_status",
+    [
+        ("/api/v1/config/", 200),
+        ("/api/v1/config/versions", 200),
+    ],
+)
 def test_get_config_endpoints(client, endpoint, expected_status):
     response = client.get(endpoint)
     assert response.status_code == expected_status
@@ -150,7 +151,7 @@ def test_patch_config(client):
     client.app.state.orchestrator = SimpleNamespace(max_concurrent=0)
     payload = {
         "config": {"debug": False, "enabled_providers": ["aws"]},
-        "description": "Test patch config"
+        "description": "Test patch config",
     }
     response = client.patch("/api/v1/config/", json=payload)
     assert response.status_code == 200
@@ -217,16 +218,26 @@ def test_delete_config_version(client):
     assert response.status_code == 200
 
 
-@pytest.mark.parametrize("endpoint,method,data,expected_status", [
-    ("/api/v1/config/", "put", {"config": {"debug": True}}, 400),
-    ("/api/v1/config/", "patch", {"config": {"debug": True}}, 400),
-    ("/api/v1/config/reload", "post", None, 200),  # Reload works even with DB disabled
-    ("/api/v1/config/versions", "get", None, 400),
-    ("/api/v1/config/versions/1", "get", None, 400),
-    ("/api/v1/config/versions/1/activate", "post", None, 400),
-    ("/api/v1/config/versions/2", "delete", None, 400),
-])
-def test_config_endpoints_database_disabled(client, monkeypatch, endpoint, method, data, expected_status):
+@pytest.mark.parametrize(
+    "endpoint,method,data,expected_status",
+    [
+        ("/api/v1/config/", "put", {"config": {"debug": True}}, 400),
+        ("/api/v1/config/", "patch", {"config": {"debug": True}}, 400),
+        (
+            "/api/v1/config/reload",
+            "post",
+            None,
+            200,
+        ),  # Reload works even with DB disabled
+        ("/api/v1/config/versions", "get", None, 400),
+        ("/api/v1/config/versions/1", "get", None, 400),
+        ("/api/v1/config/versions/1/activate", "post", None, 400),
+        ("/api/v1/config/versions/2", "delete", None, 400),
+    ],
+)
+def test_config_endpoints_database_disabled(
+    client, monkeypatch, endpoint, method, data, expected_status
+):
     """Test that endpoints return 400 when database is disabled."""
     from app.core.config import Settings
 
@@ -242,7 +253,7 @@ def test_config_endpoints_database_disabled(client, monkeypatch, endpoint, metho
                 aws_secret_access_key="test",
                 aws_default_region="us-east-1",
             )
-        
+
         def cache_clear(self):
             pass
 

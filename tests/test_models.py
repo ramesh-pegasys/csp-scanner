@@ -183,7 +183,9 @@ def test_database_manager_is_database_available(mock_sessionmaker, mock_create_e
 
 @patch("app.models.database.create_engine")
 @patch("app.models.database.sessionmaker")
-def test_database_manager_is_database_available_exception(mock_sessionmaker, mock_create_engine):
+def test_database_manager_is_database_available_exception(
+    mock_sessionmaker, mock_create_engine
+):
     """Test is_database_available with session exception"""
     mock_engine = Mock()
     mock_create_engine.return_value = mock_engine
@@ -215,7 +217,9 @@ def test_database_manager_create_tables(mock_sessionmaker, mock_create_engine):
 @patch("app.models.database.Base.metadata.create_all")
 @patch("app.models.database.create_engine")
 @patch("app.models.database.sessionmaker")
-def test_database_manager_create_tables_exception(mock_sessionmaker, mock_create_engine, mock_create_all):
+def test_database_manager_create_tables_exception(
+    mock_sessionmaker, mock_create_engine, mock_create_all
+):
     """Test create_tables with exception"""
     mock_engine = Mock()
     mock_create_engine.return_value = mock_engine

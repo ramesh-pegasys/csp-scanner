@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pytest
-
 from app.models.database import DatabaseManager
 
 
@@ -101,10 +99,7 @@ def test_database_manager_builds_url_from_env(monkeypatch):
     )
 
     manager = DatabaseManager()
-    assert (
-        recorded["url"]
-        == "postgresql://user:pass@envhost:6543/envdb"
-    )
+    assert recorded["url"] == "postgresql://user:pass@envhost:6543/envdb"
     manager.close()
     assert recorded["disposed"] == "yes"
 

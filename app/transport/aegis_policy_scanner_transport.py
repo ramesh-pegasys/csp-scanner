@@ -103,7 +103,9 @@ class AegisPolicyScannerTransport:
         for sub in azure_subs:
             sub_id = sub.get("subscription_id")
             if not sub_id:
-                logger.warning("Missing subscription_id in Azure config entry, skipping.")
+                logger.warning(
+                    "Missing subscription_id in Azure config entry, skipping."
+                )
                 continue
             for location in sub.get("locations", []):
                 location_name = (

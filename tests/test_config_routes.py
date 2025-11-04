@@ -1,5 +1,4 @@
-import types
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import pytest
 from fastapi import HTTPException
@@ -42,9 +41,9 @@ class DummySession:
         return _Query(self._entry)
 
 
-
 def _raise_db_manager():
     raise RuntimeError("boom")
+
 
 @pytest.mark.asyncio
 async def test_get_all_config_db_error(monkeypatch):
@@ -59,5 +58,5 @@ async def test_get_all_config_db_error(monkeypatch):
     monkeypatch.setattr(config, "get_settings", GetSettingsStub())
     monkeypatch.setattr(config, "get_db_manager", _raise_db_manager)
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(HTTPException):
         await config.get_current_config()

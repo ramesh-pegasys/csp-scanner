@@ -14,12 +14,19 @@ async def test_lifespan_startup():
     mock_app = Mock()
     mock_app.state = Mock()  # Use Mock instead of dict for attribute access
 
-    with patch("app.main.get_settings") as mock_get_settings, \
-         patch("boto3.Session") as mock_session_class, \
-         patch("app.main.ExtractorRegistry") as mock_registry_class, \
-         patch("app.main.TransportFactory.create") as mock_transport_factory, \
-         patch("app.main.ExtractionOrchestrator") as mock_orchestrator_class, \
-         patch("app.main.scheduler") as mock_scheduler:
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "app.main.boto3.Session"
+    ) as mock_session_class, patch(
+        "app.main.AWSSession"
+    ) as mock_aws_session_class, patch(
+        "app.main.ExtractorRegistry"
+    ) as mock_registry_class, patch(
+        "app.main.TransportFactory.create"
+    ) as mock_transport_factory, patch(
+        "app.main.ExtractionOrchestrator"
+    ) as mock_orchestrator_class, patch(
+        "app.main.scheduler"
+    ) as mock_scheduler:
         # Setup mocks
         from app.core.config import Settings
 
@@ -63,6 +70,9 @@ async def test_lifespan_startup():
         mock_session = Mock()
         mock_session_class.return_value = mock_session
 
+        mock_aws_session = Mock()
+        mock_aws_session_class.return_value = mock_aws_session
+
         mock_registry = Mock()
         mock_registry_class.return_value = mock_registry
 
@@ -83,11 +93,14 @@ async def test_lifespan_startup():
             print(f"Mock session call args: {mock_session_class.call_args}")
             print(f"Mock session call count: {mock_session_class.call_count}")
             # Verify components were initialized
+            # boto3.Session should be called once for the single AWS account in the test config
             mock_session_class.assert_called_once_with(
                 aws_access_key_id="test-key",
                 aws_secret_access_key="test-secret",
                 region_name="us-east-1",
             )
+            # AWSSession should wrap the boto3.Session
+            mock_aws_session_class.assert_called_once_with(mock_session)
             mock_registry_class.assert_called_once()
             registry_args, registry_kwargs = mock_registry_class.call_args
             assert registry_kwargs == {}
@@ -95,6 +108,15 @@ async def test_lifespan_startup():
             sessions_arg = registry_args[0]
             assert isinstance(sessions_arg, dict)
             assert list(sessions_arg.keys()) == [CloudProvider.AWS]
+            # AWS sessions should now be a list of session dicts
+            aws_sessions_list = sessions_arg[CloudProvider.AWS]
+            assert isinstance(aws_sessions_list, list)
+            assert len(aws_sessions_list) == 1
+            assert "session" in aws_sessions_list[0]
+            assert "account_id" in aws_sessions_list[0]
+            assert "regions" in aws_sessions_list[0]
+            assert aws_sessions_list[0]["account_id"] == "test-account"
+            assert aws_sessions_list[0]["regions"] == ["us-east-1"]
             assert registry_args[1] == mock_settings
             mock_transport_factory.assert_called_once_with(
                 mock_settings.transport_type, mock_settings.transport_config
@@ -185,12 +207,17 @@ async def test_lifespan_startup_failure():
     mock_app = Mock()
     mock_app.state = Mock()
 
-    with patch("app.main.get_settings") as mock_get_settings, \
-         patch("boto3.Session") as mock_session_class, \
-         patch("app.main.ExtractorRegistry") as mock_registry_class, \
-         patch("app.main.TransportFactory.create") as mock_transport_factory, \
-         patch("app.main.ExtractionOrchestrator") as mock_orchestrator_class, \
-         patch("app.main.scheduler") as mock_scheduler:
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "boto3.Session"
+    ) as mock_session_class, patch(
+        "app.main.ExtractorRegistry"
+    ) as mock_registry_class, patch(
+        "app.main.TransportFactory.create"
+    ) as mock_transport_factory, patch(
+        "app.main.ExtractionOrchestrator"
+    ) as mock_orchestrator_class, patch(
+        "app.main.scheduler"
+    ) as mock_scheduler:
         # Setup mocks
         from app.core.config import Settings
 
@@ -274,7 +301,9 @@ async def test_lifespan_no_providers_enabled():
         with patch("app.main.logger") as mock_logger:
             async with lifespan(mock_app):
                 pass
-            mock_logger.warning.assert_any_call("No cloud providers enabled at startup. Configuration can be updated via API.")
+            mock_logger.warning.assert_any_call(
+                "No cloud providers enabled at startup. Configuration can be updated via API."
+            )
 
 
 @pytest.mark.asyncio
@@ -283,13 +312,19 @@ async def test_lifespan_with_database():
     mock_app = Mock()
     mock_app.state = Mock()
 
-    with patch("app.main.get_settings") as mock_get_settings, \
-         patch("app.models.database.init_database") as mock_init_database, \
-         patch("app.models.database.get_db_manager") as mock_get_db_manager, \
-         patch("app.main.ExtractorRegistry") as mock_registry_class, \
-         patch("app.main.TransportFactory.create") as mock_transport_factory, \
-         patch("app.main.ExtractionOrchestrator") as mock_orchestrator_class, \
-         patch("app.main.scheduler") as mock_scheduler:
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "app.models.database.init_database"
+    ) as mock_init_database, patch(
+        "app.models.database.get_db_manager"
+    ) as mock_get_db_manager, patch(
+        "app.main.ExtractorRegistry"
+    ) as mock_registry_class, patch(
+        "app.main.TransportFactory.create"
+    ) as mock_transport_factory, patch(
+        "app.main.ExtractionOrchestrator"
+    ) as mock_orchestrator_class, patch(
+        "app.main.scheduler"
+    ) as mock_scheduler:
         # Setup mocks
         from app.core.config import Settings
 
@@ -342,7 +377,9 @@ async def test_lifespan_with_database():
         # Test startup
         async with lifespan(mock_app):
             # Verify database init was called
-            mock_init_database.assert_called_once_with("postgresql://user:pass@localhost:5432/test")
+            mock_init_database.assert_called_once_with(
+                "postgresql://user:pass@localhost:5432/test"
+            )
             mock_get_db_manager.assert_called_once()
             mock_db_manager.is_database_available.assert_called_once()
 
@@ -368,13 +405,17 @@ async def test_lifespan_database_unavailable_warning():
     mock_app = Mock()
     mock_app.state = Mock()
 
-    with patch("app.main.get_settings") as mock_get_settings, \
-         patch("app.models.database.init_database") as mock_init_database, \
-         patch("app.models.database.get_db_manager") as mock_get_db_manager, \
-         patch("app.main.ExtractorRegistry") as mock_registry_class, \
-         patch("app.main.TransportFactory.create") as mock_transport_factory, \
-         patch("app.main.ExtractionOrchestrator") as mock_orchestrator_class, \
-         patch("app.main.scheduler") as mock_scheduler:
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "app.models.database.init_database"
+    ), patch("app.models.database.get_db_manager") as mock_get_db_manager, patch(
+        "app.main.ExtractorRegistry"
+    ) as mock_registry_class, patch(
+        "app.main.TransportFactory.create"
+    ) as mock_transport_factory, patch(
+        "app.main.ExtractionOrchestrator"
+    ) as mock_orchestrator_class, patch(
+        "app.main.scheduler"
+    ) as mock_scheduler:
         mock_settings = Settings(database_enabled=True, enabled_providers=[])
         mock_get_settings.return_value = mock_settings
 
@@ -409,13 +450,19 @@ async def test_lifespan_database_initialization_failure():
     mock_app = Mock()
     mock_app.state = Mock()
 
-    with patch("app.main.get_settings") as mock_get_settings, \
-         patch("app.models.database.init_database") as mock_init_database, \
-         patch("app.models.database.get_db_manager") as mock_get_db_manager, \
-         patch("app.main.ExtractorRegistry") as mock_registry_class, \
-         patch("app.main.TransportFactory.create") as mock_transport_factory, \
-         patch("app.main.ExtractionOrchestrator") as mock_orchestrator_class, \
-         patch("app.main.scheduler") as mock_scheduler:
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "app.models.database.init_database"
+    ) as mock_init_database, patch(
+        "app.models.database.get_db_manager"
+    ) as mock_get_db_manager, patch(
+        "app.main.ExtractorRegistry"
+    ) as mock_registry_class, patch(
+        "app.main.TransportFactory.create"
+    ) as mock_transport_factory, patch(
+        "app.main.ExtractionOrchestrator"
+    ) as mock_orchestrator_class, patch(
+        "app.main.scheduler"
+    ) as mock_scheduler:
         mock_settings = Settings(database_enabled=True, enabled_providers=[])
         mock_get_settings.return_value = mock_settings
 
@@ -448,15 +495,21 @@ async def test_lifespan_initializes_multi_cloud_sessions():
     mock_app = Mock()
     mock_app.state = Mock()
 
-    with patch("app.main.get_settings") as mock_get_settings, \
-         patch("app.main.boto3.Session") as mock_boto_session, \
-         patch("app.main.AWSSession") as mock_aws_session, \
-         patch("app.main.AzureSession") as mock_azure_session, \
-         patch("app.main.GCPSession") as mock_gcp_session, \
-         patch("app.main.ExtractorRegistry") as mock_registry_class, \
-         patch("app.main.TransportFactory.create") as mock_transport_factory, \
-         patch("app.main.ExtractionOrchestrator") as mock_orchestrator_class, \
-         patch("app.main.scheduler") as mock_scheduler:
+    with patch("app.main.get_settings") as mock_get_settings, patch(
+        "app.main.boto3.Session"
+    ) as mock_boto_session, patch("app.main.AWSSession") as mock_aws_session, patch(
+        "app.main.AzureSession"
+    ) as mock_azure_session, patch(
+        "app.main.GCPSession"
+    ) as mock_gcp_session, patch(
+        "app.main.ExtractorRegistry"
+    ) as mock_registry_class, patch(
+        "app.main.TransportFactory.create"
+    ) as mock_transport_factory, patch(
+        "app.main.ExtractionOrchestrator"
+    ) as mock_orchestrator_class, patch(
+        "app.main.scheduler"
+    ) as mock_scheduler:
         mock_settings = Settings(
             enabled_providers=["aws", "azure", "gcp"],
             aws_access_key_id="key",

@@ -223,7 +223,9 @@ def test_load_config_from_database_returns_data(monkeypatch):
     monkeypatch.setenv("CSP_SCANNER_DATABASE_ENABLED", "true")
 
     dummy_db = SimpleNamespace(get_active_config=lambda: {"feature": {"enabled": True}})
-    monkeypatch.setattr("app.core.config.get_db_manager", lambda: dummy_db, raising=False)
+    monkeypatch.setattr(
+        "app.core.config.get_db_manager", lambda: dummy_db, raising=False
+    )
     monkeypatch.setenv("CSP_SCANNER_DATABASE_ENABLED", "true")
     result = _load_config_from_database()
     assert result == {"feature": {"enabled": True}}
