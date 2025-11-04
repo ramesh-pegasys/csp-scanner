@@ -6,6 +6,7 @@ from functools import lru_cache
 import yaml  # type: ignore[import-untyped]
 import os
 from app.models.database import get_db_manager
+import logging
 
 
 class Settings(BaseSettings):
@@ -15,7 +16,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Multi-Cloud Configuration
-    enabled_providers: List[str] = ["aws"]  # Options: ["aws", "azure", "gcp"]
+    enabled_providers: List[str] = []  # Options: ["aws", "azure", "gcp"]
 
     # AWS Configuration (multi-account)
     aws_access_key_id: Optional[str] = None
@@ -100,9 +101,7 @@ class Settings(BaseSettings):
     transport_type: str = "http"  # Options: http, filesystem, null
     filesystem_base_dir: str = "./file_collector"
     filesystem_create_dir: bool = True
-    allow_insecure_ssl: bool = (
-        False  # Allow insecure HTTPS connections (not recommended for production)
-    )
+    allow_insecure_ssl: bool = True  # Allow insecure HTTPS connections (self-signed certs accepted by default)
 
     # Orchestration Configuration
     max_concurrent_extractors: int = 10
@@ -222,44 +221,91 @@ def get_settings() -> Settings:
     4. .env file (lowest priority, handled by pydantic-settings)
     """
     config_data = {}
+    
+    logger = logging.getLogger(__name__)
 
     # Load from database if enabled
     db_config = _load_config_from_database()
     if db_config:
+        logger.info(f"Loaded {len(db_config)} config keys from database")
+        logger.debug(f"Database config keys: {list(db_config.keys())}")
         config_data.update(db_config)
+    else:
+        logger.info("No database config loaded")
 
     # Check if a config file is specified
     config_file = os.getenv("CONFIG_FILE")
 
     if config_file and os.path.exists(config_file):
+        logger.info(f"Loading config from file: {config_file}")
         # Load settings from YAML file
         with open(config_file, "r") as f:
             file_config = yaml.safe_load(f) or {}
+        logger.info(f"Loaded {len(file_config)} keys from config file")
         # File config has lower priority than DB, so update (don't overwrite DB values)
+        file_keys_added = 0
         for key, value in file_config.items():
             if key not in config_data:
                 config_data[key] = value
+                file_keys_added += 1
+        logger.info(f"Added {file_keys_added} non-conflicting keys from config file")
+    else:
+        if config_file:
+            logger.warning(f"CONFIG_FILE set to {config_file} but file does not exist")
+        else:
+            logger.info("No CONFIG_FILE environment variable set")
 
     # Create Settings with merged config data as defaults
     # Environment variables will still override these
-    return Settings(**config_data)
+    logger.info(f"Creating Settings with {len(config_data)} config keys")
+    logger.debug(f"Config data keys: {list(config_data.keys())}")
+    settings = Settings(**config_data)
+    
+    logger.info(f"Settings created: debug={settings.debug}, max_concurrent_extractors={settings.max_concurrent_extractors}")
+
+    # Set up debug logging if enabled
+
+    logger = logging.getLogger()
+    if getattr(settings, "debug", False):
+        logger.setLevel(logging.DEBUG)
+        logging.debug("Debug logging enabled by config.")
+    else:
+        logger.setLevel(logging.INFO)
+    return settings
 
 
 def _load_config_from_database() -> Dict[str, Any]:
     """Load configuration from database."""
+    logger = logging.getLogger(__name__)
     try:
         # Check if database is enabled via environment variable
-        if os.getenv("DATABASE_ENABLED", "false").lower() != "true":
+        db_enabled = os.getenv("CSP_SCANNER_DATABASE_ENABLED", "false").lower()
+        logger.info(f"CSP_SCANNER_DATABASE_ENABLED env var: {db_enabled}")
+        
+        if db_enabled != "true":
+            logger.info("Database config loading skipped (CSP_SCANNER_DATABASE_ENABLED != 'true')")
             return {}
 
+        logger.info("Attempting to load config from database...")
         db_manager = get_db_manager()
-        # Get all config entries from database
-        all_config = db_manager.get_all_config()
-        return all_config
+        # Get the active configuration version
+        active_config = db_manager.get_active_config()
+        
+        if active_config:
+            logger.info(f"Successfully loaded active config from database with {len(active_config)} keys")
+            logger.info(f"Active config keys: {list(active_config.keys())}")
+            # Log a few key values to verify content
+            if 'debug' in active_config:
+                logger.info(f"  debug = {active_config['debug']}")
+            if 'enabled_providers' in active_config:
+                logger.info(f"  enabled_providers = {active_config['enabled_providers']}")
+            if 'aws_accounts' in active_config:
+                logger.info(f"  aws_accounts = {active_config['aws_accounts']}")
+        else:
+            logger.warning("No active configuration found in database")
+            
+        return active_config if active_config else {}
     except Exception as e:
         # If database loading fails, log and continue without DB config
-        import logging
-
-        logger = logging.getLogger(__name__)
-        logger.warning(f"Failed to load config from database: {e}")
+        logger.error(f"Failed to load config from database: {e}", exc_info=True)
         return {}

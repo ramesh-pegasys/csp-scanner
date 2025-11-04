@@ -1,12 +1,16 @@
 # config/development-aegis.yaml
 app_name: "Cloud Artifact Extractor"
 environment: "development"
-debug: true
+# debug: false
 
 enabled_providers:
   - "aws"
   - "gcp"
   - "azure"
+
+ssl:
+  certfile: "certs/server.crt"
+  keyfile: "certs/server.key"
 
 # Transport configuration
 transport:
@@ -16,7 +20,8 @@ transport:
   # Token should be set in environment: AEGIS_TOKEN
   max_concurrent_requests: 5
   max_retries: 3
-  allow_insecure_ssl: false  # Allow insecure HTTPS connections (not recommended for production)
+  allow_insecure_ssl: true  # Allow insecure HTTPS connections (not recommended for production)
+  http_endpoint_url: "https://aegis.example.com/api/v1/scan"
   labels:
     env: "dev"
     team: "security"

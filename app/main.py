@@ -166,8 +166,7 @@ async def lifespan(app: FastAPI):
             logger.warning("GCP extractors will not be available")
 
     if not sessions:
-        logger.error("No cloud providers enabled! Check your configuration.")
-        raise RuntimeError("At least one cloud provider must be enabled")
+        logger.warning("No cloud providers enabled at startup. Configuration can be updated via API.")
 
     # Initialize components
     registry = ExtractorRegistry(sessions, settings)

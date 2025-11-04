@@ -29,7 +29,7 @@ transport:
   http_endpoint_url: "http://localhost:8001/api/scan"
   transport_timeout_seconds: 30
   transport_max_retries: 3
-  allow_insecure_ssl: false  # Allow insecure HTTPS connections (not recommended for production)
+  # allow_insecure_ssl: True  # Allow insecure HTTPS connections (not recommended for production)
 
 # # JWT Authentication Configuration
 # jwt:
