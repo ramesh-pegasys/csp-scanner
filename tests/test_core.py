@@ -1,10 +1,12 @@
 """Tests for core modules"""
 
 import os
+from types import SimpleNamespace
+
 import pytest
 from unittest.mock import Mock, mock_open, patch
 
-from app.core.config import Settings
+from app.core.config import Settings, _load_config_from_database
 
 
 def test_settings_defaults(monkeypatch):
@@ -58,6 +60,21 @@ def test_settings_transport_config_filesystem():
 def test_settings_transport_config_null():
     settings = Settings(transport_type="null")
     assert settings.transport_config == {"type": "null"}
+
+
+def test_settings_transport_config_dict():
+    """Test transport config with transport dict"""
+    settings = Settings(
+        transport={
+            "type": "http",
+            "http_endpoint_url": "https://example.com",
+            "api_key": "key123",
+        }
+    )
+    config = settings.transport_config
+    assert config["type"] == "http"
+    assert config["http_endpoint_url"] == "https://example.com"
+    assert config["api_key"] == "key123"
 
 
 def test_settings_orchestrator_config():
@@ -172,6 +189,34 @@ def test_settings_provider_enabled_properties():
     assert settings_none.is_gcp_enabled is False
 
 
+def test_settings_database_url_with_credentials():
+    settings = Settings(
+        database_user="user",
+        database_password="pass",
+        database_host="db.example.com",
+        database_port=5433,
+        database_name="custom_db",
+    )
+
+    assert (
+        settings.database_url == "postgresql://user:pass@db.example.com:5433/custom_db"
+    )
+
+
+def test_load_config_from_database_returns_data(monkeypatch):
+    monkeypatch.setenv("DATABASE_ENABLED", "true")
+
+    dummy_db = SimpleNamespace(get_all_config=lambda: {"feature": {"enabled": True}})
+
+    monkeypatch.setattr(
+        "app.core.config.get_db_manager", lambda: dummy_db, raising=False
+    )
+
+    result = _load_config_from_database()
+
+    assert result == {"feature": {"enabled": True}}
+
+
 @pytest.fixture(autouse=True)
 def clear_config_env(monkeypatch):
     monkeypatch.delenv("CONFIG_FILE", raising=False)
@@ -183,6 +228,7 @@ def clear_config_env(monkeypatch):
     monkeypatch.delenv("AZURE_DEFAULT_LOCATION", raising=False)
     monkeypatch.delenv("GCP_PROJECT_ID", raising=False)
     monkeypatch.delenv("GCP_DEFAULT_REGION", raising=False)
+    monkeypatch.delenv("DATABASE_ENABLED", raising=False)
     monkeypatch.delenv("GCP_CREDENTIALS_PATH", raising=False)
 
 
@@ -286,3 +332,50 @@ def test_settings_gcp_projects_list():
     # Test empty when no config
     settings_empty = Settings()
     assert settings_empty.gcp_projects_list == []
+
+
+def test_settings_database_url_without_credentials():
+    """Test database URL construction without user credentials"""
+    settings = Settings(
+        database_host="db.example.com", database_port=5432, database_name="testdb"
+    )
+    expected = "postgresql://db.example.com:5432/testdb"
+    assert settings.database_url == expected
+
+
+@patch("app.core.config._load_config_from_database")
+@patch("app.core.config.Settings")
+def test_get_settings_with_db_config(mock_settings_class, mock_load_db):
+    """Test get_settings with database config"""
+    from app.core.config import get_settings
+
+    get_settings.cache_clear()
+
+    mock_load_db.return_value = {"app_name": "DB App", "debug": True}
+    mock_instance = Mock()
+    mock_settings_class.return_value = mock_instance
+
+    settings = get_settings()
+
+    assert settings is mock_instance
+    mock_load_db.assert_called_once()
+    mock_settings_class.assert_called_once_with(app_name="DB App", debug=True)
+
+
+@patch("app.core.config.get_db_manager")
+@patch.dict(os.environ, {"DATABASE_ENABLED": "true"})
+def test_load_config_from_database_exception(mock_get_db_manager):
+    """Test _load_config_from_database handles exceptions"""
+    from app.core.config import _load_config_from_database
+
+    mock_get_db_manager.side_effect = Exception("DB connection failed")
+
+    with patch("logging.getLogger") as mock_get_logger:
+        mock_logger = Mock()
+        mock_get_logger.return_value = mock_logger
+        result = _load_config_from_database()
+
+    assert result == {}
+    mock_logger.warning.assert_called_once_with(
+        "Failed to load config from database: DB connection failed"
+    )

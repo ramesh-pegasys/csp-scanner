@@ -48,7 +48,9 @@ class AegisPolicyScannerTransport:
         # Proxy support for AsyncClient
         proxy_url = os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY")
         if proxy_url:
-            self.client = httpx.AsyncClient(proxy=proxy_url, verify=not self.allow_insecure_ssl)
+            self.client = httpx.AsyncClient(
+                proxy=proxy_url, verify=not self.allow_insecure_ssl
+            )
         else:
             self.client = httpx.AsyncClient(verify=not self.allow_insecure_ssl)
         # NO_PROXY is handled by httpx via environment variable
@@ -115,7 +117,9 @@ class AegisPolicyScannerTransport:
         # Proxy support for AsyncClient
         proxy_url = os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY")
         if proxy_url:
-            self.client = httpx.AsyncClient(proxy=proxy_url, verify=not self.allow_insecure_ssl)
+            self.client = httpx.AsyncClient(
+                proxy=proxy_url, verify=not self.allow_insecure_ssl
+            )
         else:
             self.client = httpx.AsyncClient(verify=not self.allow_insecure_ssl)
         # NO_PROXY is handled by httpx via environment variable

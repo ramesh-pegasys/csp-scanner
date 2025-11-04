@@ -100,7 +100,9 @@ class Settings(BaseSettings):
     transport_type: str = "http"  # Options: http, filesystem, null
     filesystem_base_dir: str = "./file_collector"
     filesystem_create_dir: bool = True
-    allow_insecure_ssl: bool = False  # Allow insecure HTTPS connections (not recommended for production)
+    allow_insecure_ssl: bool = (
+        False  # Allow insecure HTTPS connections (not recommended for production)
+    )
 
     # Orchestration Configuration
     max_concurrent_extractors: int = 10
@@ -128,7 +130,10 @@ class Settings(BaseSettings):
     def database_url(self) -> str:
         """Construct database URL from individual components."""
         if self.database_user and self.database_password:
-            return f"postgresql://{self.database_user}:{self.database_password}@{self.database_host}:{self.database_port}/{self.database_name}"
+            return (
+                f"postgresql://{self.database_user}:{self.database_password}@"
+                f"{self.database_host}:{self.database_port}/{self.database_name}"
+            )
         else:
             return f"postgresql://{self.database_host}:{self.database_port}/{self.database_name}"
 
@@ -243,9 +248,8 @@ def get_settings() -> Settings:
 def _load_config_from_database() -> Dict[str, Any]:
     """Load configuration from database."""
     try:
-        # Create a temporary settings instance to check DB config
-        temp_settings = Settings()
-        if not temp_settings.database_enabled:
+        # Check if database is enabled via environment variable
+        if os.getenv("DATABASE_ENABLED", "false").lower() != "true":
             return {}
 
         db_manager = get_db_manager()
@@ -255,6 +259,7 @@ def _load_config_from_database() -> Dict[str, Any]:
     except Exception as e:
         # If database loading fails, log and continue without DB config
         import logging
+
         logger = logging.getLogger(__name__)
         logger.warning(f"Failed to load config from database: {e}")
         return {}

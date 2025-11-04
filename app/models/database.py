@@ -1,15 +1,24 @@
 # app/models/database.py
-from sqlalchemy import create_engine, Column, Integer, String, JSON, DateTime, func, text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    JSON,
+    DateTime,
+    func,
+    text,
+)
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 import os
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, cast
 
 Base = declarative_base()
 
 
 class ConfigEntry(Base):
     """Database model for storing configuration entries as JSON."""
+
     __tablename__ = "csp_scanner_config"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -17,7 +26,9 @@ class ConfigEntry(Base):
     value = Column(JSON, nullable=False)
     description = Column(String(500), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
 
 class DatabaseManager:
@@ -25,11 +36,15 @@ class DatabaseManager:
 
     def __init__(self, database_url: Optional[str] = None):
         if not database_url:
-            database_url = os.getenv("DATABASE_URL", "postgresql://localhost/csp_scanner")
+            database_url = os.getenv(
+                "DATABASE_URL", "postgresql://localhost/csp_scanner"
+            )
 
         self.engine = create_engine(database_url, echo=False)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
-        
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine
+        )
+
         # Create tables if they don't exist
         self._ensure_tables_exist()
 
@@ -40,6 +55,7 @@ class DatabaseManager:
         except Exception as e:
             # Log the error but don't fail - the application can still run without DB
             import logging
+
             logger = logging.getLogger(__name__)
             logger.warning(f"Failed to create database tables: {e}")
             logger.info("Application will continue without database functionality")
@@ -66,7 +82,9 @@ class DatabaseManager:
         global_config = self.get_global_config()
         return global_config.get(key) if global_config else None
 
-    def set_config_value(self, key: str, value: Dict[str, Any], description: Optional[str] = None):
+    def set_config_value(
+        self, key: str, value: Dict[str, Any], description: Optional[str] = None
+    ):
         """Set or update a configuration value in the global config."""
         global_config = self.get_global_config() or {}
         global_config[key] = value
@@ -89,17 +107,29 @@ class DatabaseManager:
     def get_global_config(self) -> Optional[Dict[str, Any]]:
         """Get the global configuration JSON."""
         with self.get_session() as session:
-            entry = session.query(ConfigEntry).filter(ConfigEntry.key == "global_config").first()
-            return entry.value if entry else None
+            entry = (
+                session.query(ConfigEntry)
+                .filter(ConfigEntry.key == "global_config")
+                .first()
+            )
+            return cast(Dict[str, Any], entry.value) if entry else None
 
     def set_global_config(self, config: Dict[str, Any]):
         """Set the global configuration JSON."""
         with self.get_session() as session:
-            entry = session.query(ConfigEntry).filter(ConfigEntry.key == "global_config").first()
+            entry = (
+                session.query(ConfigEntry)
+                .filter(ConfigEntry.key == "global_config")
+                .first()
+            )
             if entry:
-                entry.value = config
+                entry.value = config  # type: ignore
             else:
-                entry = ConfigEntry(key="global_config", value=config, description="Global application configuration")
+                entry = ConfigEntry(
+                    key="global_config",
+                    value=config,
+                    description="Global application configuration",
+                )
                 session.add(entry)
             session.commit()
 

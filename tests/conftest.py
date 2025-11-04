@@ -28,9 +28,7 @@ def client(mock_orchestrator, mock_registry, mock_scheduler):
     test_app.include_router(
         schedules.router, prefix="/api/v1/schedules", tags=["schedules"]
     )
-    test_app.include_router(
-        config.router, prefix="/api/v1/config", tags=["config"]
-    )
+    test_app.include_router(config.router, prefix="/api/v1/config", tags=["config"])
     test_app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
 
     @test_app.get("/")

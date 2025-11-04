@@ -63,7 +63,9 @@ async def lifespan(app: FastAPI):
             if db_manager.is_database_available():
                 logger.info("Database initialized and available")
             else:
-                logger.warning("Database initialized but not accessible - config features will be limited")
+                logger.warning(
+                    "Database initialized but not accessible - config features will be limited"
+                )
         except Exception as e:
             logger.error(f"Failed to initialize database: {e}")
             logger.warning("Database features will not be available")
