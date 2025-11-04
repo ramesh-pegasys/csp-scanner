@@ -108,7 +108,6 @@ GET /extraction/services?provider=azure
 ```
 
 **Response:**
-```json
 {
   "services_by_provider": {
     "aws": [

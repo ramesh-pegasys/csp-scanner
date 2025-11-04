@@ -61,12 +61,6 @@ The Cloud Artifact Extractor can be deployed to multiple cloud platforms and Kub
   - Integrated Azure Monitor
 
 #### GCP Deployment
-- **Recommended: Google Cloud Run** - Serverless container service with automatic scaling
-  - Pay-per-request pricing
-  - Automatic scaling from 0 to N instances
-  - Fully managed serverless
-  - Simple one-command deployment
-
 #### Kubernetes Deployment
 - **Multi-Cloud Support:** Deploy to AWS EKS, Azure AKS, or GCP GKE
   - Advanced networking and security
@@ -100,10 +94,6 @@ For detailed instructions, environment configuration, monitoring setup, and trou
 
 ## JWT & Certificate Generation Utility
 
-Use `utils/generate_certs_and_jwt.py` to generate static JWT tokens and self-signed certificates for local HTTPS testing.
-
-Run interactively:
-
 ```bash
 python utils/generate_certs_and_jwt.py
 ```
@@ -135,7 +125,6 @@ The `certs/` directory is included in the repo but all contents are ignored via 
 
 ## Pre-commit Checks
 
-Run the pre-commit check script before pushing changes:
 
 ```bash
 python utils/precommit_checks.py

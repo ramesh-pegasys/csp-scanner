@@ -27,12 +27,6 @@ Configuration files are stored in the `config/` directory:
 config/
 ├── development.yaml    # Development environment settings
 ├── production.yaml     # Production environment settings
-└── extractors.yaml     # Extractor-specific configuration
-```
-
-### Loading Configuration
-
-#### Using Environment Variables
 
 ```bash
 # Specify config file
@@ -66,10 +60,6 @@ enabled_providers:
 **Environment Variables:**
 ```bash
 export ENABLED_PROVIDERS='["aws", "azure", "gcp"]'
-```
-
-### Application Settings
-
 ```yaml
 # config/production.yaml
 app_name: "Cloud Artifact Extractor"
@@ -101,7 +91,6 @@ aws_accounts:
       - "us-west-2"
       - "us-east-1"
   - account_id: "987654321098"
-    regions:
       - "eu-west-1"
 aws_access_key_id: "your-access-key-id"  # Global or per-account
 aws_secret_access_key: "your-secret-access-key"
