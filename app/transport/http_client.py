@@ -26,6 +26,7 @@ class HTTPTransport:
         self.endpoint_url: str = endpoint
         self.timeout = config.get("timeout_seconds", 30)
         self.max_retries = config.get("max_retries", 3)
+        self.allow_insecure_ssl = config.get("allow_insecure_ssl", False)
         self.headers = config.get("headers", {})
 
         # Add authentication headers if configured
@@ -36,6 +37,7 @@ class HTTPTransport:
             timeout=self.timeout,
             headers=self.headers,
             limits=httpx.Limits(max_keepalive_connections=20, max_connections=100),
+            verify=not self.allow_insecure_ssl,
         )
 
     @retry(
