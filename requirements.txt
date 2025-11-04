@@ -91,3 +91,7 @@ types-pyyaml
 # google-cloud-billing==1.20.0
 # google-cloud-redis==2.11.0
 # google-cloud-firestore==2.10.0
+
+# Database
+sqlalchemy
+psycopg2-binary

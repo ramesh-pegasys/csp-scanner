@@ -1,9 +1,11 @@
 # app/core/config.py
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 from typing import Dict, Any, Optional, List
 from functools import lru_cache
 import yaml  # type: ignore[import-untyped]
 import os
+from app.models.database import get_db_manager
 
 
 class Settings(BaseSettings):
@@ -114,12 +116,33 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 100
     rate_limit_window_seconds: int = 3600
 
+    # Database Configuration
+    database_host: str = Field(default="localhost")
+    database_port: int = Field(default=5432)
+    database_name: str = Field(default="csp_scanner")
+    database_user: Optional[str] = Field(default=None)
+    database_password: Optional[str] = Field(default=None)
+    database_enabled: bool = Field(default=False)
+
+    @property
+    def database_url(self) -> str:
+        """Construct database URL from individual components."""
+        if self.database_user and self.database_password:
+            return f"postgresql://{self.database_user}:{self.database_password}@{self.database_host}:{self.database_port}/{self.database_name}"
+        else:
+            return f"postgresql://{self.database_host}:{self.database_port}/{self.database_name}"
+
     # Extractor Configuration
     extractor_config_path: str = "config/extractors.yaml"
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore",
+        env_prefix="CSP_SCANNER_",
+        # If you previously used 'schema_extra', replace with 'json_schema_extra' for Pydantic v2
+        # json_schema_extra={}
+    )
 
     @property
     def is_aws_enabled(self) -> bool:
@@ -189,19 +212,49 @@ def get_settings() -> Settings:
 
     Loads settings from:
     1. Environment variables (highest priority)
-    2. .env file
+    2. Database (if enabled)
     3. YAML config file if CONFIG_FILE env var is set
+    4. .env file (lowest priority, handled by pydantic-settings)
     """
+    config_data = {}
+
+    # Load from database if enabled
+    db_config = _load_config_from_database()
+    if db_config:
+        config_data.update(db_config)
+
     # Check if a config file is specified
     config_file = os.getenv("CONFIG_FILE")
 
     if config_file and os.path.exists(config_file):
         # Load settings from YAML file
         with open(config_file, "r") as f:
-            config_data = yaml.safe_load(f) or {}
+            file_config = yaml.safe_load(f) or {}
+        # File config has lower priority than DB, so update (don't overwrite DB values)
+        for key, value in file_config.items():
+            if key not in config_data:
+                config_data[key] = value
 
-        # Create Settings with YAML data as defaults
-        # Environment variables will still override these
-        return Settings(**config_data)
+    # Create Settings with merged config data as defaults
+    # Environment variables will still override these
+    return Settings(**config_data)
 
-    return Settings()
+
+def _load_config_from_database() -> Dict[str, Any]:
+    """Load configuration from database."""
+    try:
+        # Create a temporary settings instance to check DB config
+        temp_settings = Settings()
+        if not temp_settings.database_enabled:
+            return {}
+
+        db_manager = get_db_manager()
+        # Get all config entries from database
+        all_config = db_manager.get_all_config()
+        return all_config
+    except Exception as e:
+        # If database loading fails, log and continue without DB config
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to load config from database: {e}")
+        return {}

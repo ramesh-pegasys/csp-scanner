@@ -16,7 +16,7 @@ class ScheduleRequest(BaseModel):
     batch_size: int = 100
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "daily-extract",
                 "cron_expression": "0 0 * * *",

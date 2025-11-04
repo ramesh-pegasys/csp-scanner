@@ -72,7 +72,7 @@ class ExtractionRequest(BaseModel):
     batch_size: int = 100
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "provider": "aws",
                 "services": ["ec2", "s3"],
@@ -88,7 +88,7 @@ class ExtractionResponse(BaseModel):
     message: str
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "job_id": "job-123",
                 "message": "Extraction started successfully",

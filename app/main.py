@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from typing import Any, Dict
 
-from app.api.routes import extraction, schedules, health
+from app.api.routes import extraction, schedules, health, config
 from app.core.config import get_settings
 from app.services.registry import ExtractorRegistry
 from app.services.orchestrator import ExtractionOrchestrator
@@ -51,6 +51,23 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     # Startup
     logger.info("Starting Cloud Artifact Extractor")
+
+    # Initialize database if enabled
+    if settings.database_enabled:
+        logger.info("Initializing database...")
+        try:
+            from app.models.database import init_database, get_db_manager
+
+            init_database(settings.database_url)
+            db_manager = get_db_manager()
+            if db_manager.is_database_available():
+                logger.info("Database initialized and available")
+            else:
+                logger.warning("Database initialized but not accessible - config features will be limited")
+        except Exception as e:
+            logger.error(f"Failed to initialize database: {e}")
+            logger.warning("Database features will not be available")
+            # Don't fail startup if DB is optional
 
     # Initialize cloud sessions based on enabled providers
     sessions: Dict[CloudProvider, Any] = {}
@@ -202,6 +219,7 @@ app = CustomOpenAPIFastAPI(
 # Include routers with versioned API prefix
 app.include_router(extraction.router, prefix="/api/v1/extraction", tags=["extraction"])  # type: ignore[attr-defined]
 app.include_router(schedules.router, prefix="/api/v1/schedules", tags=["schedules"])  # type: ignore[attr-defined]
+app.include_router(config.router, prefix="/api/v1/config", tags=["config"])  # type: ignore[attr-defined]
 app.include_router(health.router, tags=["health"])  # Register at root level, no prefix
 
 
