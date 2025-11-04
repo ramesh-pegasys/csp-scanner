@@ -55,9 +55,6 @@ enabled_providers:
   - aws
   - azure
   - gcp
-```
-
-**Environment Variables:**
 ```bash
 export ENABLED_PROVIDERS='["aws", "azure", "gcp"]'
 ```yaml

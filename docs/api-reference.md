@@ -4,7 +4,6 @@ title: API Reference
 nav_order: 8
 ---
 
-# API Reference
 
 This document provides comprehensive documentation for the Cloud Artifact Extractor's REST API endpoints.
 
@@ -91,7 +90,6 @@ List all enabled cloud providers.
 
 List all available services across enabled providers.
 
-**Query Parameters:**
 - `provider` (optional): Filter by specific provider (`aws`, `azure`, `gcp`)
 
 **Examples:**

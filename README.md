@@ -68,9 +68,6 @@ The Cloud Artifact Extractor can be deployed to multiple cloud platforms and Kub
   - Workload Identity integration
   - Enterprise-grade orchestration
 
-### Deployment Prerequisites
-
-**General:**
 - Docker installed
 - Container image built: `docker build -t cloud-artifact-extractor:latest -f Dockerfile .`
 
