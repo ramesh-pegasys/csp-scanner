@@ -68,6 +68,9 @@ class AegisPolicyScannerTransport:
         aws_accounts = config.get("aws_accounts", [])
         for account in aws_accounts:
             account_id = account.get("account_id")
+            if not account_id:
+                logger.warning("Missing account_id in AWS config entry, skipping.")
+                continue
             for region in account.get("regions", []):
                 region_name = region["name"] if isinstance(region, dict) else region
                 policy_name = (
@@ -82,6 +85,9 @@ class AegisPolicyScannerTransport:
         gcp_projects = config.get("gcp_projects", [])
         for project in gcp_projects:
             project_id = project.get("project_id")
+            if not project_id:
+                logger.warning("Missing project_id in GCP config entry, skipping.")
+                continue
             for region in project.get("regions", []):
                 region_name = region["name"] if isinstance(region, dict) else region
                 policy_name = (
@@ -96,6 +102,9 @@ class AegisPolicyScannerTransport:
         azure_subs = config.get("azure_subscriptions", [])
         for sub in azure_subs:
             sub_id = sub.get("subscription_id")
+            if not sub_id:
+                logger.warning("Missing subscription_id in Azure config entry, skipping.")
+                continue
             for location in sub.get("locations", []):
                 location_name = (
                     location["name"] if isinstance(location, dict) else location
@@ -108,28 +117,7 @@ class AegisPolicyScannerTransport:
                 if policy_name:
                     labels_value += f",policy:{policy_name}"
                 labels[labels_key] = labels_value
-            return labels
         return labels
-        self.headers = {
-            "Content-Type": "application/x-yaml",
-            "Authorization": f"Bearer {self.aegis_token}",
-        }
-        # Proxy support for AsyncClient
-        proxy_url = os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY")
-        if proxy_url:
-            self.client = httpx.AsyncClient(
-                proxy=proxy_url, verify=not self.allow_insecure_ssl
-            )
-        else:
-            self.client = httpx.AsyncClient(verify=not self.allow_insecure_ssl)
-        # NO_PROXY is handled by httpx via environment variable
-
-        # Throttling
-        self._semaphore = None
-        if self.max_concurrent_requests > 0:
-            import asyncio
-
-            self._semaphore = asyncio.Semaphore(self.max_concurrent_requests)
 
     @retry(
         stop=stop_after_attempt(3),

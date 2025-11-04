@@ -59,7 +59,7 @@ class DatabaseManager:
             db_name = os.getenv("CSP_SCANNER_DATABASE_NAME", "csp_scanner")
             db_user = os.getenv("CSP_SCANNER_DATABASE_USER")
             db_password = os.getenv("CSP_SCANNER_DATABASE_PASSWORD")
-            
+
             if db_user and db_password:
                 database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
             else:
@@ -163,23 +163,26 @@ class DatabaseManager:
         self.engine.dispose()
 
     # Versioned Configuration Methods
-    
+
     def create_config_version(
-        self, config: Dict[str, Any], description: Optional[str] = None, set_active: bool = True
+        self,
+        config: Dict[str, Any],
+        description: Optional[str] = None,
+        set_active: bool = True,
     ) -> int:
         """
         Create a new configuration version.
-        
+
         Args:
             config: Configuration dictionary
             description: Optional description for this version
             set_active: If True, set this version as active and deactivate others
-            
+
         Returns:
             The version number of the created configuration
         """
         from sqlalchemy import desc
-        
+
         with self.get_session() as session:
             # Get the next version number
             last_version = (
@@ -188,11 +191,11 @@ class DatabaseManager:
                 .first()
             )
             next_version = last_version.version + 1 if last_version else 1  # type: ignore
-            
+
             # If setting as active, deactivate all other versions
             if set_active:
                 session.query(ConfigVersion).update({"is_active": False})
-            
+
             # Create new version
             new_config = ConfigVersion(
                 version=next_version,
@@ -202,9 +205,9 @@ class DatabaseManager:
             )
             session.add(new_config)
             session.commit()
-            
+
             return next_version  # type: ignore
-    
+
     def get_active_config(self) -> Optional[Dict[str, Any]]:
         """Get the currently active configuration."""
         with self.get_session() as session:
@@ -214,7 +217,7 @@ class DatabaseManager:
                 .first()
             )
             return cast(Dict[str, Any], active_config.config) if active_config else None
-    
+
     def get_config_version(self, version: int) -> Optional[Dict[str, Any]]:
         """Get a specific configuration version."""
         with self.get_session() as session:
@@ -224,11 +227,11 @@ class DatabaseManager:
                 .first()
             )
             return cast(Dict[str, Any], config.config) if config else None
-    
+
     def list_config_versions(self, limit: int = 50) -> List[Dict[str, Any]]:
         """List all configuration versions with metadata."""
         from sqlalchemy import desc
-        
+
         with self.get_session() as session:
             versions = (
                 session.query(ConfigVersion)
@@ -236,27 +239,31 @@ class DatabaseManager:
                 .limit(limit)
                 .all()
             )
-            
+
             return [
                 {
                     "id": v.id,
                     "version": v.version,
                     "is_active": v.is_active,
                     "description": v.description,
-                    "created_at": v.created_at.isoformat(),
-                    "updated_at": v.updated_at.isoformat(),
+                    "created_at": (
+                        v.created_at.isoformat() if v.created_at is not None else None
+                    ),
+                    "updated_at": (
+                        v.updated_at.isoformat() if v.updated_at is not None else None
+                    ),
                     "config": v.config,
                 }
                 for v in versions
             ]
-    
+
     def activate_config_version(self, version: int) -> bool:
         """
         Activate a specific configuration version.
-        
+
         Args:
             version: The version number to activate
-            
+
         Returns:
             True if successful, False if version not found
         """
@@ -267,28 +274,28 @@ class DatabaseManager:
                 .filter(ConfigVersion.version == version)
                 .first()
             )
-            
+
             if not target_config:
                 return False
-            
+
             # Deactivate all versions
             session.query(ConfigVersion).update({"is_active": False})
-            
+
             # Activate target version
             target_config.is_active = True  # type: ignore
             target_config.updated_at = func.now()  # type: ignore
-            
+
             session.commit()
             return True
-    
+
     def delete_config_version(self, version: int) -> bool:
         """
         Delete a specific configuration version.
         Cannot delete the active version.
-        
+
         Args:
             version: The version number to delete
-            
+
         Returns:
             True if successful, False if version not found or is active
         """
@@ -298,14 +305,14 @@ class DatabaseManager:
                 .filter(ConfigVersion.version == version)
                 .first()
             )
-            
+
             if not config:
                 return False
-            
+
             if config.is_active:  # type: ignore
                 # Cannot delete active version
                 return False
-            
+
             session.delete(config)
             session.commit()
             return True

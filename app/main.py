@@ -5,7 +5,7 @@ import boto3  # type: ignore[import-untyped]
 from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore[import-untyped]
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from app.api.routes import extraction, schedules, health, config
 from app.core.config import get_settings
@@ -165,8 +165,27 @@ async def lifespan(app: FastAPI):
             logger.error(f"Failed to initialize GCP sessions: {e}")
             logger.warning("GCP extractors will not be available")
 
+    enabled_requested: List[CloudProvider] = [
+        provider
+        for provider, enabled in (
+            (CloudProvider.AWS, settings.is_aws_enabled),
+            (CloudProvider.AZURE, settings.is_azure_enabled),
+            (CloudProvider.GCP, settings.is_gcp_enabled),
+        )
+        if enabled
+    ]
+
     if not sessions:
-        logger.warning("No cloud providers enabled at startup. Configuration can be updated via API.")
+        if enabled_requested:
+            logger.error(
+                "Enabled cloud providers failed to initialize: %s",
+                ", ".join(provider.name for provider in enabled_requested),
+            )
+            raise RuntimeError("At least one cloud provider must be enabled")
+
+        logger.warning(
+            "No cloud providers enabled at startup. Configuration can be updated via API."
+        )
 
     # Initialize components
     registry = ExtractorRegistry(sessions, settings)

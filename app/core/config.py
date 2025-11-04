@@ -101,7 +101,9 @@ class Settings(BaseSettings):
     transport_type: str = "http"  # Options: http, filesystem, null
     filesystem_base_dir: str = "./file_collector"
     filesystem_create_dir: bool = True
-    allow_insecure_ssl: bool = True  # Allow insecure HTTPS connections (self-signed certs accepted by default)
+    allow_insecure_ssl: bool = (
+        True  # Allow insecure HTTPS connections (self-signed certs accepted by default)
+    )
 
     # Orchestration Configuration
     max_concurrent_extractors: int = 10
@@ -221,7 +223,7 @@ def get_settings() -> Settings:
     4. .env file (lowest priority, handled by pydantic-settings)
     """
     config_data = {}
-    
+
     logger = logging.getLogger(__name__)
 
     # Load from database if enabled
@@ -260,8 +262,10 @@ def get_settings() -> Settings:
     logger.info(f"Creating Settings with {len(config_data)} config keys")
     logger.debug(f"Config data keys: {list(config_data.keys())}")
     settings = Settings(**config_data)
-    
-    logger.info(f"Settings created: debug={settings.debug}, max_concurrent_extractors={settings.max_concurrent_extractors}")
+
+    logger.info(
+        f"Settings created: debug={settings.debug}, max_concurrent_extractors={settings.max_concurrent_extractors}"
+    )
 
     # Set up debug logging if enabled
 
@@ -281,29 +285,35 @@ def _load_config_from_database() -> Dict[str, Any]:
         # Check if database is enabled via environment variable
         db_enabled = os.getenv("CSP_SCANNER_DATABASE_ENABLED", "false").lower()
         logger.info(f"CSP_SCANNER_DATABASE_ENABLED env var: {db_enabled}")
-        
+
         if db_enabled != "true":
-            logger.info("Database config loading skipped (CSP_SCANNER_DATABASE_ENABLED != 'true')")
+            logger.info(
+                "Database config loading skipped (CSP_SCANNER_DATABASE_ENABLED != 'true')"
+            )
             return {}
 
         logger.info("Attempting to load config from database...")
         db_manager = get_db_manager()
         # Get the active configuration version
         active_config = db_manager.get_active_config()
-        
+
         if active_config:
-            logger.info(f"Successfully loaded active config from database with {len(active_config)} keys")
+            logger.info(
+                f"Successfully loaded active config from database with {len(active_config)} keys"
+            )
             logger.info(f"Active config keys: {list(active_config.keys())}")
             # Log a few key values to verify content
-            if 'debug' in active_config:
+            if "debug" in active_config:
                 logger.info(f"  debug = {active_config['debug']}")
-            if 'enabled_providers' in active_config:
-                logger.info(f"  enabled_providers = {active_config['enabled_providers']}")
-            if 'aws_accounts' in active_config:
+            if "enabled_providers" in active_config:
+                logger.info(
+                    f"  enabled_providers = {active_config['enabled_providers']}"
+                )
+            if "aws_accounts" in active_config:
                 logger.info(f"  aws_accounts = {active_config['aws_accounts']}")
         else:
             logger.warning("No active configuration found in database")
-            
+
         return active_config if active_config else {}
     except Exception as e:
         # If database loading fails, log and continue without DB config
