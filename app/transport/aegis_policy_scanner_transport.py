@@ -26,6 +26,7 @@ class AegisPolicyScannerTransport:
             "max_concurrent_requests", 5
         )
         self.max_retries = transport_config.get("max_retries", 3)
+        self.allow_insecure_ssl = transport_config.get("allow_insecure_ssl", False)
         # Static labels from config
         static_labels = transport_config.get("labels", {})
         # Dynamic labels for cloud resources
@@ -47,9 +48,9 @@ class AegisPolicyScannerTransport:
         # Proxy support for AsyncClient
         proxy_url = os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY")
         if proxy_url:
-            self.client = httpx.AsyncClient(proxy=proxy_url)
+            self.client = httpx.AsyncClient(proxy=proxy_url, verify=not self.allow_insecure_ssl)
         else:
-            self.client = httpx.AsyncClient()
+            self.client = httpx.AsyncClient(verify=not self.allow_insecure_ssl)
         # NO_PROXY is handled by httpx via environment variable
 
         # Throttling
@@ -114,9 +115,9 @@ class AegisPolicyScannerTransport:
         # Proxy support for AsyncClient
         proxy_url = os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY")
         if proxy_url:
-            self.client = httpx.AsyncClient(proxy=proxy_url)
+            self.client = httpx.AsyncClient(proxy=proxy_url, verify=not self.allow_insecure_ssl)
         else:
-            self.client = httpx.AsyncClient()
+            self.client = httpx.AsyncClient(verify=not self.allow_insecure_ssl)
         # NO_PROXY is handled by httpx via environment variable
 
         # Throttling

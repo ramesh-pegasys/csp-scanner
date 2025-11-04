@@ -98,6 +98,7 @@ class Settings(BaseSettings):
     transport_type: str = "http"  # Options: http, filesystem, null
     filesystem_base_dir: str = "./file_collector"
     filesystem_create_dir: bool = True
+    allow_insecure_ssl: bool = False  # Allow insecure HTTPS connections (not recommended for production)
 
     # Orchestration Configuration
     max_concurrent_extractors: int = 10
@@ -158,6 +159,7 @@ class Settings(BaseSettings):
                 "api_key": getattr(self, "scanner_api_key", None),
                 "timeout_seconds": getattr(self, "transport_timeout_seconds", 30),
                 "max_retries": getattr(self, "transport_max_retries", 3),
+                "allow_insecure_ssl": getattr(self, "allow_insecure_ssl", False),
                 "headers": {
                     "Content-Type": "application/json",
                     "User-Agent": f"{getattr(self, 'app_name', 'App')}/1.0",

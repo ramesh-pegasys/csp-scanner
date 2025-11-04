@@ -16,6 +16,7 @@ transport:
   # Token should be set in environment: AEGIS_TOKEN
   max_concurrent_requests: 5
   max_retries: 3
+  allow_insecure_ssl: false  # Allow insecure HTTPS connections (not recommended for production)
   labels:
     env: "dev"
     team: "security"

@@ -32,6 +32,7 @@ transport:
   type: "filesystem"
   base_dir: "./file_collector"
   create_dir: true
+  allow_insecure_ssl: false  # Allow insecure HTTPS connections (not recommended for production)
 
 # # JWT Authentication Configuration
 # jwt:
