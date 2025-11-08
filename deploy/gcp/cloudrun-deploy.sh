@@ -32,6 +32,11 @@ AZURE_CLIENT_SECRET_SECRET="${APP_NAME}-azure-client-secret"
 JWT_SECRET_KEY_SECRET="${APP_NAME}-jwt-secret-key"
 JWT_ALGORITHM_SECRET="${APP_NAME}-jwt-algorithm"
 JWT_EXPIRE_DAYS_SECRET="${APP_NAME}-jwt-expire-days"
+DB_HOST_SECRET="${APP_NAME}-db-host"
+DB_PORT_SECRET="${APP_NAME}-db-port"
+DB_NAME_SECRET="${APP_NAME}-db-name"
+DB_USER_SECRET="${APP_NAME}-db-user"
+DB_PASSWORD_SECRET="${APP_NAME}-db-password"
 
 # Colors for output
 RED='\033[0;31m'
@@ -63,7 +68,8 @@ gcloud services enable \
     artifactregistry.googleapis.com \
     cloudscheduler.googleapis.com \
     cloudtasks.googleapis.com \
-    logging.googleapis.com
+    logging.googleapis.com \
+    secretmanager.googleapis.com
 
 # Create Artifact Registry repository
 echo -e "${YELLOW}Setting up Artifact Registry...${NC}"
@@ -106,6 +112,11 @@ gcloud projects add-iam-policy-binding ${GCP_PROJECT_ID} \
     --role=roles/logging.logWriter \
     --condition=None 2>/dev/null || true
 
+gcloud projects add-iam-policy-binding ${GCP_PROJECT_ID} \
+    --member=serviceAccount:${SERVICE_ACCOUNT} \
+    --role=roles/secretmanager.secretAccessor \
+    --condition=None 2>/dev/null || true
+
 
 # Secret management if --withSecrets is passed
 if [ "$WITH_SECRETS" = true ]; then
@@ -140,7 +151,7 @@ if [ "$WITH_SECRETS" = true ]; then
         exit 1
     fi
 
-    # Create/update secrets for AWS, AZURE, JWT
+    # Create/update secrets for AWS, AZURE, JWT, and Database
     [ -n "$AWS_ACCESS_KEY_ID" ] && create_or_update_secret "$AWS_ACCESS_KEY_ID_SECRET" "$AWS_ACCESS_KEY_ID"
     [ -n "$AWS_SECRET_ACCESS_KEY" ] && create_or_update_secret "$AWS_SECRET_ACCESS_KEY_SECRET" "$AWS_SECRET_ACCESS_KEY"
     [ -n "$AWS_SESSION_TOKEN" ] && create_or_update_secret "$AWS_SESSION_TOKEN_SECRET" "$AWS_SESSION_TOKEN"
@@ -150,6 +161,11 @@ if [ "$WITH_SECRETS" = true ]; then
     [ -n "$JWT_SECRET_KEY" ] && create_or_update_secret "$JWT_SECRET_KEY_SECRET" "$JWT_SECRET_KEY"
     [ -n "$JWT_ALGORITHM" ] && create_or_update_secret "$JWT_ALGORITHM_SECRET" "$JWT_ALGORITHM"
     [ -n "$JWT_EXPIRE_DAYS" ] && create_or_update_secret "$JWT_EXPIRE_DAYS_SECRET" "$JWT_EXPIRE_DAYS"
+    [ -n "$CSP_SCANNER_DATABASE_HOST" ] && create_or_update_secret "$DB_HOST_SECRET" "$CSP_SCANNER_DATABASE_HOST"
+    [ -n "$CSP_SCANNER_DATABASE_PORT" ] && create_or_update_secret "$DB_PORT_SECRET" "$CSP_SCANNER_DATABASE_PORT"
+    [ -n "$CSP_SCANNER_DATABASE_NAME" ] && create_or_update_secret "$DB_NAME_SECRET" "$CSP_SCANNER_DATABASE_NAME"
+    [ -n "$CSP_SCANNER_DATABASE_USER" ] && create_or_update_secret "$DB_USER_SECRET" "$CSP_SCANNER_DATABASE_USER"
+    [ -n "$CSP_SCANNER_DATABASE_PASSWORD" ] && create_or_update_secret "$DB_PASSWORD_SECRET" "$CSP_SCANNER_DATABASE_PASSWORD"
 fi
 
 # Deploy Cloud Run with secrets mounted
@@ -168,8 +184,8 @@ gcloud run deploy ${APP_NAME} \
         --timeout=3600 \
         --service-account=${SERVICE_ACCOUNT} \
         --project=${GCP_PROJECT_ID} \
-        --set-secrets="CONFIG_FILE=${CONFIG_SECRET}:latest,AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_SECRET}:latest,AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_SECRET}:latest,AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN_SECRET}:latest,AZURE_TENANT_ID=${AZURE_TENANT_ID_SECRET}:latest,AZURE_CLIENT_ID=${AZURE_CLIENT_ID_SECRET}:latest,AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET_SECRET}:latest,JWT_SECRET_KEY=${JWT_SECRET_KEY_SECRET}:latest,JWT_ALGORITHM=${JWT_ALGORITHM_SECRET}:latest,JWT_EXPIRE_DAYS=${JWT_EXPIRE_DAYS_SECRET}:latest" \
-    --set-env-vars="ENVIRONMENT=production,DEBUG=false,MAX_CONCURRENT_EXTRACTORS=20,BATCH_SIZE=200,BATCH_DELAY_SECONDS=0.1,TRANSPORT_TYPE=null,TRANSPORT_TIMEOUT_SECONDS=60,TRANSPORT_MAX_RETRIES=5,HTTP_ENDPOINT_URL=${HTTP_ENDPOINT_URL:-}" 
+        --set-secrets="CONFIG_FILE=${CONFIG_SECRET}:latest,AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_SECRET}:latest,AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_SECRET}:latest,AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN_SECRET}:latest,AZURE_TENANT_ID=${AZURE_TENANT_ID_SECRET}:latest,AZURE_CLIENT_ID=${AZURE_CLIENT_ID_SECRET}:latest,AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET_SECRET}:latest,JWT_SECRET_KEY=${JWT_SECRET_KEY_SECRET}:latest,JWT_ALGORITHM=${JWT_ALGORITHM_SECRET}:latest,JWT_EXPIRE_DAYS=${JWT_EXPIRE_DAYS_SECRET}:latest,CSP_SCANNER_DATABASE_HOST=${DB_HOST_SECRET}:latest,CSP_SCANNER_DATABASE_PORT=${DB_PORT_SECRET}:latest,CSP_SCANNER_DATABASE_NAME=${DB_NAME_SECRET}:latest,CSP_SCANNER_DATABASE_USER=${DB_USER_SECRET}:latest,CSP_SCANNER_DATABASE_PASSWORD=${DB_PASSWORD_SECRET}:latest" \
+    --set-env-vars="ENVIRONMENT=production,DEBUG=false,MAX_CONCURRENT_EXTRACTORS=20,BATCH_SIZE=200,BATCH_DELAY_SECONDS=0.1,TRANSPORT_TYPE=null,TRANSPORT_TIMEOUT_SECONDS=60,TRANSPORT_MAX_RETRIES=5,HTTP_ENDPOINT_URL=${HTTP_ENDPOINT_URL:-},CSP_SCANNER_DATABASE_ENABLED=true" 
 
 # Get service URL
 SERVICE_URL=$(gcloud run services describe ${APP_NAME} \
