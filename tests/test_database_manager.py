@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from app.models.database import DatabaseManager
 
 
@@ -7,6 +9,26 @@ def _make_sqlite_url(tmp_path: Path) -> str:
     """Build a sqlite database URL backed by a temporary file."""
     db_file = tmp_path / "db.sqlite"
     return f"sqlite:///{db_file}"
+
+
+@pytest.fixture(autouse=True)
+def stub_mask_sensitive(monkeypatch):
+    """Ensure database manager can mask config even if helper absent."""
+
+    def _noop(config):
+        return config
+
+    monkeypatch.setattr(
+        "app.models.database.mask_sensitive_config", _noop, raising=False
+    )
+
+    import importlib
+
+    config_module = importlib.import_module("app.core.config")
+    if not hasattr(config_module, "mask_sensitive_config"):
+        monkeypatch.setattr(
+            config_module, "mask_sensitive_config", _noop, raising=False
+        )
 
 
 def test_global_config_crud(tmp_path):
@@ -69,6 +91,97 @@ def test_config_version_workflow(tmp_path):
     assert manager.delete_config_version(second_version) is False
     assert manager.delete_config_version(first_version) is True
 
+    manager.close()
+
+
+def test_job_crud_operations(tmp_path):
+    manager = DatabaseManager(_make_sqlite_url(tmp_path))
+
+    job_id = "job-123"
+    manager.create_job(
+        job_id,
+        services=["s3", "ec2"],
+        regions=["us-east-1"],
+        filters={"tag": "prod"},
+        batch_size=50,
+    )
+
+    job = manager.get_job(job_id)
+    assert job is not None
+    assert job["status"] == "running"
+    assert job["services"] == ["s3", "ec2"]
+
+    manager.update_job(
+        job_id,
+        status="completed",
+        total_artifacts=10,
+        successful_artifacts=9,
+        failed_artifacts=1,
+        errors=["one failure"],
+    )
+
+    updated = manager.get_job(job_id)
+    assert updated["status"] == "completed"
+    assert updated["failed_artifacts"] == 1
+    assert updated["errors"] == ["one failure"]
+
+    jobs = manager.list_jobs(status="completed")
+    assert any(j["id"] == job_id for j in jobs)
+
+    # Mark job as older than cutoff to exercise delete_old_jobs
+    from datetime import datetime, timezone, timedelta
+    from app.models.database import ExtractionJob
+
+    with manager.get_session() as session:
+        db_job = session.query(ExtractionJob).filter(ExtractionJob.id == job_id).first()
+        assert db_job is not None
+        db_job.started_at = datetime.now(timezone.utc) - timedelta(days=10)
+        session.commit()
+
+    deleted = manager.delete_old_jobs(days=5)
+    assert deleted == 1
+    assert manager.get_job(job_id) is None
+
+    manager.close()
+
+
+def test_schedule_crud_operations(tmp_path):
+    manager = DatabaseManager(_make_sqlite_url(tmp_path))
+
+    schedule_id = "sched-1"
+    manager.create_schedule(
+        schedule_id,
+        name="Nightly",
+        cron_expression="0 2 * * *",
+        services=["s3"],
+        regions=["us-east-1"],
+        filters={"tag": "nightly"},
+        batch_size=25,
+        description="Nightly scan",
+    )
+
+    schedule = manager.get_schedule(schedule_id)
+    assert schedule is not None
+    assert schedule["is_active"] is True
+
+    manager.update_schedule(
+        schedule_id,
+        paused=True,
+        description="Updated schedule",
+        batch_size=30,
+    )
+
+    updated = manager.get_schedule(schedule_id)
+    assert updated["paused"] is True
+    assert updated["description"] == "Updated schedule"
+    assert updated["batch_size"] == 30
+
+    active_schedules = manager.list_schedules(active_only=True)
+    assert len(active_schedules) == 1
+    assert active_schedules[0]["id"] == schedule_id
+
+    assert manager.delete_schedule(schedule_id) is True
+    assert manager.get_schedule(schedule_id) is None
     manager.close()
 
 

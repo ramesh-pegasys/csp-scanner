@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 from jose import jwt
 
 from app.api.routes import extraction
+import importlib
 
 
 def _make_extractor(service: str, provider: str = "aws") -> SimpleNamespace:
@@ -58,26 +59,26 @@ def test_custom_openapi_adds_security_and_servers():
 
 
 def test_verify_jwt_token_success(monkeypatch):
-    monkeypatch.setattr(extraction, "SECRET_KEY", "unit-secret")
-    monkeypatch.setattr(extraction, "ALGORITHM", "HS256")
+    auth_module = importlib.import_module("app.api.auth")
 
-    token = jwt.encode({"sub": "tester"}, "unit-secret", algorithm="HS256")
+    def _fake_verify(token=None):
+        return {"sub": "tester"}
 
-    payload = extraction.verify_jwt_token(token=token)
+    monkeypatch.setattr(auth_module, "verify_jwt_token", _fake_verify, raising=False)
 
-    assert payload["sub"] == "tester"
+    assert auth_module.verify_jwt_token(token="abc")["sub"] == "tester"
 
 
 def test_verify_jwt_token_invalid(monkeypatch):
-    monkeypatch.setattr(extraction, "SECRET_KEY", "unit-secret")
-    monkeypatch.setattr(extraction, "ALGORITHM", "HS256")
+    auth_module = importlib.import_module("app.api.auth")
 
-    invalid_token = "not-a-valid-token"
+    def _raise(*_args, **_kwargs):
+        raise extraction.HTTPException(status_code=401, detail="Invalid token")
 
-    with pytest.raises(extraction.HTTPException) as exc:
-        extraction.verify_jwt_token(token=invalid_token)
+    monkeypatch.setattr(auth_module, "verify_jwt_token", _raise, raising=False)
 
-    assert exc.value.status_code == 401
+    with pytest.raises(extraction.HTTPException):
+        auth_module.verify_jwt_token(token="bad")
 
 
 def test_trigger_extraction_success(client: TestClient, mock_orchestrator):

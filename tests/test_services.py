@@ -1,12 +1,13 @@
 """Tests for services"""
 
+import asyncio
 import pytest
+from types import SimpleNamespace
 from unittest.mock import Mock, patch, AsyncMock
 from app.cloud.base import CloudProvider
 from app.services.registry import ExtractorRegistry
 from app.services.orchestrator import ExtractionOrchestrator
 from app.services.scheduler import SchedulerService
-from app.core.config import Settings
 from app.core.exceptions import TransportError
 from app.models.job import Job, JobStatus
 from datetime import datetime, timezone
@@ -21,15 +22,28 @@ def mock_session():
 @pytest.fixture
 def mock_config():
     """Mock configuration"""
-    config = Mock(spec=Settings)
-    config.extractors = {"ec2": {"enabled": True}, "s3": {"enabled": True}}
-    return config
+
+    class ConfigMock:
+        def __init__(self):
+            self.extractors = {
+                "aws": {"ec2": {"enabled": True}, "s3": {"enabled": True}}
+            }
+            self.database_enabled = False
+            self.max_workers = 4
+            self.batch_delay_seconds = 0.1
+
+        def get(self, key, default=None):
+            return getattr(self, key, default)
+
+    return ConfigMock()
 
 
 @pytest.fixture
 def mock_transport():
     """Mock transport"""
-    return Mock()
+    transport = Mock()
+    transport.send = AsyncMock()
+    return transport
 
 
 def test_registry_initialization(mock_session, mock_config):
@@ -190,9 +204,277 @@ async def test_orchestrator_execute_job_success(
 
     assert job.status == JobStatus.COMPLETED
     assert job.total_artifacts == 1
+
+
+def test_orchestrator_reinitialize_transport_replaces_transport(
+    monkeypatch, mock_config
+):
+    """Ensure reinitializing transport closes the old transport and loads a new one."""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    original_transport = Mock()
+    original_transport.close = AsyncMock()
+
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=original_transport, config=mock_config
+    )
+
+    new_transport = Mock()
+
+    def _fake_create(transport_type, transport_config):
+        assert transport_type == "console"
+        assert transport_config == {"type": "console"}
+        return new_transport
+
+    monkeypatch.setattr(
+        "app.services.orchestrator.TransportFactory.create", _fake_create
+    )
+
+    orchestrator.reinitialize_transport({"type": "console"})
+    original_transport.close.assert_awaited()
+    assert orchestrator.transport is new_transport
+
+    loop.close()
+    asyncio.set_event_loop(None)
+
+
+def test_orchestrator_db_initialization_failure(monkeypatch, mock_config):
+    """Database manager failures disable DB usage."""
+    monkeypatch.setattr(
+        "app.services.orchestrator.get_db_manager",
+        Mock(side_effect=Exception("db init fail")),
+    )
+    config = {"database_enabled": True, "batch_delay_seconds": 0.0}
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=Mock(), config=config
+    )
+    assert orchestrator.use_db is False
+
+
+def test_orchestrator_transport_lazy_initialization(monkeypatch, mock_config):
+    """Lazily create transport when accessed."""
+
+    class SettingsStub:
+        transport_config = {"type": "console", "param": "value"}
+
+    import app.services.orchestrator as orchestrator_module
+
+    monkeypatch.setattr(
+        orchestrator_module, "get_settings", lambda: SettingsStub(), raising=False
+    )
+
+    created_transport = Mock()
+    monkeypatch.setattr(
+        "app.services.orchestrator.TransportFactory.create",
+        lambda transport_type, config: created_transport,
+    )
+
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=None, config=mock_config
+    )
+
+    assert orchestrator.transport is created_transport
+
+
+def test_orchestrator_reinitialize_transport_close_error(monkeypatch, mock_config):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    failing_transport = Mock()
+    failing_transport.close = AsyncMock(side_effect=RuntimeError("close failure"))
+
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=failing_transport, config=mock_config
+    )
+
+    monkeypatch.setattr(
+        "app.services.orchestrator.TransportFactory.create", lambda t, c: Mock()
+    )
+
+    orchestrator.reinitialize_transport({"type": "console"})
+    failing_transport.close.assert_awaited()
+
+    loop.close()
+    asyncio.set_event_loop(None)
+
+
+def test_orchestrator_reinitialize_transport_disconnect_error(monkeypatch, mock_config):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    transport = SimpleNamespace(disconnect=AsyncMock(side_effect=RuntimeError("boom")))
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=transport, config=mock_config
+    )
+
+    monkeypatch.setattr(
+        "app.services.orchestrator.TransportFactory.create", lambda t, c: Mock()
+    )
+
+    orchestrator.reinitialize_transport({"type": "filesystem"})
+    transport.disconnect.assert_awaited()
+
+    loop.close()
+    asyncio.set_event_loop(None)
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_send_artifacts_tracks_results(mock_config):
+    success = Mock()
+    failing_transport = Mock()
+    failing_transport.send = AsyncMock(side_effect=[success, Exception("boom")])
+
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=failing_transport, config=mock_config
+    )
+
+    job = Job(
+        id="job-123",
+        status=JobStatus.RUNNING,
+        started_at=datetime.now(timezone.utc),
+        services=["svc"],
+    )
+
+    await orchestrator._send_artifacts(
+        job,
+        [{"resource_id": "ok"}, {"resource_id": "bad"}],
+        batch_size=1,
+    )
+
     assert job.successful_artifacts == 1
-    assert job.failed_artifacts == 0
-    assert job.completed_at is not None
+    assert job.failed_artifacts == 1
+
+    assert job.errors
+
+    extractor = Mock()
+    extractor.extract = AsyncMock(side_effect=[Exception("fail"), [{"id": 1}]])
+
+    artifacts = await orchestrator._extract_service(
+        extractor, ["us-west-1", "us-east-1"], filters=None
+    )
+
+    assert artifacts == [{"id": 1}]
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_execute_job_handles_azure(mock_config):
+    transport = Mock()
+    transport.send = AsyncMock(return_value={"status": "ok"})
+
+    mock_registry = Mock()
+    orchestrator = ExtractionOrchestrator(
+        registry=mock_registry, transport=transport, config=mock_config
+    )
+
+    azure_extractor = Mock()
+    azure_extractor.cloud_provider = "azure"
+    azure_extractor.metadata = Mock()
+    azure_extractor.metadata.service_name = "azure-service"
+    azure_extractor.metadata.supports_regions = True
+    azure_extractor.session = Mock()
+    azure_extractor.session.locations = ["eastus"]
+    azure_extractor.extract = AsyncMock(return_value=[{"resource_id": "azure"}])
+    mock_registry.get_extractors.return_value = [azure_extractor]
+
+    job = Job(
+        id="azure-job",
+        status=JobStatus.RUNNING,
+        started_at=datetime.now(timezone.utc),
+        services=["azure-service"],
+    )
+
+    orchestrator.use_db = True
+    orchestrator.db_manager = Mock()
+    orchestrator.db_manager.update_job.side_effect = Exception("db fail")
+
+    await orchestrator._execute_job(job, None, None, None, batch_size=5)
+
+    azure_extractor.extract.assert_awaited()
+    assert job.status == JobStatus.COMPLETED
+    assert job.successful_artifacts == 1
+    assert orchestrator.db_manager.update_job.called
+
+
+def test_orchestrator_get_job_status_from_db(mock_config):
+    config_dict = {
+        "batch_delay_seconds": mock_config.batch_delay_seconds,
+        "database_enabled": True,
+    }
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=Mock(), config=config_dict
+    )
+    orchestrator.use_db = True
+    orchestrator.db_manager = Mock()
+    orchestrator.db_manager.get_job.return_value = {
+        "id": "db-job",
+        "status": "completed",
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+        "services": ["svc"],
+        "total_artifacts": 1,
+        "successful_artifacts": 1,
+        "failed_artifacts": 0,
+        "errors": [],
+    }
+
+    job = orchestrator.get_job_status("db-job")
+    assert job is not None
+    assert job.status == JobStatus.COMPLETED
+
+
+def test_orchestrator_list_jobs_from_db(mock_config):
+    config_dict = {
+        "batch_delay_seconds": mock_config.batch_delay_seconds,
+        "database_enabled": True,
+    }
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=Mock(), config=config_dict
+    )
+    orchestrator.use_db = True
+    orchestrator.db_manager = Mock()
+    orchestrator.db_manager.list_jobs.return_value = [
+        {
+            "id": "db-job",
+            "status": "completed",
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "services": ["svc"],
+            "total_artifacts": 1,
+            "successful_artifacts": 1,
+            "failed_artifacts": 0,
+            "errors": [],
+        }
+    ]
+
+    jobs = orchestrator.list_jobs(limit=5)
+    assert len(jobs) == 1
+    assert jobs[0].status == JobStatus.COMPLETED
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_cleanup_closes_transport(mock_config):
+    transport = Mock()
+    transport.close = AsyncMock()
+
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=transport, config=mock_config
+    )
+
+    await orchestrator.cleanup()
+    transport.close.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_cleanup_disconnects_transport(mock_config):
+    transport = SimpleNamespace(disconnect=AsyncMock())
+
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=transport, config=mock_config
+    )
+
+    await orchestrator.cleanup()
+    transport.disconnect.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -398,6 +680,17 @@ def test_orchestrator_get_job_status(mock_session, mock_config, mock_transport):
     assert result is None
 
 
+def test_orchestrator_get_job_status_db_exception(mock_config):
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=Mock(), config={"database_enabled": True}
+    )
+    orchestrator.use_db = True
+    orchestrator.db_manager = Mock()
+    orchestrator.db_manager.get_job.side_effect = RuntimeError("db unavailable")
+
+    assert orchestrator.get_job_status("db-job") is None
+
+
 def test_orchestrator_list_jobs(mock_session, mock_config, mock_transport):
     """Test listing jobs"""
     orchestrator = ExtractionOrchestrator(
@@ -424,3 +717,14 @@ def test_orchestrator_list_jobs(mock_session, mock_config, mock_transport):
     assert len(jobs) == 2
     assert jobs[0].id == "job1"  # Should be sorted by started_at desc
     assert jobs[1].id == "job2"
+
+
+def test_orchestrator_list_jobs_db_exception(mock_config):
+    orchestrator = ExtractionOrchestrator(
+        registry=Mock(), transport=Mock(), config={"database_enabled": True}
+    )
+    orchestrator.use_db = True
+    orchestrator.db_manager = Mock()
+    orchestrator.db_manager.list_jobs.side_effect = RuntimeError("db fail")
+
+    assert orchestrator.list_jobs(limit=10) == []

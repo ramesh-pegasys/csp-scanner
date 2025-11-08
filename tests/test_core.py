@@ -207,18 +207,17 @@ def test_settings_provider_enabled_properties():
     assert settings_none.is_gcp_enabled is False
 
 
-def test_settings_database_url_with_credentials():
+def test_settings_database_url_with_credentials(monkeypatch):
+    monkeypatch.delenv("CSP_SCANNER_DATABASE_USER", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE_PASSWORD", raising=False)
     settings = Settings(
-        database={
-            "enabled": True,
-            "user": "user",
-            "password": "pass",
-            "host": "db.example.com",
-            "port": 5433,
-            "name": "custom_db",
-        }
+        database_enabled=True,
+        database_user="user",
+        database_password="pass",
+        database_host="db.example.com",
+        database_port=5433,
+        database_name="custom_db",
     )
-
     assert (
         settings.database_url == "postgresql://user:pass@db.example.com:5433/custom_db"
     )
@@ -249,6 +248,19 @@ def clear_config_env(monkeypatch):
     monkeypatch.delenv("GCP_DEFAULT_REGION", raising=False)
     monkeypatch.delenv("DATABASE_ENABLED", raising=False)
     monkeypatch.delenv("GCP_CREDENTIALS_PATH", raising=False)
+    # Clear nested database env vars that override Settings defaults
+    monkeypatch.delenv("CSP_SCANNER_DATABASE__ENABLED", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE__HOST", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE__PORT", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE__NAME", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE__USER", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE__PASSWORD", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE_ENABLED", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE_HOST", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE_PORT", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE_NAME", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE_USER", raising=False)
+    monkeypatch.delenv("CSP_SCANNER_DATABASE_PASSWORD", raising=False)
 
 
 def test_settings_aws_accounts_list():
@@ -347,12 +359,10 @@ def test_settings_gcp_projects_list():
 def test_settings_database_url_without_credentials():
     """Test database URL construction without user credentials"""
     settings = Settings(
-        database={
-            "enabled": True,
-            "host": "db.example.com",
-            "port": 5432,
-            "name": "testdb",
-        }
+        database_enabled=True,
+        database_host="db.example.com",
+        database_port=5432,
+        database_name="testdb",
     )
     expected = "postgresql://db.example.com:5432/testdb"
     print(f"Expected: {expected}, Actual: {settings.database_url}")

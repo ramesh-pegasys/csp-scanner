@@ -319,3 +319,25 @@ def _load_config_from_database() -> Dict[str, Any]:
         # If database loading fails, log and continue without DB config
         logger.error(f"Failed to load config from database: {e}", exc_info=True)
         return {}
+
+
+def mask_sensitive_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Mask sensitive values in the config dict by replacing them with asterisks or environment variable references.
+    """
+    SENSITIVE_KEYS = {
+        "aws_access_key_id",
+        "aws_secret_access_key",
+        "azure_client_secret",
+        "gcp_credentials_path",
+        "api_key",
+        "scanner_api_key",
+        "database_password",
+    }
+    masked = {}
+    for k, v in config.items():
+        if k in SENSITIVE_KEYS and v is not None:
+            masked[k] = "***MASKED***"
+        else:
+            masked[k] = v
+    return masked
