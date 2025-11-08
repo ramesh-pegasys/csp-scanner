@@ -328,37 +328,39 @@ transport:
   compression: "gzip"
 ```
 
-### 8. Database Issues (if using database transport)
+### 8. Database Issues
 
 #### Connection Refused
 
-**Error:** `Connection refused` or `Can't connect to MySQL server`
+**Error:** `Connection refused` or `Can't connect to database server`
 
 **Solutions:**
 ```bash
-# Check database service
-docker ps | grep mysql
+# Check if the database container is running
+docker ps | grep postgres
 
-# Test connection
-mysql -h localhost -u user -p
+# Test the connection from the application container
+docker exec -it <app_container_id> psql -h <db_host> -U <db_user> -d <db_name>
 
-# Check connection string
-# Verify host, port, credentials in config
+# Verify the database connection string in your configuration
 ```
 
-#### Migration Issues
+#### Migration Errors
 
 **Error:** `Migration failed` or `Table doesn't exist`
 
 **Solutions:**
 ```bash
-# Run migrations manually
+# Ensure the database is running and accessible before starting the application
+# The application automatically runs migrations on startup
+# If you need to run migrations manually:
 alembic upgrade head
 
-# Check migration status
+# To check the current migration version:
 alembic current
 
-# Reset database (CAUTION: destroys data)
+# In case of a failed migration, you might need to downgrade and then upgrade again
+# WARNING: This might cause data loss
 alembic downgrade base
 alembic upgrade head
 ```

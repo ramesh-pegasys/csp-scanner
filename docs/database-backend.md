@@ -45,13 +45,32 @@ Stores information about extraction schedules.
 - `created_at` (DateTime with timezone) - Record creation timestamp
 - `updated_at` (DateTime with timezone) - Last update timestamp
 
+#### 3. `csp_scanner_config`
+Stores the application's configuration settings.
+
+**Columns:**
+- `id` (String, Primary Key) - Unique identifier for the configuration entry.
+- `config` (JSON) - The configuration data.
+- `created_at` (DateTime with timezone) - Timestamp of when the configuration was created.
+- `updated_at` (DateTime with timezone) - Timestamp of when the configuration was last updated.
+
+#### 4. `csp_scanner_config_versions`
+Stores versions of the application's configuration settings.
+
+**Columns:**
+- `id` (Integer, Primary Key) - Unique identifier for the configuration version.
+- `version` (Integer, indexed) - The version number.
+- `config` (JSON) - The configuration data for this version.
+- `created_at` (DateTime with timezone) - Timestamp of when this version was created.
+
 ## Implementation Details
 
 ### 1. Database Models (`app/models/database.py`)
-- Added `ExtractionJob` and `Schedule` SQLAlchemy models
+- Added `ExtractionJob`, `Schedule`, `ConfigEntry`, and `ConfigVersion` SQLAlchemy models
 - Added CRUD methods to `DatabaseManager` class:
   - **Job methods:** `create_job()`, `get_job()`, `update_job()`, `list_jobs()`, `delete_old_jobs()`
   - **Schedule methods:** `create_schedule()`, `get_schedule()`, `update_schedule()`, `list_schedules()`, `delete_schedule()`
+  - **Config methods:** `create_config()`, `get_config()`, `update_config()`, `create_config_version()`, `get_config_version()`
 
 ### 2. Orchestrator Updates (`app/services/orchestrator.py`)
 - Added database integration to `ExtractionOrchestrator`
@@ -188,16 +207,12 @@ For existing deployments:
 
 ## Testing
 
-The implementation includes:
-- Type checking passes (no errors)
-- Graceful error handling
-- Logging at appropriate levels
-- Backwards compatibility with existing tests
+The database-related tests are designed to be self-contained and not interfere with each other. This is achieved by using a temporary, file-based SQLite database for each test function. This ensures that the database logic is tested in isolation.
 
 To test database functionality:
 ```bash
-# Run tests with database enabled
-CSP_SCANNER_DATABASE_ENABLED=true pytest tests/
+# Run all tests, including database tests
+pytest
 
 # Run specific database tests
 pytest tests/test_database_manager.py -v

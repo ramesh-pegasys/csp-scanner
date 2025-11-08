@@ -73,6 +73,29 @@ export DEBUG="false"
 export LOG_LEVEL="INFO"
 ```
 
+### Database Configuration
+
+```yaml
+# config/production.yaml
+database:
+  enabled: true
+  host: "localhost"
+  port: 5432
+  name: "csp_scanner"
+  user: "your_user"
+  password: "your_password"
+```
+
+**Environment Variables:**
+```bash
+export CSP_SCANNER_DATABASE_ENABLED="true"
+export CSP_SCANNER_DATABASE_HOST="localhost"
+export CSP_SCANNER_DATABASE_PORT="5432"
+export CSP_SCANNER_DATABASE_NAME="csp_scanner"
+export CSP_SCANNER_DATABASE_USER="your_user"
+export CSP_SCANNER_DATABASE_PASSWORD="your_password"
+```
+
 ## Cloud Provider Configuration
 
 ### AWS Configuration
