@@ -1,0 +1,143 @@
+{
+  "provider": "gcp",
+  "project_id": "first-project",
+  "region": "global",
+  "service": "storage",
+  "resource_type": "bucket",
+  "timestamp": "2025-11-05T10:30:00Z",
+  "artifacts": [
+    {
+      "id": "first-project-prod-data",
+      "name": "first-project-prod-data",
+      "location": "US",
+      "location_type": "multi-region",
+      "storage_class": "STANDARD",
+      "time_created": "2025-09-15T10:00:00.000Z",
+      "updated": "2025-11-01T14:30:00.000Z",
+      "versioning": {
+        "enabled": true
+      },
+      "lifecycle": {
+        "rule": [
+          {
+            "action": {
+              "type": "Delete"
+            },
+            "condition": {
+              "age": 90,
+              "is_live": false
+            }
+          }
+        ]
+      },
+      "iam_configuration": {
+        "uniform_bucket_level_access": {
+          "enabled": true,
+          "locked_time": "2025-12-15T10:00:00.000Z"
+        },
+        "public_access_prevention": "enforced"
+      },
+      "encryption": {
+        "default_kms_key_name": "projects/first-project/locations/us/keyRings/prod-keyring/cryptoKeys/bucket-key"
+      },
+      "labels": {
+        "environment": "production",
+        "team": "data-platform",
+        "data-classification": "confidential"
+      },
+      "logging": {
+        "log_bucket": "first-project-logs",
+        "log_object_prefix": "storage-logs/"
+      },
+      "website": null,
+      "cors": [],
+      "retention_policy": null
+    },
+    {
+      "id": "first-project-dev-data",
+      "name": "first-project-dev-data",
+      "location": "US-CENTRAL1",
+      "location_type": "region",
+      "storage_class": "STANDARD",
+      "time_created": "2025-09-20T14:00:00.000Z",
+      "updated": "2025-10-25T09:15:00.000Z",
+      "versioning": {
+        "enabled": false
+      },
+      "lifecycle": {
+        "rule": [
+          {
+            "action": {
+              "type": "Delete"
+            },
+            "condition": {
+              "age": 30
+            }
+          }
+        ]
+      },
+      "iam_configuration": {
+        "uniform_bucket_level_access": {
+          "enabled": true,
+          "locked_time": "2025-12-20T14:00:00.000Z"
+        },
+        "public_access_prevention": "enforced"
+      },
+      "labels": {
+        "environment": "development",
+        "team": "data-platform"
+      },
+      "logging": null,
+      "website": null,
+      "cors": [
+        {
+          "origin": ["https://dev.example.com"],
+          "method": ["GET", "POST"],
+          "response_header": ["Content-Type"],
+          "max_age_seconds": 3600
+        }
+      ],
+      "retention_policy": null
+    },
+    {
+      "id": "first-project-public-assets",
+      "name": "first-project-public-assets",
+      "location": "US",
+      "location_type": "multi-region",
+      "storage_class": "STANDARD",
+      "time_created": "2025-08-10T10:00:00.000Z",
+      "updated": "2025-11-03T16:45:00.000Z",
+      "versioning": {
+        "enabled": false
+      },
+      "lifecycle": null,
+      "iam_configuration": {
+        "uniform_bucket_level_access": {
+          "enabled": true,
+          "locked_time": "2025-11-10T10:00:00.000Z"
+        },
+        "public_access_prevention": "inherited"
+      },
+      "labels": {
+        "environment": "production",
+        "team": "frontend",
+        "content-type": "static-assets"
+      },
+      "logging": null,
+      "website": {
+        "main_page_suffix": "index.html",
+        "not_found_page": "404.html"
+      },
+      "cors": [
+        {
+          "origin": ["*"],
+          "method": ["GET"],
+          "response_header": ["Content-Type"],
+          "max_age_seconds": 86400
+        }
+      ],
+      "retention_policy": null
+    }
+  ],
+  "total_count": 3
+}

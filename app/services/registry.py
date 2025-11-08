@@ -90,20 +90,12 @@ class ExtractorRegistry:
         aws_sessions = self.sessions[CloudProvider.AWS]
         aws_config = self.config.extractors.get("aws", {})
 
-        # Handle both list and single session
-        if isinstance(aws_sessions, list):
-            session_entries = aws_sessions
-        else:
-            # Fallback: single session object, wrap in list
-            session_entries = [
-                {
-                    "session": aws_sessions,
-                    "account_id": getattr(aws_sessions, "account_id", "unknown"),
-                    "regions": getattr(aws_sessions, "regions", ["us-west-2"]),
-                }
-            ]
+        # AWS sessions should always be a list
+        if not isinstance(aws_sessions, list):
+            logger.error("AWS sessions is not a list, skipping AWS extractors")
+            return
 
-        for aws_entry in session_entries:
+        for aws_entry in aws_sessions:
             aws_session = aws_entry["session"]
             for extractor_class in extractor_classes:
                 # Key includes account_id for uniqueness if needed
@@ -139,22 +131,12 @@ class ExtractorRegistry:
             azure_sessions = self.sessions[CloudProvider.AZURE]
             azure_config = self.config.extractors.get("azure", {})
 
-            # Handle both list and single session
-            if isinstance(azure_sessions, list):
-                session_entries = azure_sessions
-            else:
-                # Fallback: single session object, wrap in list
-                session_entries = [
-                    {
-                        "session": azure_sessions,
-                        "subscription_id": getattr(
-                            azure_sessions, "subscription_id", "unknown"
-                        ),
-                        "locations": getattr(azure_sessions, "locations", ["eastus"]),
-                    }
-                ]
+            # Azure sessions should always be a list
+            if not isinstance(azure_sessions, list):
+                logger.error("Azure sessions is not a list, skipping Azure extractors")
+                return
 
-            for az_entry in session_entries:
+            for az_entry in azure_sessions:
                 azure_session = az_entry["session"]
                 for extractor_class in extractor_classes:
                     # Key includes subscription_id for uniqueness if needed
@@ -233,20 +215,12 @@ class ExtractorRegistry:
             gcp_sessions = self.sessions[CloudProvider.GCP]
             gcp_config = self.config.extractors.get("gcp", {})
 
-            # Handle both list and single session
-            if isinstance(gcp_sessions, list):
-                session_entries = gcp_sessions
-            else:
-                # Fallback: single session object, wrap in list
-                session_entries = [
-                    {
-                        "session": gcp_sessions,
-                        "project_id": getattr(gcp_sessions, "project_id", "unknown"),
-                        "regions": getattr(gcp_sessions, "regions", ["us-central1"]),
-                    }
-                ]
+            # GCP sessions should always be a list
+            if not isinstance(gcp_sessions, list):
+                logger.error("GCP sessions is not a list, skipping GCP extractors")
+                return
 
-            for gcp_entry in session_entries:
+            for gcp_entry in gcp_sessions:
                 gcp_session = gcp_entry["session"]
                 for extractor_class in extractor_classes:
                     # Key includes project_id for uniqueness
@@ -366,3 +340,61 @@ class ExtractorRegistry:
                 if key.startswith(f"{provider.value}:")
             ]
         return list(self._extractors.keys())
+
+    def unregister_provider_extractors(self, provider: CloudProvider) -> int:
+        """
+        Unregister all extractors for a specific cloud provider.
+
+        Args:
+            provider: Cloud provider to unregister
+
+        Returns:
+            Number of extractors unregistered
+        """
+        keys_to_remove = [
+            key
+            for key in self._extractors.keys()
+            if key.startswith(f"{provider.value}:")
+        ]
+
+        for key in keys_to_remove:
+            del self._extractors[key]
+            logger.info(f"Unregistered extractor: {key}")
+
+        # Remove sessions for this provider
+        if provider in self.sessions:
+            del self.sessions[provider]
+            logger.info(f"Removed session for provider: {provider.value}")
+
+        return len(keys_to_remove)
+
+    def register_provider(self, provider: CloudProvider, sessions: Any) -> int:
+        """
+        Register extractors for a new cloud provider.
+
+        Args:
+            provider: Cloud provider to register
+            sessions: Session(s) for the provider
+
+        Returns:
+            Number of extractors registered
+        """
+        # Store sessions for this provider
+        self.sessions[provider] = sessions
+
+        initial_count = len(self._extractors)
+
+        # Register extractors based on provider
+        if provider == CloudProvider.AWS:
+            self._register_aws_extractors()
+        elif provider == CloudProvider.AZURE:
+            self._register_azure_extractors()
+        elif provider == CloudProvider.GCP:
+            self._register_gcp_extractors()
+        else:
+            logger.warning(f"Unknown provider: {provider.value}")
+            return 0
+
+        new_count = len(self._extractors) - initial_count
+        logger.info(f"Registered {new_count} extractors for provider: {provider.value}")
+        return new_count

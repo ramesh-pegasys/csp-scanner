@@ -329,16 +329,16 @@ async def test_lifespan_with_database():
         from app.core.config import Settings
 
         mock_settings = Settings(
-            database_enabled=True,
-            database_host="localhost",
-            database_port=5432,
-            database_name="test",
-            database_user="user",
-            database_password="pass",
+            database={
+                "enabled": True,
+                "host": "localhost",
+                "port": 5432,
+                "name": "test",
+                "user": "user",
+                "password": "pass",
+            },
             aws_access_key_id="test-key",
             aws_secret_access_key="test-secret",
-            aws_account_id="test-account",
-            aws_default_region="us-east-1",
             enabled_providers=["aws"],
             aws_accounts=[
                 {
@@ -416,7 +416,7 @@ async def test_lifespan_database_unavailable_warning():
     ) as mock_orchestrator_class, patch(
         "app.main.scheduler"
     ) as mock_scheduler:
-        mock_settings = Settings(database_enabled=True, enabled_providers=[])
+        mock_settings = Settings(database={"enabled": True}, enabled_providers=[])
         mock_get_settings.return_value = mock_settings
 
         db_manager = Mock()
@@ -463,7 +463,7 @@ async def test_lifespan_database_initialization_failure():
     ) as mock_orchestrator_class, patch(
         "app.main.scheduler"
     ) as mock_scheduler:
-        mock_settings = Settings(database_enabled=True, enabled_providers=[])
+        mock_settings = Settings(database={"enabled": True}, enabled_providers=[])
         mock_get_settings.return_value = mock_settings
 
         mock_init_database.side_effect = RuntimeError("boom")

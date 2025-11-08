@@ -1,0 +1,12 @@
+# Development requirements for type checking and linting
+mypy
+flake8
+pytest
+pytest-asyncio
+types-PyYAML
+types-python-dateutil
+types-requests
+types-setuptools
+types-toml
+types-ujson
+types-croniter

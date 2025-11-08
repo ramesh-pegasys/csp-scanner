@@ -48,32 +48,57 @@ transport:
 #   # No additional config needed
 
 # AWS multi-account configuration
+# Policy hierarchy: region-level > account-level > cloud-level > transport default
+# Note: All policy_name fields are optional at every level
 aws_accounts:
-  - account_id: "123456789012"
-    regions:
-      - name: "us-west-2"
-        policy_name: "aws-us-west-2-policy"
-      - name: "us-east-1"
-        policy_name: "aws-us-east-1-policy"
-  - account_id: "123456789013"
-    regions:
-      - name: "eu-west-1"
-        policy_name: "aws-eu-west-1-policy"
+  # policy_name: "aws-cloud-policy"  # Optional: Cloud-level policy for all AWS resources
+  accounts:
+    - account_id: "123456789012"
+      policy_name: "aws-account-123456789012-policy"  # Optional: Account-level policy
+      regions:
+        - name: "us-west-2"
+          policy_name: "aws-us-west-2-policy"  # Optional: Region-level policy (highest priority)
+        - name: "us-east-1"
+          policy_name: "aws-us-east-1-policy"
+    - account_id: "123456789013"
+      # No account-level policy, will fall back to cloud or transport level
+      regions:
+        - name: "eu-west-1"
+          policy_name: "aws-eu-west-1-policy"
+        - name: "eu-central-1"
+          # No region-level policy, will use account, cloud, or transport level
 
 # GCP multi-project configuration
 gcp_projects:
-  - project_id: "first-project"
-    regions:
-      - name: "us-central1"
-      - name: "us-east1"
+  # policy_name: "gcp-cloud-policy"  # Optional: Cloud-level policy for all GCP resources
+  projects:
+    - project_id: "first-project"
+      policy_name: "gcp-first-project-policy"  # Optional: Project-level policy
+      regions:
+        - name: "us-central1"
+          policy_name: "gcp-us-central1-policy"  # Optional: Region-level policy
+        - name: "us-east1"
+          # No region-level policy, will use project, cloud, or transport level
+    - project_id: "second-project"
+      # No project-level policy defined
+      regions:
+        - name: "europe-west1"
+          policy_name: "gcp-europe-west1-policy"
 
 # Azure configuration
 azure_subscriptions:
-  - subscription_id: "sub-123"
-    locations:
-      - name: "eastus"
-      - name: "westeurope"
-        policy_name: "azure-westeurope-policy"
+  # policy_name: "azure-cloud-policy"  # Optional: Cloud-level policy for all Azure resources
+  subscriptions:
+    - subscription_id: "sub-123"
+      policy_name: "azure-sub-123-policy"  # Optional: Subscription-level policy
+      locations:
+        - name: "eastus"
+          # No location-level policy, will use subscription, cloud, or transport level
+        - name: "westeurope"
+          policy_name: "azure-westeurope-policy"  # Optional: Location-level policy
+    - subscription_id: "sub-456"
+      locations:
+        - name: "northeurope"
 
 # Other extractor settings
 batch_size: 50

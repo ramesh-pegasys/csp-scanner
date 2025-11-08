@@ -1,0 +1,394 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/ramesh/projects/csp-scanner
+configfile: pytest.ini
+plugins: asyncio-1.2.0, anyio-4.11.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 332 items
+
+tests/test_aegis_policy_override.py ...............                      [  4%]
+tests/test_aws_session.py ......                                         [  6%]
+tests/test_base_extractor.py ...........                                 [  9%]
+tests/test_cloud.py ...............                                      [ 14%]
+tests/test_config_api.py ..................                              [ 19%]
+tests/test_config_routes.py .                                            [ 19%]
+tests/test_core.py ........F
+
+=================================== FAILURES ===================================
+___________________________ test_get_settings_cached ___________________________
+
+self = <sqlalchemy.engine.base.Connection object at 0x10a5046b0>
+engine = Engine(postgresql://ramesh:***@localhost:5432/aegis), connection = None
+_has_events = None, _allow_revalidate = True, _allow_autobegin = True
+
+    def __init__(
+        self,
+        engine: Engine,
+        connection: Optional[PoolProxiedConnection] = None,
+        _has_events: Optional[bool] = None,
+        _allow_revalidate: bool = True,
+        _allow_autobegin: bool = True,
+    ):
+        """Construct a new Connection."""
+        self.engine = engine
+        self.dialect = dialect = engine.dialect
+    
+        if connection is None:
+            try:
+>               self._dbapi_connection = engine.raw_connection()
+                                         ^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:3301: in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:447: in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:1264: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:711: in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py:177: in _do_get
+    with util.safe_reraise():
+.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py:175: in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:388: in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:673: in __init__
+    self.__connect()
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:899: in __connect
+    with util.safe_reraise():
+.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:895: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py:661: in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py:629: in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=localhost dbname=aegis user=ramesh password=postgres port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'aegis', 'host': 'localhost', 'password': 'postgres', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: Operation not permitted
+E       	Is the server running on that host and accepting TCP/IP connections?
+E       connection to server at "localhost" (127.0.0.1), port 5432 failed: Operation not permitted
+E       	Is the server running on that host and accepting TCP/IP connections?
+
+.venv/lib/python3.12/site-packages/psycopg2/__init__.py:122: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    def _load_config_from_database() -> Dict[str, Any]:
+        """Load configuration from database."""
+        logger = logging.getLogger(__name__)
+        try:
+            # Check if database is enabled via environment variable (nested format)
+            db_enabled = os.getenv("CSP_SCANNER_DATABASE__ENABLED", "false").lower()
+            logger.info(f"Database enabled env var: {db_enabled}")
+    
+            if db_enabled != "true":
+                logger.info(
+                    "Database config loading skipped (CSP_SCANNER_DATABASE__ENABLED != 'true')"
+                )
+                return {}
+    
+            # Build database URL from environment variables for initial connection
+            db_host = os.getenv("CSP_SCANNER_DATABASE__HOST", "localhost")
+            db_port = os.getenv("CSP_SCANNER_DATABASE__PORT", "5432")
+            db_name = os.getenv("CSP_SCANNER_DATABASE__NAME", "csp_scanner")
+            db_user = os.getenv("CSP_SCANNER_DATABASE__USER")
+            db_password = os.getenv("CSP_SCANNER_DATABASE__PASSWORD")
+    
+            if db_user and db_password:
+                db_url = (
+                    f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+                )
+            else:
+                db_url = f"postgresql://{db_host}:{db_port}/{db_name}"
+    
+            logger.info(f"Connecting to database: {db_name} at {db_host}:{db_port}")
+    
+            # Initialize database with the constructed URL
+            from app.models.database import init_database
+    
+            try:
+>               init_database(db_url)
+
+app/core/config.py:387: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/models/database.py:816: in init_database
+    _db_manager.create_tables()
+app/models/database.py:147: in create_tables
+    Base.metadata.create_all(bind=self.engine)
+.venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py:5928: in create_all
+    bind._run_ddl_visitor(
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:3251: in _run_ddl_visitor
+    with self.begin() as conn:
+../../.pyenv/versions/3.12.2/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:3241: in begin
+    with self.connect() as conn:
+         ^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:3277: in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:145: in __init__
+    Connection._handle_dbapi_exception_noconnection(
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:2440: in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:143: in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:3301: in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:447: in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:1264: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:711: in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py:177: in _do_get
+    with util.safe_reraise():
+.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/impl.py:175: in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:388: in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:673: in __init__
+    self.__connect()
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:899: in __connect
+    with util.safe_reraise():
+.venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+.venv/lib/python3.12/site-packages/sqlalchemy/pool/base.py:895: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/create.py:661: in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py:629: in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dsn = 'host=localhost dbname=aegis user=ramesh password=postgres port=5432'
+connection_factory = None, cursor_factory = None
+kwargs = {'dbname': 'aegis', 'host': 'localhost', 'password': 'postgres', 'port': 5432, ...}
+kwasync = {}
+
+    def connect(dsn=None, connection_factory=None, cursor_factory=None, **kwargs):
+        """
+        Create a new database connection.
+    
+        The connection parameters can be specified as a string:
+    
+            conn = psycopg2.connect("dbname=test user=postgres password=secret")
+    
+        or using a set of keyword arguments:
+    
+            conn = psycopg2.connect(database="test", user="postgres", password="secret")
+    
+        Or as a mix of both. The basic connection parameters are:
+    
+        - *dbname*: the database name
+        - *database*: the database name (only as keyword argument)
+        - *user*: user name used to authenticate
+        - *password*: password used to authenticate
+        - *host*: database host address (defaults to UNIX socket if not provided)
+        - *port*: connection port number (defaults to 5432 if not provided)
+    
+        Using the *connection_factory* parameter a different class or connections
+        factory can be specified. It should be a callable object taking a dsn
+        argument.
+    
+        Using the *cursor_factory* parameter, a new default cursor factory will be
+        used by cursor().
+    
+        Using *async*=True an asynchronous connection will be created. *async_* is
+        a valid alias (for Python versions where ``async`` is a keyword).
+    
+        Any other keyword parameter will be passed to the underlying client
+        library: the list of supported parameters depends on the library version.
+    
+        """
+        kwasync = {}
+        if 'async' in kwargs:
+            kwasync['async'] = kwargs.pop('async')
+        if 'async_' in kwargs:
+            kwasync['async_'] = kwargs.pop('async_')
+    
+        dsn = _ext.make_dsn(dsn, **kwargs)
+>       conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Operation not permitted
+E       	Is the server running on that host and accepting TCP/IP connections?
+E       connection to server at "localhost" (127.0.0.1), port 5432 failed: Operation not permitted
+E       	Is the server running on that host and accepting TCP/IP connections?
+E       
+E       (Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+.venv/lib/python3.12/site-packages/psycopg2/__init__.py:122: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+mock_settings_class = <MagicMock name='Settings' id='4466311136'>
+
+    @patch("app.core.config.Settings")
+    def test_get_settings_cached(mock_settings_class):
+        """Test get_settings caching"""
+        from app.core.config import get_settings
+    
+        # Clear the LRU cache to ensure clean state
+        get_settings.cache_clear()
+    
+        mock_instance = Mock()
+        mock_settings_class.return_value = mock_instance
+    
+        # First call
+>       settings1 = get_settings()
+                    ^^^^^^^^^^^^^^
+
+tests/test_core.py:139: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/core/config.py:301: in get_settings
+    db_config = _load_config_from_database()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _load_config_from_database() -> Dict[str, Any]:
+        """Load configuration from database."""
+        logger = logging.getLogger(__name__)
+        try:
+            # Check if database is enabled via environment variable (nested format)
+            db_enabled = os.getenv("CSP_SCANNER_DATABASE__ENABLED", "false").lower()
+            logger.info(f"Database enabled env var: {db_enabled}")
+    
+            if db_enabled != "true":
+                logger.info(
+                    "Database config loading skipped (CSP_SCANNER_DATABASE__ENABLED != 'true')"
+                )
+                return {}
+    
+            # Build database URL from environment variables for initial connection
+            db_host = os.getenv("CSP_SCANNER_DATABASE__HOST", "localhost")
+            db_port = os.getenv("CSP_SCANNER_DATABASE__PORT", "5432")
+            db_name = os.getenv("CSP_SCANNER_DATABASE__NAME", "csp_scanner")
+            db_user = os.getenv("CSP_SCANNER_DATABASE__USER")
+            db_password = os.getenv("CSP_SCANNER_DATABASE__PASSWORD")
+    
+            if db_user and db_password:
+                db_url = (
+                    f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+                )
+            else:
+                db_url = f"postgresql://{db_host}:{db_port}/{db_name}"
+    
+            logger.info(f"Connecting to database: {db_name} at {db_host}:{db_port}")
+    
+            # Initialize database with the constructed URL
+            from app.models.database import init_database
+    
+            try:
+                init_database(db_url)
+            except Exception as db_init_error:
+                # Provide clear error message for database connection failures
+                logger.error(
+                    f"DATABASE CONNECTION FAILED: Unable to connect to database '{db_name}' at {db_host}:{db_port}\n"
+                    f"Error: {str(db_init_error)}\n"
+                    f"To run without database, set: CSP_SCANNER_DATABASE__ENABLED=false"
+                )
+    
+                # Re-raise the exception to halt startup
+>               raise RuntimeError(
+                    f"Failed to connect to database '{db_name}' at {db_host}:{db_port}. "
+                    f"Set CSP_SCANNER_DATABASE__ENABLED=false to start without database."
+                ) from db_init_error
+E               RuntimeError: Failed to connect to database 'aegis' at localhost:5432. Set CSP_SCANNER_DATABASE__ENABLED=false to start without database.
+
+app/core/config.py:397: RuntimeError
+------------------------------ Captured log call -------------------------------
+WARNING  app.models.database:database.py:133 Failed to create database tables: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Operation not permitted
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Operation not permitted
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+ERROR    app.core.config:config.py:390 DATABASE CONNECTION FAILED: Unable to connect to database 'aegis' at localhost:5432
+Error: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Operation not permitted
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Operation not permitted
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+To run without database, set: CSP_SCANNER_DATABASE__ENABLED=false
+=========================== short test summary info ============================
+FAILED tests/test_core.py::test_get_settings_cached - RuntimeError: Failed to...
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+=================== 1 failed, 74 passed, 9 warnings in 0.81s ===================

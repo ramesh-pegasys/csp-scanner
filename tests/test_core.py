@@ -12,29 +12,30 @@ from app.core.config import Settings, _load_config_from_database
 def test_settings_defaults(monkeypatch):
     """Test settings with default values"""
     monkeypatch.delenv("AWS_REGION", raising=False)
-    monkeypatch.delenv("AWS_DEFAULT_REGION", raising=False)
     monkeypatch.delenv("CONFIG_FILE", raising=False)
     settings = Settings()
 
     assert settings.app_name == "Cloud Artifact Extractor"
     assert settings.environment == "development"
     assert settings.debug is False
-    assert settings.aws_default_region == "us-east-1"
     assert settings.transport_config["http_endpoint_url"] == "http://localhost:8000"
-    assert settings.transport_timeout_seconds == 30
-    assert settings.transport_max_retries == 3
+    assert settings.transport_config["timeout_seconds"] == 30
+    assert settings.transport_config["max_retries"] == 3
     assert settings.max_concurrent_extractors == 10
     assert settings.batch_size == 100
     assert settings.api_key_enabled is False
 
 
 def test_settings_transport_config():
-    """Test transport config property"""
+    """Test transport config property with transport dict"""
     settings = Settings(
-        http_endpoint_url="https://scanner.example.com",
-        scanner_api_key="test-key",
-        transport_timeout_seconds=60,
-        transport_max_retries=5,
+        transport={
+            "type": "http",
+            "http_endpoint_url": "https://scanner.example.com",
+            "api_key": "test-key",
+            "timeout_seconds": 60,
+            "max_retries": 5,
+        }
     )
 
     config = settings.transport_config
@@ -42,23 +43,26 @@ def test_settings_transport_config():
     assert config["api_key"] == "test-key"
     assert config["timeout_seconds"] == 60
     assert config["max_retries"] == 5
-    assert "Content-Type" in config["headers"]
-    assert "User-Agent" in config["headers"]
 
 
 def test_settings_transport_config_filesystem():
+    """Test filesystem transport config"""
     settings = Settings(
-        transport_type="filesystem",
-        filesystem_base_dir="/tmp",
-        filesystem_create_dir=False,
+        transport={
+            "type": "filesystem",
+            "base_dir": "/tmp",
+            "create_dir": False,
+        }
     )
     config = settings.transport_config
+    assert config["type"] == "filesystem"
     assert config["base_dir"] == "/tmp"
     assert config["create_dir"] is False
 
 
 def test_settings_transport_config_null():
-    settings = Settings(transport_type="null")
+    """Test null transport config"""
+    settings = Settings(transport={"type": "null"})
     assert settings.transport_config == {"type": "null"}
 
 
@@ -142,17 +146,15 @@ def test_get_settings_cached(mock_settings_class):
 
 def test_get_settings_from_config_file(tmp_path, monkeypatch):
     config_file = tmp_path / "config.yaml"
-    config_file.write_text("app_name: Custom App\naws_default_region: eu-central-1\n")
+    config_file.write_text("app_name: Custom App\nmax_concurrent_extractors: 20\n")
     monkeypatch.setenv("CONFIG_FILE", str(config_file))
     monkeypatch.delenv("AWS_REGION", raising=False)
-    monkeypatch.delenv("AWS_DEFAULT_REGION", raising=False)
-    monkeypatch.delenv("CSP_SCANNER_AWS_DEFAULT_REGION", raising=False)
 
     from app.core import config as config_module
 
     fake_settings = Settings(
         app_name="Custom App",
-        aws_default_region="eu-central-1",
+        max_concurrent_extractors=20,
     )
 
     class FakeGetSettings:
@@ -169,7 +171,7 @@ def test_get_settings_from_config_file(tmp_path, monkeypatch):
     settings = config_module.get_settings()
 
     assert settings.app_name == "Custom App"
-    assert settings.aws_default_region == "eu-central-1"
+    assert settings.max_concurrent_extractors == 20
 
 
 def test_settings_provider_enabled_properties():
@@ -207,11 +209,14 @@ def test_settings_provider_enabled_properties():
 
 def test_settings_database_url_with_credentials():
     settings = Settings(
-        database_user="user",
-        database_password="pass",
-        database_host="db.example.com",
-        database_port=5433,
-        database_name="custom_db",
+        database={
+            "enabled": True,
+            "user": "user",
+            "password": "pass",
+            "host": "db.example.com",
+            "port": 5433,
+            "name": "custom_db",
+        }
     )
 
     assert (
@@ -254,17 +259,16 @@ def test_settings_aws_accounts_list():
         {"account_id": "123", "regions": ["us-east-1"]}
     ]
 
-    # Test fallback with account_id and region
-    settings_fallback = Settings(aws_account_id="456", aws_default_region="us-west-2")
-    assert settings_fallback.aws_accounts_list == [
-        {"account_id": "456", "regions": ["us-west-2"]}
-    ]
-
-    # Test fallback with only region
-    settings_region_only = Settings(aws_default_region="eu-central-1")
-    assert settings_region_only.aws_accounts_list == [
-        {"account_id": "default", "regions": ["eu-central-1"]}
-    ]
+    # Test with multiple accounts
+    settings_multi = Settings(
+        aws_accounts=[
+            {"account_id": "456", "regions": ["us-west-2"]},
+            {"account_id": "789", "regions": ["eu-west-1", "eu-central-1"]},
+        ]
+    )
+    assert len(settings_multi.aws_accounts_list) == 2
+    assert settings_multi.aws_accounts_list[0]["account_id"] == "456"
+    assert settings_multi.aws_accounts_list[1]["account_id"] == "789"
 
     # Test empty when no config
     settings_empty = Settings()
@@ -277,8 +281,6 @@ def test_settings_azure_accounts_list():
 
     original_env = {}
     for key in [
-        "AZURE_SUBSCRIPTION_ID",
-        "AZURE_DEFAULT_LOCATION",
         "AZURE_TENANT_ID",
         "AZURE_CLIENT_ID",
         "AZURE_CLIENT_SECRET",
@@ -296,19 +298,16 @@ def test_settings_azure_accounts_list():
             {"subscription_id": "sub1", "locations": ["eastus"]}
         ]
 
-        # Test fallback with subscription_id and location
-        settings_fallback = Settings(
-            azure_subscription_id="sub2", azure_default_location="westus"
+        # Test with multiple subscriptions
+        settings_multi = Settings(
+            azure_accounts=[
+                {"subscription_id": "sub2", "locations": ["westus"]},
+                {"subscription_id": "sub3", "locations": ["uksouth", "northeurope"]},
+            ]
         )
-        assert settings_fallback.azure_accounts_list == [
-            {"subscription_id": "sub2", "locations": ["westus"]}
-        ]
-
-        # Test fallback with only location
-        settings_location_only = Settings(azure_default_location="uksouth")
-        assert settings_location_only.azure_accounts_list == [
-            {"subscription_id": "default", "locations": ["uksouth"]}
-        ]
+        assert len(settings_multi.azure_accounts_list) == 2
+        assert settings_multi.azure_accounts_list[0]["subscription_id"] == "sub2"
+        assert settings_multi.azure_accounts_list[1]["subscription_id"] == "sub3"
 
         # Test empty when no config
         settings_empty = Settings()
@@ -329,19 +328,16 @@ def test_settings_gcp_projects_list():
         {"project_id": "proj1", "regions": ["us-central1"]}
     ]
 
-    # Test fallback with project_id and region
-    settings_fallback = Settings(
-        gcp_project_id="proj2", gcp_default_region="europe-west1"
+    # Test with multiple projects
+    settings_multi = Settings(
+        gcp_projects=[
+            {"project_id": "proj2", "regions": ["europe-west1"]},
+            {"project_id": "proj3", "regions": ["asia-east1", "asia-southeast1"]},
+        ]
     )
-    assert settings_fallback.gcp_projects_list == [
-        {"project_id": "proj2", "regions": ["europe-west1"]}
-    ]
-
-    # Test fallback with only region
-    settings_region_only = Settings(gcp_default_region="asia-east1")
-    assert settings_region_only.gcp_projects_list == [
-        {"project_id": "default", "regions": ["asia-east1"]}
-    ]
+    assert len(settings_multi.gcp_projects_list) == 2
+    assert settings_multi.gcp_projects_list[0]["project_id"] == "proj2"
+    assert settings_multi.gcp_projects_list[1]["project_id"] == "proj3"
 
     # Test empty when no config
     settings_empty = Settings()
@@ -351,7 +347,12 @@ def test_settings_gcp_projects_list():
 def test_settings_database_url_without_credentials():
     """Test database URL construction without user credentials"""
     settings = Settings(
-        database_host="db.example.com", database_port=5432, database_name="testdb"
+        database={
+            "enabled": True,
+            "host": "db.example.com",
+            "port": 5432,
+            "name": "testdb",
+        }
     )
     expected = "postgresql://db.example.com:5432/testdb"
     print(f"Expected: {expected}, Actual: {settings.database_url}")
