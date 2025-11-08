@@ -4,7 +4,6 @@ title: API Reference
 nav_order: 8
 ---
 
-# API Reference
 
 This document provides comprehensive documentation for the Cloud Artifact Extractor's REST API endpoints.
 
@@ -73,6 +72,43 @@ Check the health status of the application.
 }
 ```
 
+### Configuration Management
+
+#### GET `/config`
+
+Get the current application configuration.
+
+**Response:**
+```json
+{
+  "config": {
+    "setting1": "value1",
+    "setting2": "value2"
+  },
+  "version": 1,
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
+#### GET `/config/{version}`
+
+Get a specific version of the application configuration.
+
+**Path Parameters:**
+- `version`: The configuration version number.
+
+**Response:**
+```json
+{
+  "config": {
+    "setting1": "value1",
+    "setting2": "value2"
+  },
+  "version": 1,
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
 ### Provider Management
 
 #### GET `/extraction/providers`
@@ -91,7 +127,6 @@ List all enabled cloud providers.
 
 List all available services across enabled providers.
 
-**Query Parameters:**
 - `provider` (optional): Filter by specific provider (`aws`, `azure`, `gcp`)
 
 **Examples:**
@@ -151,48 +186,12 @@ Trigger a new extraction job.
 }
 ```
 
-**Examples:**
-
-```bash
-# Extract all resources from all enabled providers
-curl -X POST http://localhost:8000/extraction/trigger \
-  -H "Content-Type: application/json" \
-  -d '{}'
-
-# Extract specific AWS services
-curl -X POST http://localhost:8000/extraction/trigger \
-  -H "Content-Type: application/json" \
-  -d '{
-    "provider": "aws",
-    "services": ["ec2", "s3"],
-    "regions": ["us-east-1", "us-west-2"]
-  }'
-
-# Extract Azure compute resources
-curl -X POST http://localhost:8000/extraction/trigger \
-  -H "Content-Type: application/json" \
-  -d '{
-    "provider": "azure",
-    "services": ["compute"],
-    "regions": ["eastus"]
-  }'
-
-# Extract with custom batch size
-curl -X POST http://localhost:8000/extraction/trigger \
-  -H "Content-Type: application/json" \
-  -d '{
-    "services": ["ec2"],
-    "batch_size": 50
-  }'
-```
-
 **Response:**
 ```json
 {
-  "job_id": "job_1234567890",
-  "status": "started",
-  "message": "Extraction job started successfully",
-  "estimated_completion": "2024-01-15T10:35:00Z"
+  "job_id": "a3f8e9b2-5b4a-4b4e-8b1e-3e2a6d5c8b1a",
+  "status": "pending",
+  "created_at": "2024-01-15T10:30:00Z"
 }
 ```
 
@@ -204,25 +203,12 @@ List recent extraction jobs.
 - `limit` (optional): Maximum number of jobs to return (default: 10)
 - `status` (optional): Filter by status (`running`, `completed`, `failed`)
 
-**Examples:**
-
-```bash
-# Get recent jobs
-GET /extraction/jobs
-
-# Get last 5 jobs
-GET /extraction/jobs?limit=5
-
-# Get only running jobs
-GET /extraction/jobs?status=running
-```
-
 **Response:**
 ```json
 {
   "jobs": [
     {
-      "job_id": "job_1234567890",
+      "id": "a3f8e9b2-5b4a-4b4e-8b1e-3e2a6d5c8b1a",
       "status": "completed",
       "provider": "aws",
       "services": ["ec2", "s3"],
@@ -248,7 +234,7 @@ Get detailed information about a specific job.
 **Response:**
 ```json
 {
-  "job_id": "job_1234567890",
+  "id": "a3f8e9b2-5b4a-4b4e-8b1e-3e2a6d5c8b1a",
   "status": "completed",
   "provider": "aws",
   "services": ["ec2", "s3"],
@@ -300,37 +286,15 @@ Create a new extraction schedule.
 }
 ```
 
-**Examples:**
-
-```bash
-# Daily full scan of all providers
-curl -X POST http://localhost:8000/schedules/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "daily-full-scan",
-    "cron_expression": "0 2 * * *",
-    "batch_size": 200
-  }'
-
-# Hourly AWS scan
-curl -X POST http://localhost:8000/schedules/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "hourly-aws-scan",
-    "cron_expression": "0 * * * *",
-    "provider": "aws",
-    "services": ["ec2", "rds"]
-  }'
-```
-
 **Response:**
 ```json
 {
-  "schedule_id": "sched_1234567890",
+  "id": "daily-full-scan",
   "name": "daily-full-scan",
   "cron_expression": "0 2 * * *",
-  "next_run": "2024-01-16T02:00:00Z",
-  "status": "active"
+  "next_run_at": "2024-01-16T02:00:00Z",
+  "is_active": true,
+  "created_at": "2024-01-15T10:30:00Z"
 }
 ```
 
@@ -343,15 +307,14 @@ List all extraction schedules.
 {
   "schedules": [
     {
-      "schedule_id": "sched_1234567890",
+      "id": "daily-full-scan",
       "name": "daily-full-scan",
       "cron_expression": "0 2 * * *",
       "provider": null,
       "services": null,
-      "enabled": true,
-      "last_run": "2024-01-15T02:00:00Z",
-      "next_run": "2024-01-16T02:00:00Z",
-      "status": "active"
+      "is_active": true,
+      "last_run_at": "2024-01-15T02:00:00Z",
+      "next_run_at": "2024-01-16T02:00:00Z"
     }
   ],
   "total": 1

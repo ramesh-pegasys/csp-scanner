@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 @pytest.fixture
 def client(mock_orchestrator, mock_registry, mock_scheduler):
     """Test client fixture"""
-    from app.api.routes import extraction, schedules, health
+    from app.api.routes import extraction, schedules, health, config
 
     test_app = FastAPI(
         title="Test Cloud Artifact Extractor", description="Test API", version="1.0.0"
@@ -28,6 +28,7 @@ def client(mock_orchestrator, mock_registry, mock_scheduler):
     test_app.include_router(
         schedules.router, prefix="/api/v1/schedules", tags=["schedules"]
     )
+    test_app.include_router(config.router, prefix="/api/v1/config", tags=["config"])
     test_app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
 
     @test_app.get("/")

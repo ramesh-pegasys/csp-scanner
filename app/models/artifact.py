@@ -18,7 +18,7 @@ class CloudArtifact(BaseModel):
 
     class Config:
         json_encoders = {datetime: lambda v: v.isoformat()}
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "resource_id": "i-1234567890abcdef0",
                 "resource_type": "ec2",

@@ -5,13 +5,13 @@ import boto3  # type: ignore[import-untyped]
 from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore[import-untyped]
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from typing import Any, Dict
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Any, Dict, List
 
-from app.api.routes import extraction, schedules, health
+from app.api.routes import extraction, schedules, health, config
 from app.core.config import get_settings
 from app.services.registry import ExtractorRegistry
 from app.services.orchestrator import ExtractionOrchestrator
-from app.transport.base import TransportFactory
 from app.cloud.base import CloudProvider
 from app.cloud.aws_session import AWSSession
 from app.cloud.azure_session import AzureSession
@@ -22,6 +22,7 @@ from app.api.routes.extraction import custom_openapi
 # Ensure transports register themselves with the factory
 importlib.import_module("app.transport.http_transport")
 importlib.import_module("app.transport.filesystem")
+importlib.import_module("app.transport.console")
 
 # Setup logging
 logging.basicConfig(
@@ -51,6 +52,25 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     # Startup
     logger.info("Starting Cloud Artifact Extractor")
+
+    # Initialize database if enabled
+    if settings.database_enabled:
+        logger.info("Initializing database...")
+        try:
+            from app.models.database import init_database, get_db_manager
+
+            init_database(settings.database_url)
+            db_manager = get_db_manager()
+            if db_manager.is_database_available():
+                logger.info("Database initialized and available")
+            else:
+                logger.warning(
+                    "Database initialized but not accessible - config features will be limited"
+                )
+        except Exception as e:
+            logger.error(f"Failed to initialize database: {e}")
+            logger.warning("Database features will not be available")
+            # Don't fail startup if DB is optional
 
     # Initialize cloud sessions based on enabled providers
     sessions: Dict[CloudProvider, Any] = {}
@@ -146,25 +166,79 @@ async def lifespan(app: FastAPI):
             logger.error(f"Failed to initialize GCP sessions: {e}")
             logger.warning("GCP extractors will not be available")
 
+    enabled_requested: List[CloudProvider] = [
+        provider
+        for provider, enabled in (
+            (CloudProvider.AWS, settings.is_aws_enabled),
+            (CloudProvider.AZURE, settings.is_azure_enabled),
+            (CloudProvider.GCP, settings.is_gcp_enabled),
+        )
+        if enabled
+    ]
+
     if not sessions:
-        logger.error("No cloud providers enabled! Check your configuration.")
-        raise RuntimeError("At least one cloud provider must be enabled")
+        if enabled_requested:
+            logger.warning(
+                "Cloud providers are enabled but have no valid account configurations: %s\n"
+                "Please configure accounts/subscriptions/projects via the configuration API or environment variables.",
+                ", ".join(provider.name for provider in enabled_requested),
+            )
+        else:
+            logger.warning(
+                "No cloud providers enabled at startup. Configuration can be updated via API."
+            )
 
     # Initialize components
     registry = ExtractorRegistry(sessions, settings)
 
-    # Create transport based on configuration
-    transport: Any = TransportFactory.create(
-        settings.transport_type, settings.transport_config
-    )
-
+    # Create orchestrator without transport - transport will be created lazily when needed
     orchestrator = ExtractionOrchestrator(
-        registry=registry, transport=transport, config=settings.orchestrator_config
+        registry=registry, transport=None, config=settings.orchestrator_config
     )
 
     # Start scheduler
     scheduler.start()
     logger.info("Scheduler started")
+
+    # Restore schedules from database if enabled
+    if settings.database_enabled:
+        try:
+            from app.models.database import get_db_manager
+            from apscheduler.triggers.cron import CronTrigger
+
+            db_manager = get_db_manager()
+            db_schedules = db_manager.list_schedules(active_only=True)
+
+            for schedule_data in db_schedules:
+                if not schedule_data.get("paused", False):
+                    try:
+                        trigger = CronTrigger.from_crontab(
+                            schedule_data["cron_expression"]
+                        )
+                        scheduler.add_job(
+                            orchestrator.run_extraction,
+                            trigger=trigger,
+                            id=schedule_data["id"],
+                            name=schedule_data["name"],
+                            kwargs={
+                                "services": schedule_data.get("services"),
+                                "regions": schedule_data.get("regions"),
+                                "filters": schedule_data.get("filters"),
+                                "batch_size": schedule_data.get("batch_size", 100),
+                            },
+                            replace_existing=True,
+                        )
+                        logger.info(
+                            f"Restored schedule '{schedule_data['name']}' from database"
+                        )
+                    except Exception as e:
+                        logger.error(
+                            f"Failed to restore schedule '{schedule_data.get('name')}': {e}"
+                        )
+
+            logger.info(f"Restored {len(db_schedules)} schedules from database")
+        except Exception as e:
+            logger.warning(f"Failed to restore schedules from database: {e}")
 
     # Store in app state
     app.state.orchestrator = orchestrator
@@ -177,11 +251,9 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down")
     scheduler.shutdown()
 
-    # Close transport if it has a close method (HTTP transport), otherwise disconnect
-    if hasattr(transport, "close"):
-        await transport.close()
-    elif hasattr(transport, "disconnect"):
-        await transport.disconnect()
+    # Cleanup orchestrator resources (including transport)
+    if orchestrator:
+        await orchestrator.cleanup()
 
 
 # Custom FastAPI subclass to override openapi method
@@ -199,9 +271,19 @@ app = CustomOpenAPIFastAPI(
     lifespan=lifespan,
 )
 
+# Add CORS middleware - allowing all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
+
 # Include routers with versioned API prefix
 app.include_router(extraction.router, prefix="/api/v1/extraction", tags=["extraction"])  # type: ignore[attr-defined]
 app.include_router(schedules.router, prefix="/api/v1/schedules", tags=["schedules"])  # type: ignore[attr-defined]
+app.include_router(config.router, prefix="/api/v1/config", tags=["config"])  # type: ignore[attr-defined]
 app.include_router(health.router, tags=["health"])  # Register at root level, no prefix
 
 

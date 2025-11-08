@@ -145,6 +145,12 @@ az containerapp create \
         ENABLED_PROVIDERS='["aws","azure","gcp"]' \
         DEBUG=false \
         CONFIG_FILE=/app/config/production.yaml \
+        CSP_SCANNER_DATABASE_ENABLED='true' \
+        CSP_SCANNER_DATABASE_HOST='your-db-host' \
+        CSP_SCANNER_DATABASE_PORT='5432' \
+        CSP_SCANNER_DATABASE_NAME='csp_scanner' \
+        CSP_SCANNER_DATABASE_USER='your-user' \
+        CSP_SCANNER_DATABASE_PASSWORD='your-password' \
     --secrets \
         jwt-secret=your-jwt-secret-key \
         scanner-endpoint=https://your-scanner-endpoint.com
@@ -157,7 +163,13 @@ az containerapp update \
     --resource-group ${RESOURCE_GROUP} \
     --min-replicas 2 \
     --max-replicas 10 \
-    --set-env-vars CPU_TARGET=70 MEMORY_TARGET=80
+    --set-env-vars CPU_TARGET=70 MEMORY_TARGET=80 \
+        CSP_SCANNER_DATABASE_ENABLED='true' \
+        CSP_SCANNER_DATABASE_HOST='your-db-host' \
+        CSP_SCANNER_DATABASE_PORT='5432' \
+        CSP_SCANNER_DATABASE_NAME='csp_scanner' \
+        CSP_SCANNER_DATABASE_USER='your-user' \
+        CSP_SCANNER_DATABASE_PASSWORD='your-password'
 
 # Get the FQDN
 FQDN=$(az containerapp show \

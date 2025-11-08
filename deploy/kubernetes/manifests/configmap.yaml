@@ -9,6 +9,10 @@ data:
   CONFIG_FILE: '/app/config/production.yaml'
   HTTP_ENDPOINT_URL: 'https://your-scanner-endpoint.com'
   LOG_LEVEL: 'INFO'
+  CSP_SCANNER_DATABASE_ENABLED: 'true'
+  CSP_SCANNER_DATABASE_HOST: 'your-db-host'
+  CSP_SCANNER_DATABASE_PORT: '5432'
+  CSP_SCANNER_DATABASE_NAME: 'csp_scanner'
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -29,6 +33,14 @@ data:
       workers: 4
       timeout: 30
     
+    database:
+      enabled: true
+      host: "your-db-host"
+      port: 5432
+      name: "csp_scanner"
+      user: "your-user"
+      password: "your-password"
+
     providers:
       aws:
         enabled: true

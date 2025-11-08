@@ -1,0 +1,2 @@
+app_name: Custom App
+max_concurrent_extractors: 20

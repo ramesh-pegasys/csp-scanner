@@ -40,6 +40,62 @@ def test_aegis_policy_scanner_transport_basic(monkeypatch):
 
 
 @pytest.mark.asyncio
+def test_aegis_policy_scanner_label_generation(monkeypatch, caplog):
+    monkeypatch.setenv("AEGIS_TOKEN", "dummy-token")
+    caplog.set_level("WARNING")
+    config = {
+        "type": "aegis_policy_scanner",
+        "aegis_host": "host",
+        "policy_name": "policy",
+        "labels": {"static": "value"},
+        "aws_accounts": [
+            {
+                "account_id": "123456789012",
+                "regions": [
+                    {"name": "us-east-1", "policy_name": "east-policy"},
+                    "us-west-2",
+                ],
+            }
+        ],
+        "gcp_projects": [
+            {
+                "project_id": "proj-1",
+                "regions": [{"name": "us-central1", "policy_name": "central-policy"}],
+            },
+            {
+                "regions": ["us-west1"],
+            },
+        ],
+        "azure_subscriptions": [
+            {
+                "subscription_id": "sub-1",
+                "locations": [
+                    {"name": "eastus", "policy_name": "east-policy"},
+                    "westus",
+                ],
+            }
+        ],
+    }
+    transport = AegisPolicyScannerTransport(config)
+    labels = transport.labels
+    assert labels["static"] == "value"
+    assert "aws_123456789012_us-east-1" in labels
+    assert "policy:east-policy" in labels["aws_123456789012_us-east-1"]
+    assert "aws_123456789012_us-west-2" in labels
+    assert "gcp_proj-1_us-central1" in labels
+    assert "policy:central-policy" in labels["gcp_proj-1_us-central1"]
+    assert "gcp_None" not in ",".join(labels.keys())
+    assert any("Missing project_id" in record.message for record in caplog.records)
+    assert "azure_sub-1_eastus" in labels
+    assert "policy:east-policy" in labels["azure_sub-1_eastus"]
+    assert "azure_sub-1_westus" in labels
+
+    import asyncio
+
+    asyncio.run(transport.close())
+
+
+@pytest.mark.asyncio
 def test_aegis_policy_scanner_transport_token_missing(monkeypatch):
     monkeypatch.delenv("AEGIS_TOKEN", raising=False)
     config = {

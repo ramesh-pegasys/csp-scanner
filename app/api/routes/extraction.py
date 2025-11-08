@@ -2,11 +2,9 @@
 from fastapi import APIRouter, HTTPException, Request, Depends
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
 from app.models.job import Job
 from app.cloud.base import CloudProvider
-import os
+from app.api.auth import verify_jwt_token
 from fastapi import FastAPI
 
 
@@ -46,21 +44,6 @@ def custom_openapi(app: FastAPI):
 
 router = APIRouter()
 
-# JWT config (static token usage)
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key")
-ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
-
-# TODO: Support external JWT providers (Auth0, Cognito, Google IAM) in future
-
-
-def verify_jwt_token(token: str = Depends(oauth2_scheme)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-
 
 class ExtractionRequest(BaseModel):
     provider: Optional[str] = (
@@ -72,14 +55,29 @@ class ExtractionRequest(BaseModel):
     batch_size: int = 100
 
     class Config:
-        schema_extra = {
-            "example": {
-                "provider": "aws",
-                "services": ["ec2", "s3"],
-                "regions": ["us-west-2"],
-                "filters": {"tag": "production"},
-                "batch_size": 100,
-            }
+        json_schema_extra = {
+            "examples": [
+                {
+                    "provider": "aws",
+                    "services": ["ec2", "s3"],
+                    "regions": ["us-west-2"],
+                    "filters": {"tag": "production"},
+                    "batch_size": 100,
+                },
+                {
+                    "provider": "gcp",
+                    "services": ["compute", "storage"],
+                    "regions": ["us-central1", "us-east1"],
+                    "filters": {"labels": {"environment": "production"}},
+                    "batch_size": 100,
+                },
+                {
+                    "provider": "azure",
+                    "services": ["vm", "storage"],
+                    "regions": ["eastus", "westeurope"],
+                    "batch_size": 100,
+                },
+            ]
         }
 
 
@@ -88,7 +86,7 @@ class ExtractionResponse(BaseModel):
     message: str
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "job_id": "job-123",
                 "message": "Extraction started successfully",
@@ -103,12 +101,36 @@ class ExtractionResponse(BaseModel):
         "requestBody": {
             "content": {
                 "application/json": {
-                    "example": {
-                        "provider": "aws",
-                        "services": ["ec2", "s3"],
-                        "regions": ["us-west-2"],
-                        "filters": {"tag": "production"},
-                        "batch_size": 100,
+                    "examples": {
+                        "aws": {
+                            "summary": "AWS Extraction",
+                            "value": {
+                                "provider": "aws",
+                                "services": ["ec2", "s3"],
+                                "regions": ["us-west-2"],
+                                "filters": {"tag": "production"},
+                                "batch_size": 100,
+                            },
+                        },
+                        "gcp": {
+                            "summary": "GCP Extraction",
+                            "value": {
+                                "provider": "gcp",
+                                "services": ["compute", "storage"],
+                                "regions": ["us-central1", "us-east1"],
+                                "filters": {"labels": {"environment": "production"}},
+                                "batch_size": 100,
+                            },
+                        },
+                        "azure": {
+                            "summary": "Azure Extraction",
+                            "value": {
+                                "provider": "azure",
+                                "services": ["vm", "storage"],
+                                "regions": ["eastus", "westeurope"],
+                                "batch_size": 100,
+                            },
+                        },
                     }
                 }
             }

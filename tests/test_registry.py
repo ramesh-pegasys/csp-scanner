@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from app.core.config import Settings
+from app.cloud.base import CloudProvider
 from app.extractors.base import BaseExtractor, ExtractorMetadata
 from app.services.registry import ExtractorRegistry
 
@@ -34,12 +35,17 @@ class DummyExtractor(BaseExtractor):
 
 @pytest.fixture
 def registry(tmp_path):
-    session = SimpleNamespace()
     settings = Settings()
+    aws_entry = {
+        "session": SimpleNamespace(),
+        "account_id": "acct-1",
+        "regions": ["us-east-1"],
+    }
+    sessions = {CloudProvider.AWS: [aws_entry]}
     with patch.object(
         ExtractorRegistry, "_register_default_extractors", lambda self: None
     ):
-        reg = ExtractorRegistry(session, settings)
+        reg = ExtractorRegistry(sessions, settings)
     extractor_config = tmp_path / "extractors.yaml"
     extractor_config.write_text("dummy:\n  option: value\n")
     reg.config.extractor_config_path = str(extractor_config)
@@ -346,8 +352,12 @@ def test_register_azure_extractors_success(monkeypatch, tmp_path):
     from app.cloud.base import CloudProvider
 
     # Create registry with Azure session
-    azure_session = SimpleNamespace()
-    sessions = {CloudProvider.AZURE: azure_session}
+    azure_entry = {
+        "session": SimpleNamespace(),
+        "subscription_id": "sub",
+        "locations": ["eastus"],
+    }
+    sessions = {CloudProvider.AZURE: [azure_entry]}
     settings = Settings()
 
     # Mock Azure extractors
@@ -410,8 +420,12 @@ def test_register_gcp_extractors_success(monkeypatch, tmp_path):
     from app.cloud.base import CloudProvider
 
     # Create registry with GCP session
-    gcp_session = SimpleNamespace()
-    sessions = {CloudProvider.GCP: gcp_session}
+    gcp_entry = {
+        "session": SimpleNamespace(),
+        "project_id": "proj-1",
+        "regions": ["us-central1"],
+    }
+    sessions = {CloudProvider.GCP: [gcp_entry]}
     settings = Settings()
 
     # Mock GCP extractors (just a few key ones for coverage)

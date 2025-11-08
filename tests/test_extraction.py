@@ -1,11 +1,17 @@
 """Tests for extraction endpoints"""
 
-from fastapi.testclient import TestClient
-from types import SimpleNamespace
-import uuid
-import os
-from jose import jwt
 from datetime import datetime, timedelta
+import os
+import uuid
+from types import SimpleNamespace
+
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from jose import jwt
+
+from app.api.routes import extraction
+import importlib
 
 
 def _make_extractor(service: str, provider: str = "aws") -> SimpleNamespace:
@@ -32,6 +38,47 @@ def generate_test_jwt():
 def auth_headers():
     token = generate_test_jwt()
     return {"Authorization": f"Bearer {token}"}
+
+
+def test_custom_openapi_adds_security_and_servers():
+    app = FastAPI()
+    app.include_router(extraction.router, prefix="/api/v1/extraction")
+
+    schema = extraction.custom_openapi(app)
+
+    assert "BearerAuth" in schema["components"]["securitySchemes"]
+    assert schema["servers"] == [
+        {
+            "url": "https://localhost:8443",
+            "description": "Local HTTPS (self-signed certs)",
+        }
+    ]
+
+    # Call again to ensure cached schema path is exercised
+    assert extraction.custom_openapi(app) is schema
+
+
+def test_verify_jwt_token_success(monkeypatch):
+    auth_module = importlib.import_module("app.api.auth")
+
+    def _fake_verify(token=None):
+        return {"sub": "tester"}
+
+    monkeypatch.setattr(auth_module, "verify_jwt_token", _fake_verify, raising=False)
+
+    assert auth_module.verify_jwt_token(token="abc")["sub"] == "tester"
+
+
+def test_verify_jwt_token_invalid(monkeypatch):
+    auth_module = importlib.import_module("app.api.auth")
+
+    def _raise(*_args, **_kwargs):
+        raise extraction.HTTPException(status_code=401, detail="Invalid token")
+
+    monkeypatch.setattr(auth_module, "verify_jwt_token", _raise, raising=False)
+
+    with pytest.raises(extraction.HTTPException):
+        auth_module.verify_jwt_token(token="bad")
 
 
 def test_trigger_extraction_success(client: TestClient, mock_orchestrator):

@@ -64,7 +64,7 @@ if aws apprunner describe-service \
     echo "Updating existing App Runner service..."
     aws apprunner update-service \
         --service-arn "arn:aws:apprunner:${AWS_REGION}:${AWS_ACCOUNT_ID}:service/${APP_NAME}/apprunner-service" \
-        --source-configuration ImageRepository="{ImageIdentifier=${IMAGE_URI},ImageRepositoryType=ECR,ImageConfiguration={Port=8000}}" \
+        --source-configuration ImageRepository="{ImageIdentifier=${IMAGE_URI},ImageRepositoryType=ECR,ImageConfiguration={Port=8000,RuntimeEnvironmentVariables={ENABLED_PROVIDERS='[\"aws\",\"azure\",\"gcp\"]',DEBUG='false',CSP_SCANNER_DATABASE_ENABLED='true',CSP_SCANNER_DATABASE_HOST='your-db-host',CSP_SCANNER_DATABASE_PORT='5432',CSP_SCANNER_DATABASE_NAME='csp_scanner',CSP_SCANNER_DATABASE_USER='your-user',CSP_SCANNER_DATABASE_PASSWORD='your-password'}}}" \
         --region ${AWS_REGION}
 else
     echo "Creating new App Runner service..."
@@ -99,7 +99,7 @@ else
     # Create App Runner service
     aws apprunner create-service \
         --service-name apprunner-service \
-        --source-configuration ImageRepository="{ImageIdentifier=${IMAGE_URI},ImageRepositoryType=ECR,ImageConfiguration={Port=8000,RuntimeEnvironmentVariables={ENABLED_PROVIDERS='[\"aws\",\"azure\",\"gcp\"]',DEBUG='false'}}}" \
+        --source-configuration ImageRepository="{ImageIdentifier=${IMAGE_URI},ImageRepositoryType=ECR,ImageConfiguration={Port=8000,RuntimeEnvironmentVariables={ENABLED_PROVIDERS='[\"aws\",\"azure\",\"gcp\"]',DEBUG='false',CSP_SCANNER_DATABASE_ENABLED='true',CSP_SCANNER_DATABASE_HOST='your-db-host',CSP_SCANNER_DATABASE_PORT='5432',CSP_SCANNER_DATABASE_NAME='csp_scanner',CSP_SCANNER_DATABASE_USER='your-user',CSP_SCANNER_DATABASE_PASSWORD='your-password'}}}" \
         --instance-configuration InstanceRoleArn=${ROLE_ARN} \
         --region ${AWS_REGION}
 fi

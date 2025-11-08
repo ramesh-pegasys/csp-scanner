@@ -27,12 +27,6 @@ Configuration files are stored in the `config/` directory:
 config/
 ├── development.yaml    # Development environment settings
 ├── production.yaml     # Production environment settings
-└── extractors.yaml     # Extractor-specific configuration
-```
-
-### Loading Configuration
-
-#### Using Environment Variables
 
 ```bash
 # Specify config file
@@ -61,15 +55,8 @@ enabled_providers:
   - aws
   - azure
   - gcp
-```
-
-**Environment Variables:**
 ```bash
 export ENABLED_PROVIDERS='["aws", "azure", "gcp"]'
-```
-
-### Application Settings
-
 ```yaml
 # config/production.yaml
 app_name: "Cloud Artifact Extractor"
@@ -84,6 +71,29 @@ export APP_NAME="My CSP Scanner"
 export ENVIRONMENT="production"
 export DEBUG="false"
 export LOG_LEVEL="INFO"
+```
+
+### Database Configuration
+
+```yaml
+# config/production.yaml
+database:
+  enabled: true
+  host: "localhost"
+  port: 5432
+  name: "csp_scanner"
+  user: "your_user"
+  password: "your_password"
+```
+
+**Environment Variables:**
+```bash
+export CSP_SCANNER_DATABASE_ENABLED="true"
+export CSP_SCANNER_DATABASE_HOST="localhost"
+export CSP_SCANNER_DATABASE_PORT="5432"
+export CSP_SCANNER_DATABASE_NAME="csp_scanner"
+export CSP_SCANNER_DATABASE_USER="your_user"
+export CSP_SCANNER_DATABASE_PASSWORD="your_password"
 ```
 
 ## Cloud Provider Configuration
@@ -101,7 +111,6 @@ aws_accounts:
       - "us-west-2"
       - "us-east-1"
   - account_id: "987654321098"
-    regions:
       - "eu-west-1"
 aws_access_key_id: "your-access-key-id"  # Global or per-account
 aws_secret_access_key: "your-secret-access-key"

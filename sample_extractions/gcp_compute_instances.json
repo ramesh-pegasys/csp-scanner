@@ -1,0 +1,116 @@
+{
+  "provider": "gcp",
+  "project_id": "first-project",
+  "region": "us-central1",
+  "service": "compute",
+  "resource_type": "instance",
+  "timestamp": "2025-11-05T10:30:00Z",
+  "artifacts": [
+    {
+      "id": "1234567890123456789",
+      "name": "web-server-prod-01",
+      "zone": "us-central1-a",
+      "machine_type": "n1-standard-2",
+      "status": "RUNNING",
+      "network_interfaces": [
+        {
+          "network": "projects/first-project/global/networks/default",
+          "subnet": "projects/first-project/regions/us-central1/subnetworks/default",
+          "network_ip": "10.128.0.2",
+          "access_configs": [
+            {
+              "type": "ONE_TO_ONE_NAT",
+              "name": "External NAT",
+              "nat_ip": "34.123.45.67"
+            }
+          ]
+        }
+      ],
+      "disks": [
+        {
+          "device_name": "persistent-disk-0",
+          "source": "projects/first-project/zones/us-central1-a/disks/web-server-prod-01",
+          "boot": true,
+          "auto_delete": true,
+          "disk_size_gb": 10
+        }
+      ],
+      "metadata": {
+        "fingerprint": "abc123def456",
+        "items": [
+          {
+            "key": "startup-script",
+            "value": "#!/bin/bash\necho 'Hello World'"
+          }
+        ]
+      },
+      "tags": {
+        "fingerprint": "xyz789",
+        "items": ["http-server", "https-server"]
+      },
+      "labels": {
+        "environment": "production",
+        "team": "platform",
+        "app": "web"
+      },
+      "service_accounts": [
+        {
+          "email": "123456789012-compute@developer.gserviceaccount.com",
+          "scopes": [
+            "https://www.googleapis.com/auth/devstorage.read_only",
+            "https://www.googleapis.com/auth/logging.write",
+            "https://www.googleapis.com/auth/monitoring.write"
+          ]
+        }
+      ],
+      "creation_timestamp": "2025-10-01T08:30:00.000-07:00"
+    },
+    {
+      "id": "9876543210987654321",
+      "name": "web-server-prod-02",
+      "zone": "us-central1-b",
+      "machine_type": "n1-standard-2",
+      "status": "RUNNING",
+      "network_interfaces": [
+        {
+          "network": "projects/first-project/global/networks/default",
+          "subnet": "projects/first-project/regions/us-central1/subnetworks/default",
+          "network_ip": "10.128.0.3",
+          "access_configs": [
+            {
+              "type": "ONE_TO_ONE_NAT",
+              "name": "External NAT",
+              "nat_ip": "34.123.45.68"
+            }
+          ]
+        }
+      ],
+      "disks": [
+        {
+          "device_name": "persistent-disk-0",
+          "source": "projects/first-project/zones/us-central1-b/disks/web-server-prod-02",
+          "boot": true,
+          "auto_delete": true,
+          "disk_size_gb": 10
+        }
+      ],
+      "labels": {
+        "environment": "production",
+        "team": "platform",
+        "app": "web"
+      },
+      "service_accounts": [
+        {
+          "email": "123456789012-compute@developer.gserviceaccount.com",
+          "scopes": [
+            "https://www.googleapis.com/auth/devstorage.read_only",
+            "https://www.googleapis.com/auth/logging.write",
+            "https://www.googleapis.com/auth/monitoring.write"
+          ]
+        }
+      ],
+      "creation_timestamp": "2025-10-01T09:15:00.000-07:00"
+    }
+  ],
+  "total_count": 2
+}

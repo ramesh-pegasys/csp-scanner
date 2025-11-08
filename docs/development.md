@@ -107,6 +107,9 @@ app/
 │   ├── azure/        # Azure extractors
 │   └── gcp/          # GCP extractors
 ├── models/           # Pydantic data models
+│   ├── database.py   # SQLAlchemy models and DatabaseManager
+│   ├── job.py        # Job model
+│   └── schedule.py   # Schedule model
 ├── services/         # Business logic
 │   ├── registry.py   # Extractor registry
 │   └── orchestrator.py # Extraction orchestration
@@ -280,21 +283,22 @@ git push origin your-branch
 
 ## Testing
 
+### Two-Tiered Testing Strategy
+
+The project employs a two-tiered testing strategy to ensure both speed and correctness:
+
+1.  **API and Service Level Tests**: These tests focus on the application's API and service layers. They use a mocked backend for external services, including the database. This approach allows for fast, isolated tests that can be run frequently during development. The primary configuration for these tests can be found in `tests/conftest.py`.
+
+2.  **Database Layer Tests**: These tests specifically target the database interaction layer, primarily the `DatabaseManager` class. They use a temporary, file-based SQLite database that is created and destroyed for each test function. This ensures that the database logic is tested thoroughly and in isolation from the rest of the application. These tests can be found in `tests/test_database_manager.py`.
+
 ### Test Structure
 
 ```
 tests/
-├── conftest.py           # Shared fixtures
-├── unit/                 # Unit tests
-│   ├── test_extractors/
-│   ├── test_transport/
-│   └── test_services/
-├── integration/          # Integration tests
-│   ├── test_aws_extraction.py
-│   ├── test_azure_extraction.py
-│   └── test_gcp_extraction.py
-└── e2e/                  # End-to-end tests
-    └── test_full_workflow.py
+├── conftest.py           # Shared fixtures for API and service tests
+├── test_database_manager.py # Database layer tests
+├── test_main_app.py      # API level tests
+└── ...                   # Other service and utility tests
 ```
 
 ### Running Tests
@@ -307,7 +311,7 @@ pytest
 pytest --cov=app --cov-report=term-missing --cov-report=html
 
 # Specific test file
-pytest tests/unit/test_extractors/test_ec2.py
+pytest tests/test_database_manager.py
 
 # Tests matching pattern
 pytest -k "test_extraction"
@@ -321,21 +325,21 @@ pytest -x
 
 ### Writing Tests
 
-#### Unit Tests
+#### API and Service Tests (with Mocking)
 
 ```python
 import pytest
 from app.extractors.aws.ec2 import EC2Extractor
 
 class TestEC2Extractor:
-    def test_get_metadata(self):
-        extractor = EC2Extractor(mock_session, {})
+    def test_get_metadata(self, mock_aws_session):
+        extractor = EC2Extractor(mock_aws_session, {})
         metadata = extractor.get_metadata()
         assert metadata.service_name == "ec2"
         assert "instance" in metadata.resource_types
 
-    def test_transform_instance(self):
-        extractor = EC2Extractor(mock_session, {})
+    def test_transform_instance(self, mock_aws_session):
+        extractor = EC2Extractor(mock_aws_session, {})
         raw_data = {"instance": mock_ec2_instance}
         result = extractor.transform(raw_data)
         
@@ -345,66 +349,45 @@ class TestEC2Extractor:
         assert "configuration" in result
 ```
 
-#### Integration Tests
+#### Database Tests (with Temporary SQLite DB)
 
 ```python
 import pytest
-from app.services.orchestrator import ExtractionOrchestrator
+from app.models.database import DatabaseManager, Job
 
 @pytest.mark.asyncio
-async def test_aws_ec2_extraction():
-    # Requires real AWS credentials
-    orchestrator = create_test_orchestrator()
-    
-    job_id = await orchestrator.run_extraction(
+async def test_job_crud_operations(tmp_path):
+    db_url = f"sqlite+aiosqlite:///{tmp_path}/test.db"
+    db_manager = DatabaseManager(db_url)
+    await db_manager.create_all()
+
+    # Create a new job
+    new_job = await db_manager.create_job(
+        status="running",
+        provider="aws",
         services=["ec2"],
         regions=["us-east-1"]
     )
-    
-    # Wait for completion
-    status = await orchestrator.get_job_status(job_id)
-    assert status["status"] == "completed"
-    assert status["resources_extracted"] > 0
-```
+    assert new_job.id is not None
 
-#### Mocking Cloud APIs
+    # Retrieve the job
+    retrieved_job = await db_manager.get_job(new_job.id)
+    assert retrieved_job.status == "running"
 
-```python
-import pytest
-from unittest.mock import Mock, patch
-
-@pytest.fixture
-def mock_aws_session():
-    session = Mock()
-    client = Mock()
-    session.get_client.return_value = client
-    session.provider = "aws"
-    return session
-
-def test_extractor_with_mock(mock_aws_session):
-    with patch('boto3.client') as mock_client:
-        mock_client.return_value.describe_instances.return_value = {
-            'Reservations': [{'Instances': [mock_instance_data]}]
-        }
-        
-        extractor = EC2Extractor(mock_aws_session, {})
-        results = asyncio.run(extractor.extract())
-        
-        assert len(results) == 1
-        assert results[0]["resource_type"] == "aws:ec2:instance"
+    # ... other CRUD operations
 ```
 
 ### Test Coverage Goals
 
-- **Unit Tests**: 90%+ coverage
+- **Unit and Service Tests**: 90%+ coverage
+- **Database Tests**: Cover all `DatabaseManager` methods.
 - **Integration Tests**: Cover all extractors with real APIs (optional)
-- **E2E Tests**: Full workflow testing
 
 ### CI/CD Testing
 
 GitHub Actions runs:
 - Code quality checks (black, flake8, mypy)
-- Unit tests with coverage
+- Unit and database tests with coverage
 - Integration tests (with credentials)
 - Security scanning
 

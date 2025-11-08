@@ -69,3 +69,7 @@ google-cloud-dataflow-client
 google-api-python-client
 google-api-core
 google-auth-httplib2
+
+# Database
+sqlalchemy
+psycopg2-binary
