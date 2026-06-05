@@ -12,9 +12,8 @@ enabled_providers:
 
 # AWS multi-account configuration
 aws_accounts:
-  - account_id: "123456789012"
+  - account_id: "302263084051"
     regions:
-      - "us-west-2"
       - "us-east-1"
 
 # AWS credentials
@@ -30,14 +29,9 @@ aws_accounts:
 
 # Azure multi-subscription configuration
 azure_accounts:
-  - subscription_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  - subscription_id: "a47ca96d-c5ee-4a92-8796-5bce2a4865e7"
     locations:
-      - "eastus"
-      - "westeurope"
-  - subscription_id: "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
-    locations:
-      - "centralus"
-      - "uksouth"
+      - "eastus2"
 
 # Azure credentials
 # It is recommended to use environment variables for Azure credentials in production:
@@ -52,13 +46,12 @@ azure_accounts:
 
 # GCP multi-project configuration
 gcp_projects:
-  - project_id: "some-project"
+  - project_id: "pegasus-437722"
     regions:
-      - "us-west1"
-      - "europe-west1"
-gcp_credentials_path: "/path/to/service-account-key.json"  # Optional
+      - "us-central1"
+# gcp_credentials_path: "/path/to/service-account-key.json"  # Optional
 
-scanner_endpoint_url: "https://policy-scanner.example.com/api/scan"
+http_endpoint_url: "https://policy-scanner.example.com/api/scan"
 transport_timeout_seconds: 60
 transport_max_retries: 5
 
@@ -67,9 +60,13 @@ batch_size: 200
 batch_delay_seconds: 0.1
 
 # Transport Configuration
-transport_type: "http"  # Options: http, filesystem, null
-filesystem_base_dir: "./file_collector"
-filesystem_create_dir: true
+transport:
+  type: "null"
+  # For filesystem transport, use:
+  # type: "filesystem"
+  # base_dir: "./file_collector"
+  # create_dir: true
+  # allow_insecure_ssl: false  # Allow insecure HTTPS connections (not recommended for production)
 
 # JWT Authentication Configuration
 # It is recommended to use environment variables for JWT settings in production:
